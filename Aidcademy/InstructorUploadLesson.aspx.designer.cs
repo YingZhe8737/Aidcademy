@@ -42,6 +42,33 @@ namespace Aidcademy
         protected global::System.Web.UI.WebControls.DropDownList ddlCourses;
 
         /// <summary>
+        /// txtNewCourseTitle control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtNewCourseTitle;
+
+        /// <summary>
+        /// ddlNewCourseCategory control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.DropDownList ddlNewCourseCategory;
+
+        /// <summary>
+        /// hfIsNewCourse control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfIsNewCourse;
+
+        /// <summary>
         /// txtSequenceOrder control.
         /// </summary>
         /// <remarks>
@@ -121,6 +148,15 @@ namespace Aidcademy
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.DropDownList ddlCorrectAnswer;
+
+        /// <summary>
+        /// btnSaveDraft control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnSaveDraft;
 
         /// <summary>
         /// btnSubmitLesson control.
