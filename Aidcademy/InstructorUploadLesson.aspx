@@ -15,11 +15,11 @@
         #editor-container { height: 500px; font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 16px; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; }
         .ql-toolbar { border-top-left-radius: 8px; border-top-right-radius: 8px; background-color: #f8f9fa; }
         
-        /* 1. Custom Icons for Quill Toolbar */
+        /* Custom Icons for Quill Toolbar */
         .ql-flipcard::after { content: "\f022"; font-family: "FontAwesome"; font-size: 16px; }
         .ql-accordion::after { content: "\f0ca"; font-family: "FontAwesome"; font-size: 16px; }
 
-        /* 2. THE EDITOR TRICK: Make Flip Cards flat and editable INSIDE the editor only */
+        /* THE EDITOR TRICK: Make Flip Cards flat and editable INSIDE the editor only */
         .ql-editor .flip-card { background: #f8f9fa; border: 2px dashed #c9242b; padding: 15px; margin: 15px 0; border-radius: 8px; }
         .ql-editor .flip-card-front::before { content: "FLIP CARD FRONT:"; font-size: 12px; color: #c9242b; font-weight: bold; display: block; margin-bottom: 5px; }
         .ql-editor .flip-card-back { margin-top: 15px; padding-top: 15px; border-top: 1px solid #ccc; }
@@ -28,9 +28,21 @@
 </head>
 <body class="bg-light">
     <form id="form1" runat="server">
+        
         <nav class="navbar navbar-expand-lg bg-brand-red py-3 shadow-sm">
             <div class="container">
-                <a class="navbar-brand text-white" href="#"><i class="fa-solid fa-truck-medical me-2"></i>AIDCADEMY</a>
+                <a class="navbar-brand text-white" href="#">
+                    <i class="fa-solid fa-truck-medical me-2"></i>AIDCADEMY
+                </a>
+                <div class="collapse navbar-collapse justify-content-end">
+                    <ul class="navbar-nav">
+                        <li class="nav-item"><a class="nav-link" href="InstructorManageContent.aspx">Dashboard</a></li>
+                        <li class="nav-item"><a class="nav-link fw-bold active" href="InstructorUploadLesson.aspx">Upload Content</a></li>
+                        <li class="nav-item"><a class="nav-link" href="RespondQuestions.aspx">Q&A</a></li>
+                        <li class="nav-item"><a class="nav-link" href="InstructorProfile.aspx">Profile</a></li>
+                        <li class="nav-item"><a class="nav-link" href="Login_signup.aspx">Logout</a></li>
+                    </ul>
+                </div>
             </div>
         </nav>
 
@@ -41,10 +53,33 @@
 
                     <div class="card creator-card shadow-sm p-4 mb-4">
                         <div class="row mb-4">
+                            
                             <div class="col-md-8">
-                                <label class="text-muted small fw-bold text-uppercase">Select Course</label>
-                                <asp:DropDownList ID="ddlCourses" runat="server" CssClass="form-select border-0 bg-light fw-bold"></asp:DropDownList>
+                                <div class="d-flex justify-content-between align-items-end mb-1">
+                                    <label class="text-muted small fw-bold text-uppercase mb-0">Select Course</label>
+                                    <a href="javascript:void(0);" onclick="toggleNewCourse()" id="btnToggleCourse" class="small text-danger fw-bold text-decoration-none">
+                                        <i class="fa-solid fa-plus"></i> New Course
+                                    </a>
+                                </div>
+                                
+                                <div id="existingCourseDiv">
+                                    <asp:DropDownList ID="ddlCourses" runat="server" CssClass="form-select border-0 bg-light fw-bold"></asp:DropDownList>
+                                </div>
+                                
+                                <div id="newCourseDiv" style="display:none;">
+                                    <div class="input-group">
+                                        <asp:TextBox ID="txtNewCourseTitle" runat="server" CssClass="form-control border-0 bg-light fw-bold" placeholder="Type new course name..."></asp:TextBox>
+                                        <asp:DropDownList ID="ddlNewCourseCategory" runat="server" CssClass="form-select border-0 bg-light fw-bold" style="max-width: 150px;">
+                                            <asp:ListItem Text="Category" Value=""></asp:ListItem>
+                                            <asp:ListItem Text="General" Value="General"></asp:ListItem>
+                                            <asp:ListItem Text="CPR" Value="CPR"></asp:ListItem>
+                                            <asp:ListItem Text="Trauma" Value="Trauma"></asp:ListItem>
+                                        </asp:DropDownList>
+                                    </div>
+                                </div>
+                                <asp:HiddenField ID="hfIsNewCourse" runat="server" Value="0" />
                             </div>
+
                             <div class="col-md-4">
                                 <label class="text-muted small fw-bold text-uppercase">Step Number</label>
                                 <asp:TextBox ID="txtSequenceOrder" runat="server" CssClass="form-control border-0 bg-light fw-bold" TextMode="Number"></asp:TextBox>
@@ -93,8 +128,12 @@
         <div class="publish-bar shadow-lg">
             <div class="container">
                 <div class="row justify-content-center">
-                    <div class="col-lg-9 d-flex justify-content-end align-items-center">
-                        <asp:Button ID="btnSubmitLesson" runat="server" Text="Publish Lesson & Quiz" CssClass="btn btn-danger fw-bold px-4" OnClientClick="saveQuillHtml();" OnClick="btnSubmitLesson_Click" />
+                    <div class="col-lg-9 d-flex justify-content-between align-items-center">
+                        <span class="text-muted small"><i class="fa-solid fa-clock-rotate-left me-1"></i> Don't lose your progress</span>
+                        <div>
+                            <asp:Button ID="btnSaveDraft" runat="server" Text="Save as Draft" CssClass="btn btn-outline-secondary fw-bold px-4 me-2" OnClientClick="saveQuillHtml();" OnClick="btnSaveDraft_Click" />
+                            <asp:Button ID="btnSubmitLesson" runat="server" Text="Publish to Admin" CssClass="btn btn-danger fw-bold px-4" OnClientClick="saveQuillHtml();" OnClick="btnSubmitLesson_Click" />
+                        </div>
                     </div>
                 </div>
             </div>
@@ -110,20 +149,16 @@
                     <div class="modal-body">
                         <div class="mb-3 p-3 bg-light border rounded">
                             <label class="form-label text-muted small fw-bold text-uppercase"><i class="fa-solid fa-image me-1"></i> Front Image (Optional)</label>
-        
                             <div class="input-group mb-2">
                                 <span class="input-group-text bg-white"><i class="fa-solid fa-upload"></i></span>
                                 <input type="file" id="fcImageFile" class="form-control" accept=".jpg,.jpeg,.png,.gif" />
                             </div>
-        
                             <div class="text-center small text-muted fw-bold my-1">OR</div>
-        
                             <div class="input-group">
                                 <span class="input-group-text bg-white"><i class="fa-solid fa-link"></i></span>
                                 <input type="text" id="fcImageUrl" class="form-control" placeholder="Paste an image URL..." />
                             </div>
                         </div>
-
                         <div class="mb-3">
                             <label class="form-label text-muted small fw-bold text-uppercase">Front Text (Title)</label>
                             <input type="text" id="fcFront" class="form-control" placeholder="e.g., R.I.C.E. Method" />
@@ -140,34 +175,48 @@
                 </div>
             </div>
         </div>
-
     </form>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
     
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
-    
     <script>
-        // ==========================================
-        // 1. REGISTER CUSTOM QUILL BLOT FOR FLIP CARDS
-        // ==========================================
-        var BlockEmbed = Quill.import('blots/block/embed');
+        // 1. ADD COURSE TOGGLE LOGIC
+        function toggleNewCourse() {
+            var existingDiv = document.getElementById('existingCourseDiv');
+            var newDiv = document.getElementById('newCourseDiv');
+            var btnToggle = document.getElementById('btnToggleCourse');
+            var hfIsNew = document.getElementById('<%= hfIsNewCourse.ClientID %>');
 
+            if (hfIsNew.value === "0") {
+                // Switch to "New Course" mode
+                existingDiv.style.display = 'none';
+                newDiv.style.display = 'block';
+                btnToggle.innerHTML = '<i class="fa-solid fa-list"></i> Select Existing';
+                btnToggle.classList.replace('text-danger', 'text-secondary');
+                hfIsNew.value = "1";
+            } else {
+                // Switch back to "Existing Course" mode
+                existingDiv.style.display = 'block';
+                newDiv.style.display = 'none';
+                btnToggle.innerHTML = '<i class="fa-solid fa-plus"></i> New Course';
+                btnToggle.classList.replace('text-secondary', 'text-danger');
+                hfIsNew.value = "0";
+            }
+        }
+
+        // 2. REGISTER CUSTOM QUILL BLOT FOR FLIP CARDS
+        var BlockEmbed = Quill.import('blots/block/embed');
         class FlipCardBlot extends BlockEmbed {
             static create(value) {
                 let node = super.create();
-                // Store data securely in attributes for the database
                 node.setAttribute('class', 'aidcademy-flipcard-data');
                 node.setAttribute('data-img', value.imgUrl);
                 node.setAttribute('data-front', value.frontText);
                 node.setAttribute('data-back', value.backText);
-                node.setAttribute('contenteditable', 'false'); // Prevents instructor from deleting half the card
+                node.setAttribute('contenteditable', 'false');
 
-                // What the INSTRUCTOR sees in the editor (A neat, flat preview box)
                 let imgHtml = value.imgUrl ? `<img src="${value.imgUrl}" style="max-height: 50px; margin-right: 15px; border-radius: 4px; border: 1px solid #ccc;" />` : '';
-
                 node.innerHTML = `
                     <div style="background: #fff3f3; border: 2px dashed #c9242b; padding: 15px; margin: 15px 0; border-radius: 8px; font-family: sans-serif;">
                         <span style="background: #c9242b; color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-bottom: 10px; display: inline-block;"><i class="fa-solid fa-cube me-1"></i> INTERACTIVE FLIP CARD</span>
@@ -183,8 +232,6 @@
                 `;
                 return node;
             }
-
-            // Tells Quill how to extract the data back out if needed
             static value(node) {
                 return {
                     imgUrl: node.getAttribute('data-img'),
@@ -198,9 +245,7 @@
         FlipCardBlot.tagName = 'div';
         Quill.register(FlipCardBlot);
 
-        // ==========================================
-        // 2. INITIALIZE QUILL
-        // ==========================================
+        // 3. INITIALIZE QUILL
         var toolbarOptions = {
             container: [
                 [{ 'header': [1, 2, 3, false] }],
@@ -223,34 +268,21 @@
             modules: { toolbar: toolbarOptions }
         });
 
-        document.querySelector('.ql-flipcard').title = "Insert Interactive Flip Card";
-
-        // Add tooltips to the toolbar automatically
+        // Add tooltips
         function addQuillTooltips() {
+            document.querySelector('.ql-flipcard').title = "Insert Interactive Flip Card";
             document.querySelector('.ql-bold').title = 'Bold';
             document.querySelector('.ql-italic').title = 'Italic';
             document.querySelector('.ql-underline').title = 'Underline';
-            document.querySelector('.ql-strike').title = 'Strikethrough';
-
             document.querySelector('.ql-list[value="ordered"]').title = 'Numbered List';
             document.querySelector('.ql-list[value="bullet"]').title = 'Bullet Point List';
-
             document.querySelector('.ql-header').title = 'Heading Style';
-            document.querySelector('.ql-color').title = 'Text Color';
-            document.querySelector('.ql-background').title = 'Highlight Color';
-
             document.querySelector('.ql-image').title = 'Upload Image';
             document.querySelector('.ql-video').title = 'Embed YouTube Video';
-            document.querySelector('.ql-link').title = 'Insert Web Link';
-            document.querySelector('.ql-clean').title = 'Clear All Formatting';
         }
-
-        // Run the tooltip function immediately after the editor loads
         addQuillTooltips();
 
-        // ==========================================
-        // 3. INSERT THE BLOT INTO THE EDITOR
-        // ==========================================
+        // 4. INSERT BLOT
         function insertFlipCard() {
             var fileInput = document.getElementById('fcImageFile');
             var imgUrl = document.getElementById('fcImageUrl').value.trim();
@@ -264,17 +296,12 @@
 
             var insertIntoEditor = function (finalImgUrl) {
                 var range = quill.getSelection(true);
-                // Use insertEmbed instead of dangerouslyPasteHTML!
                 quill.insertEmbed(range.index, 'flipcard', {
                     imgUrl: finalImgUrl,
                     frontText: frontText,
                     backText: backText
                 });
-
-                // Move cursor to a new line below the card
                 quill.setSelection(range.index + 1, Quill.sources.SILENT);
-
-                // Close Modal & Reset
                 bootstrap.Modal.getInstance(document.getElementById('flipCardModal')).hide();
                 document.getElementById('fcImageFile').value = '';
                 document.getElementById('fcImageUrl').value = '';
@@ -282,7 +309,6 @@
                 document.getElementById('fcBack').value = '';
             };
 
-            // Handle Image Upload vs URL
             if (fileInput.files && fileInput.files[0]) {
                 var reader = new FileReader();
                 reader.onload = function (e) { insertIntoEditor(e.target.result); };
@@ -292,9 +318,7 @@
             }
         }
 
-        // ==========================================
-        // 4. SAVE TO C# HIDDEN FIELD
-        // ==========================================
+        // 5. SAVE HTML
         function saveQuillHtml() {
             document.getElementById('<%= hfContentBody.ClientID %>').value = document.querySelector('.ql-editor').innerHTML;
         }
