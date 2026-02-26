@@ -100,11 +100,12 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="About.aspx" />
-    <Content Include="ContentManagement.aspx" />
     <Content Include="App_Data\Database1.mdf" />
     <Content Include="App_Data\Database1_log.ldf">
       <DependentUpon>Database1.mdf</DependentUpon>
     </Content>
+    <Content Include="ContentManagement.aspx" />
+    <Content Include="Scripts\Instructor\lesson-editor.js" />
     <Content Include="Styles\aidcademy-theme.css" />
     <Content Include="Contact.aspx" />
     <Content Include="Content\bootstrap-grid.css" />
@@ -162,6 +163,7 @@
     <Content Include="Content\bootstrap-grid.min.css.map" />
     <Content Include="Content\bootstrap-grid.css.map" />
     <Content Include="AdminDashboard.aspx" />
+    <Content Include="Instructor.Master" />
     <None Include="Scripts\jquery-3.7.0.intellisense.js" />
     <Content Include="Scripts\jquery-3.7.0.js" />
     <Content Include="Scripts\jquery-3.7.0.min.js" />
@@ -231,6 +233,13 @@
     </Compile>
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
+    </Compile>
+    <Compile Include="Instructor.Master.cs">
+      <DependentUpon>Instructor.Master</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Instructor.Master.designer.cs">
+      <DependentUpon>Instructor.Master</DependentUpon>
     </Compile>
     <Compile Include="InstructorEditContent.aspx.cs">
       <DependentUpon>InstructorEditContent.aspx</DependentUpon>

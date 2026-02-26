@@ -7,15 +7,13 @@ namespace Aidcademy
 {
     public partial class InstructorUploadLesson : System.Web.UI.Page
     {
-        // Global connection string pulled from Web.config
         string connString = ConfigurationManager.ConnectionStrings["AidcademyDB"].ConnectionString;
 
         protected void Page_Load(object sender, EventArgs e)
         {
             if (!IsPostBack)
             {
-                // Pretending Instructor with UserID 1 is logged in
-                int currentInstructorId = 1;
+                int currentInstructorId = 1; // Testing ID
                 BindCoursesDropdown(currentInstructorId);
             }
         }
@@ -38,8 +36,6 @@ namespace Aidcademy
             ddlCourses.Items.Insert(0, new ListItem("-- Choose a Course --", ""));
         }
 
-        // --- THE TWO NEW BUTTON EVENTS ---
-
         protected void btnSaveDraft_Click(object sender, EventArgs e)
         {
             ProcessSubmission("Draft");
@@ -50,13 +46,11 @@ namespace Aidcademy
             ProcessSubmission("Pending Admin");
         }
 
-        // --- THE MASTER SAVING LOGIC ---
-
         private void ProcessSubmission(string status)
         {
             bool isNewCourse = hfIsNewCourse.Value == "1";
 
-            // 1. Thorough Validation
+            // Basic Validation
             if ((!isNewCourse && string.IsNullOrEmpty(ddlCourses.SelectedValue)) ||
                 (isNewCourse && (string.IsNullOrEmpty(txtNewCourseTitle.Text) || string.IsNullOrEmpty(ddlNewCourseCategory.SelectedValue))) ||
                 string.IsNullOrEmpty(txtLessonTitle.Text) ||
@@ -74,16 +68,20 @@ namespace Aidcademy
             using (SqlConnection conn = new SqlConnection(connString))
             {
                 conn.Open();
-
-                // Start a transaction: If one part fails, EVERYTHING undoes itself.
                 SqlTransaction transaction = conn.BeginTransaction();
 
                 try
                 {
-                    // 2. Handle New Course Creation
+                    // 1. Handle New Course Creation
                     if (isNewCourse)
                     {
-                        // Note: SCOPE_IDENTITY() grabs the brand new CourseID that SQL just generated
+                        // Logic for Custom Category
+                        string finalCategory = ddlNewCourseCategory.SelectedValue;
+                        if (finalCategory == "Other")
+                        {
+                            finalCategory = txtCustomCategory.Text.Trim();
+                        }
+
                         string courseQuery = @"INSERT INTO Courses (UserID, Title, Description, Category, ApprovalStatus) 
                                                VALUES (@UserID, @Title, 'Instructor generated course', @Category, @CourseStatus);
                                                SELECT SCOPE_IDENTITY();";
@@ -92,7 +90,7 @@ namespace Aidcademy
                         {
                             cmd.Parameters.AddWithValue("@UserID", currentInstructorId);
                             cmd.Parameters.AddWithValue("@Title", txtNewCourseTitle.Text.Trim());
-                            cmd.Parameters.AddWithValue("@Category", ddlNewCourseCategory.SelectedValue);
+                            cmd.Parameters.AddWithValue("@Category", finalCategory);
                             cmd.Parameters.AddWithValue("@CourseStatus", status);
 
                             finalCourseId = Convert.ToInt32(cmd.ExecuteScalar());
@@ -103,7 +101,7 @@ namespace Aidcademy
                         finalCourseId = Convert.ToInt32(ddlCourses.SelectedValue);
                     }
 
-                    // 3. Save the Lesson (Tied to the finalCourseId)
+                    // 2. Save the Lesson
                     string lessonQuery = @"INSERT INTO Lessons (CourseID, Title, ContentBody, MediaURL, SequenceOrder) 
                                            VALUES (@CourseID, @Title, @ContentBody, '', @SequenceOrder);
                                            SELECT SCOPE_IDENTITY();";
@@ -113,16 +111,15 @@ namespace Aidcademy
                     {
                         cmd.Parameters.AddWithValue("@CourseID", finalCourseId);
                         cmd.Parameters.AddWithValue("@Title", txtLessonTitle.Text.Trim());
-                        cmd.Parameters.AddWithValue("@ContentBody", hfContentBody.Value.Trim()); // The Rich HTML
+                        cmd.Parameters.AddWithValue("@ContentBody", hfContentBody.Value.Trim());
                         cmd.Parameters.AddWithValue("@SequenceOrder", Convert.ToInt32(txtSequenceOrder.Text));
 
                         finalLessonId = Convert.ToInt32(cmd.ExecuteScalar());
                     }
 
-                    // 4. Attach the Knowledge Check Quiz (if the instructor wrote one)
+                    // 3. Attach the Knowledge Check Quiz (if provided)
                     if (!string.IsNullOrEmpty(txtQuizQuestion.Text) && !string.IsNullOrEmpty(txtOptA.Text))
                     {
-                        // Create the Quiz Header
                         string quizQuery = "INSERT INTO Quizzes (LessonID, Title) VALUES (@LessonID, @QuizTitle); SELECT SCOPE_IDENTITY();";
                         int finalQuizId = 0;
                         using (SqlCommand cmd = new SqlCommand(quizQuery, conn, transaction))
@@ -132,7 +129,6 @@ namespace Aidcademy
                             finalQuizId = Convert.ToInt32(cmd.ExecuteScalar());
                         }
 
-                        // Save the actual Question and Options
                         string questionQuery = @"INSERT INTO QuizQuestions (QuizID, QuestionText, OptionA, OptionB, OptionC, OptionD, CorrectAnswer)
                                                  VALUES (@QuizID, @QuestionText, @OptA, @OptB, @OptC, @OptD, @CorrectAns)";
                         using (SqlCommand cmd = new SqlCommand(questionQuery, conn, transaction))
@@ -149,25 +145,23 @@ namespace Aidcademy
                         }
                     }
 
-                    // 5. If everything succeeded, commit it permanently to the database!
                     transaction.Commit();
 
-                    // Success Feedback
                     lblMessage.Text = isNewCourse
                         ? $"Success! New course created and lesson saved as '{status}'."
                         : $"Success! Lesson attached to existing course and saved as '{status}'.";
                     lblMessage.CssClass = "d-block mb-3 fw-bold text-success";
 
-                    // Reset the User Interface completely
+                    // Reset User Interface
                     txtLessonTitle.Text = "";
                     txtSequenceOrder.Text = "";
                     txtNewCourseTitle.Text = "";
+                    txtCustomCategory.Text = "";
                     ddlNewCourseCategory.SelectedIndex = 0;
                     txtQuizQuestion.Text = "";
                     txtOptA.Text = ""; txtOptB.Text = ""; txtOptC.Text = ""; txtOptD.Text = "";
                     ddlCorrectAnswer.SelectedIndex = 0;
 
-                    // Force the dropdown to show the new course if they just made one
                     if (isNewCourse)
                     {
                         BindCoursesDropdown(currentInstructorId);
@@ -176,7 +170,6 @@ namespace Aidcademy
                 }
                 catch (Exception ex)
                 {
-                    // If literally anything breaks, roll back the database so no corrupted partial-data is saved
                     transaction.Rollback();
                     lblMessage.Text = "Database Error: " + ex.Message;
                     lblMessage.CssClass = "d-block mb-3 fw-bold text-danger";
