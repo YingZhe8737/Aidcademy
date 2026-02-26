@@ -1,5 +1,4 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props" Condition="Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.2.0.1\build\net46\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
@@ -9,7 +8,6 @@
     <ProductVersion>
     </ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{A1EBD0F9-109E-4144-A501-CA5E23EE42B3}</ProjectGuid>
     <ProjectGuid>{FC49EC2C-67D5-4ADD-9548-45CA2F6853D9}</ProjectGuid>
     <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
@@ -19,7 +17,6 @@
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <UseIISExpress>true</UseIISExpress>
     <Use64BitIISExpress />
-    <IISExpressSSLPort>44310</IISExpressSSLPort>
     <IISExpressSSLPort>44327</IISExpressSSLPort>
     <IISExpressAnonymousAuthentication />
     <IISExpressWindowsAuthentication />
@@ -106,9 +103,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="About.aspx" />
-    <Content Include="App_Data\Database1.mdf" />
-    <Content Include="App_Data\Database1_log.ldf">
-      <DependentUpon>Database1.mdf</DependentUpon>
     <Content Include="App_Data\AidcademyDB.mdf" />
     <Content Include="App_Data\AidcademyDB_log.ldf">
       <DependentUpon>AidcademyDB.mdf</DependentUpon>
@@ -248,81 +242,102 @@
     </Compile>
     <Compile Include="Default.aspx.cs">
       <DependentUpon>Default.aspx</DependentUpon>
-    <Compile Include="ChangePassword.aspx.cs">
-      <DependentUpon>ChangePassword.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Default.aspx.designer.cs">
       <DependentUpon>Default.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Global.asax.cs">
-      <DependentUpon>Global.asax</DependentUpon>
+    <Compile Include="ChangePassword.aspx.cs">
+      <DependentUpon>ChangePassword.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="ChangePassword.aspx.designer.cs">
       <DependentUpon>ChangePassword.aspx</DependentUpon>
     </Compile>
+    <Compile Include="Global.asax.cs">
+      <DependentUpon>Global.asax</DependentUpon>
+    </Compile>
     <Compile Include="Instructor.Master.cs">
       <DependentUpon>Instructor.Master</DependentUpon>
-    <Compile Include="ForgotPassword.aspx.cs">
-      <DependentUpon>ForgotPassword.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Instructor.Master.designer.cs">
       <DependentUpon>Instructor.Master</DependentUpon>
+    </Compile>
+    <Compile Include="ForgotPassword.aspx.cs">
+      <DependentUpon>ForgotPassword.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="ForgotPassword.aspx.designer.cs">
       <DependentUpon>ForgotPassword.aspx</DependentUpon>
     </Compile>
     <Compile Include="InstructorEditContent.aspx.cs">
       <DependentUpon>InstructorEditContent.aspx</DependentUpon>
-    <Compile Include="LearningCourse.aspx.cs">
-      <DependentUpon>LearningCourse.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="InstructorEditContent.aspx.designer.cs">
       <DependentUpon>InstructorEditContent.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="LearningCourse.aspx.cs">
+      <DependentUpon>LearningCourse.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="LearningCourse.aspx.designer.cs">
       <DependentUpon>LearningCourse.aspx</DependentUpon>
     </Compile>
     <Compile Include="InstructorManageContent.aspx.cs">
       <DependentUpon>InstructorManageContent.aspx</DependentUpon>
-    <Compile Include="LearningProgress.aspx.cs">
-      <DependentUpon>LearningProgress.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="InstructorManageContent.aspx.designer.cs">
       <DependentUpon>InstructorManageContent.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="LearningProgress.aspx.cs">
+      <DependentUpon>LearningProgress.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="LearningProgress.aspx.designer.cs">
       <DependentUpon>LearningProgress.aspx</DependentUpon>
     </Compile>
     <Compile Include="InstructorProfile.aspx.cs">
       <DependentUpon>InstructorProfile.aspx</DependentUpon>
-    <Compile Include="Login_signup.aspx.cs">
-      <DependentUpon>Login_signup.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="InstructorProfile.aspx.designer.cs">
       <DependentUpon>InstructorProfile.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Login_signup.aspx.cs">
+      <DependentUpon>Login_signup.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="Login_signup.aspx.designer.cs">
       <DependentUpon>Login_signup.aspx</DependentUpon>
     </Compile>
     <Compile Include="InstructorUploadLesson.aspx.cs">
       <DependentUpon>InstructorUploadLesson.aspx</DependentUpon>
-    <Compile Include="MemberDashboard.aspx.cs">
-      <DependentUpon>MemberDashboard.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="InstructorUploadLesson.aspx.designer.cs">
       <DependentUpon>InstructorUploadLesson.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="MemberDashboard.aspx.cs">
+      <DependentUpon>MemberDashboard.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="MemberDashboard.aspx.designer.cs">
       <DependentUpon>MemberDashboard.aspx</DependentUpon>
     </Compile>
     <Compile Include="InstructorUploadQuiz.aspx.cs">
       <DependentUpon>InstructorUploadQuiz.aspx</DependentUpon>
-    <Compile Include="MemberProfile.aspx.cs">
-      <DependentUpon>MemberProfile.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="InstructorUploadQuiz.aspx.designer.cs">
       <DependentUpon>InstructorUploadQuiz.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="MemberProfile.aspx.cs">
+      <DependentUpon>MemberProfile.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="MemberProfile.aspx.designer.cs">
       <DependentUpon>MemberProfile.aspx</DependentUpon>
     </Compile>
@@ -364,31 +379,35 @@
     </Compile>
     <Compile Include="ViewSwitcher.ascx.cs">
       <DependentUpon>ViewSwitcher.ascx</DependentUpon>
-    <Compile Include="SubmitQuestion.aspx.cs">
-      <DependentUpon>SubmitQuestion.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="ViewSwitcher.ascx.designer.cs">
       <DependentUpon>ViewSwitcher.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="SubmitQuestion.aspx.cs">
+      <DependentUpon>SubmitQuestion.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="SubmitQuestion.aspx.designer.cs">
       <DependentUpon>SubmitQuestion.aspx</DependentUpon>
     </Compile>
     <Compile Include="AdminDashboard.aspx.cs">
       <DependentUpon>AdminDashboard.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="AdminDashboard.aspx.designer.cs">
+      <DependentUpon>AdminDashboard.aspx</DependentUpon>
+    </Compile>
     <Compile Include="UtilityClasses.cs" />
     <Compile Include="VerifyOtp.aspx.cs">
       <DependentUpon>VerifyOtp.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="AdminDashboard.aspx.designer.cs">
-      <DependentUpon>AdminDashboard.aspx</DependentUpon>
     <Compile Include="VerifyOtp.aspx.designer.cs">
       <DependentUpon>VerifyOtp.aspx</DependentUpon>
     </Compile>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="App_Data\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <None Include="packages.config" />
     <Content Include="Scripts\jquery-3.7.0.slim.min.map" />
@@ -415,10 +434,8 @@
         <WebProjectProperties>
           <UseIIS>True</UseIIS>
           <AutoAssignPort>True</AutoAssignPort>
-          <DevelopmentServerPort>51056</DevelopmentServerPort>
           <DevelopmentServerPort>25471</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>https://localhost:44310/</IISUrl>
           <IISUrl>https://localhost:44327/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
