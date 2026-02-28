@@ -175,6 +175,38 @@ namespace Aidcademy.Utilities
     {
         private static readonly Random _rng = new Random();
 
+        // ===== LAB 11 OTP METHODS =====
+        public static string GenerateNumericOtp()
+        {
+            return GenerateOtp(); // Returns a 6-digit numeric string
+        }
+
+        public static string HmacOtp(string otp, string secret)
+        {
+            using (var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(secret)))
+            {
+                byte[] hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(otp));
+                return Convert.ToBase64String(hash);
+            }
+        }
+
+        public static void SaveOtpToDb(int userId, string otpHash, DateTime expiresAt)
+        {
+            using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["AidcademyDB"].ConnectionString))
+            {
+                conn.Open();
+                string insert = "INSERT INTO OtpCodes (UserID, OtpCode, Purpose, ExpiresAt) VALUES (@UserID, @OtpCode, 'Login', @ExpiresAt)";
+                using (SqlCommand cmd = new SqlCommand(insert, conn))
+                {
+                    cmd.Parameters.AddWithValue("@UserID", userId);
+                    cmd.Parameters.AddWithValue("@OtpCode", otpHash); // Store the hash in OtpCode
+                    cmd.Parameters.AddWithValue("@ExpiresAt", expiresAt);
+                    cmd.ExecuteNonQuery();
+                }
+            }
+        }
+        // ================================
+
         /// <summary>
         /// Generate a cryptographically random 6-digit OTP string.
         /// </summary>
@@ -328,6 +360,16 @@ namespace Aidcademy.Utilities
                     Credentials = new NetworkCredential(smtpUsername, smtpPassword),
                     EnableSsl   = enableSSL
                 };
+
+                // ===== DEVELOPMENT MOCK =====
+                if (smtpPassword == "your-app-password")
+                {
+                    string logPath = HttpContext.Current.Server.MapPath("~/App_Data/MockEmails.txt");
+                    string logEntry = $"[{DateTime.Now}] MOCK EMAIL TO: {toEmail}\r\nSUBJECT: {subject}\r\nBODY: {body}\r\n========================================\r\n\r\n";
+                    System.IO.File.AppendAllText(logPath, logEntry);
+                    return true;
+                }
+                // ============================
 
                 smtp.Send(mail);
                 return true;
