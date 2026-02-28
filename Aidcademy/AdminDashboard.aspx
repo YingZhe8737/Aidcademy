@@ -37,26 +37,41 @@
 
         <!-- box left -->
         <div class="general-box">
-            <h3>System Report</h3>
+            <div class="color-h2-white"> <h2>System Report</h2> </div>
             <p>Summary of system performance.</p>
         </div>
 
         <!-- box middle -->
 
         <div class="general-box">
-            <h3>Content-Summary</h3>
+            <div class="color-h2-white"><h2>Content-Summary</h2></div>
             <p>Summary of Accessed Content.</p>
         </div>
 
          <!-- box right -->
 
       <div class="general-box">
-          <h3>User-Management</h3>
-          <p>Summary of Accessed Content.</p>
-      </div>
+          <div class="color-h2-white"> <h2>User-Management</h2> </div>
+                  <!-- Member Overview -->
+          <div class="user-box">
+              <div class="user-section">
+                  <h4>Member Overview</h4>
+                  <asp:Label ID="lblActiveMembers" runat="server" CssClass="stat"></asp:Label>
+                  <asp:Label ID="lblSuspendedMembers" runat="server" CssClass="stat"></asp:Label>
+                  <asp:Label ID="lblDeactivatedMembers" runat="server" CssClass="stat"></asp:Label>
+              </div>
 
-
+              <div class="user-section">
+                  <h4>Instructor Overview</h4>
+                  <asp:Label ID="lblActiveInstructors" runat="server" CssClass="stat"></asp:Label>
+                  <asp:Label ID="lblSuspendedInstructors" runat="server" CssClass="stat"></asp:Label>
+                  <asp:Label ID="lblDeactivatedInstructors" runat="server" CssClass="stat"></asp:Label>
+              </div>
+              <asp:Button runat="server" CssClass="nav-btn" Text="View Details" OnClick="User_Management2" />
+            </div>
     </div>
+
+
 
     </form>
 </body>
