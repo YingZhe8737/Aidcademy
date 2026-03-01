@@ -17,7 +17,7 @@
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <UseIISExpress>true</UseIISExpress>
     <Use64BitIISExpress />
-    <IISExpressSSLPort>44327</IISExpressSSLPort>
+    <IISExpressSSLPort>44310</IISExpressSSLPort>
     <IISExpressAnonymousAuthentication />
     <IISExpressWindowsAuthentication />
     <IISExpressUseClassicPipelineMode />
@@ -115,11 +115,11 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="About.aspx" />
+    <Content Include="ContentManagement.aspx" />
     <Content Include="App_Data\AidcademyDB.mdf" />
     <Content Include="App_Data\AidcademyDB_log.ldf">
       <DependentUpon>AidcademyDB.mdf</DependentUpon>
     </Content>
-    <Content Include="ContentManagement.aspx" />
     <Content Include="Styles\aidcademy-theme.css" />
     <Content Include="Contact.aspx" />
     <Content Include="Content\Site.css" />
@@ -135,6 +135,9 @@
     <Content Include="AdminDashboard.aspx" />
     <Content Include="Site.Master" />
     <Content Include="Site.Mobile.Master" />
+    <Content Include="Styles\CustomAdmin.css" />
+    <Content Include="SystemReport.aspx" />
+    <Content Include="UserManagement.aspx" />
     <Content Include="Web.config" />
     <Content Include="Bundle.config" />
     <Content Include="ChangePassword.aspx" />
@@ -150,6 +153,7 @@
     <Content Include="ViewSwitcher.ascx" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="App_Start\admin.cs" />
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="About.aspx.cs">
       <DependentUpon>About.aspx</DependentUpon>
@@ -307,7 +311,7 @@
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="UserManagement.aspx.designer.cs">
-      <DependentUpon>UserManagement.aspx</DependentUpon>
+      <DependentUpon>UserManagement.aspx.cs</DependentUpon>
     </Compile>
     <Compile Include="ViewSwitcher.ascx.cs">
       <DependentUpon>ViewSwitcher.ascx</DependentUpon>
