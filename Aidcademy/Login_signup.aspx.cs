@@ -19,8 +19,12 @@ namespace Aidcademy
 
                 if (Request.QueryString["msg"] == "google_error")
                 {
-                    Session.Remove("GoogleError"); 
-                    ShowMessage("⚠️ Google Sign-In failed. Please try again or use email and password.", false);
+                    string googleErr = Session["GoogleError"]?.ToString();
+                    Session.Remove("GoogleError");
+                    string displayMsg = !string.IsNullOrEmpty(googleErr)
+                        ? "⚠️ Google Sign-In failed: " + googleErr
+                        : "⚠️ Google Sign-In failed. Please try again or use email and password.";
+                    ShowMessage(displayMsg, false);
                 }
             }
         }
