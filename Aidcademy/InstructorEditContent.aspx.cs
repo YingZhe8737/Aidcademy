@@ -13,11 +13,13 @@ namespace Aidcademy
         {
             if (!IsPostBack)
             {
-                BindCoursesDropdown(1); // 1 = Test Instructor ID
+                int currentInstructorId = Convert.ToInt32(Session["UserID"]);
+                BindCoursesDropdown(currentInstructorId);
                 if (Request.QueryString["LessonID"] != null)
                 {
                     LoadLessonData(Convert.ToInt32(Request.QueryString["LessonID"]));
                 }
+                BindGlobalCategories();
             }
         }
 
@@ -39,13 +41,22 @@ namespace Aidcademy
 
         private void LoadLessonData(int lessonId)
         {
+            int currentInstructorId = Convert.ToInt32(Session["UserID"]);
+
             using (SqlConnection conn = new SqlConnection(connString))
             {
-                // Load Lesson Data
-                using (SqlCommand cmd = new SqlCommand("SELECT CourseID, Title, ContentBody, SequenceOrder FROM Lessons WHERE LessonID = @LessonID", conn))
+                // SECURE QUERY: Joins the Course table to prove Ownership!
+                string query = @"SELECT l.CourseID, l.Title, l.ContentBody, l.SequenceOrder 
+                         FROM Lessons l
+                         INNER JOIN Courses c ON l.CourseID = c.CourseID
+                         WHERE l.LessonID = @LessonID AND c.UserID = @InstructorID";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
                     cmd.Parameters.AddWithValue("@LessonID", lessonId);
+                    cmd.Parameters.AddWithValue("@InstructorID", currentInstructorId);
                     conn.Open();
+
                     using (SqlDataReader reader = cmd.ExecuteReader())
                     {
                         if (reader.Read())
@@ -54,6 +65,11 @@ namespace Aidcademy
                             txtLessonTitle.Text = reader["Title"].ToString();
                             txtSequenceOrder.Text = reader["SequenceOrder"].ToString();
                             hfContentBody.Value = reader["ContentBody"].ToString();
+                        }
+                        else
+                        {
+                            // IDOR BLOCKED! The lesson either doesn't exist, or they don't own it.
+                            Response.Redirect("InstructorManageContent.aspx");
                         }
                     }
                 }
@@ -82,6 +98,16 @@ namespace Aidcademy
             }
         }
 
+        protected void btnSaveDraft_Click(object sender, EventArgs e)
+        {
+            ProcessUpdate("Draft");
+        }
+
+        protected void btnPublishAdmin_Click(object sender, EventArgs e)
+        {
+            ProcessUpdate("Pending Admin");
+        }
+
         private void ProcessUpdate(string status)
         {
             int lessonId = Convert.ToInt32(Request.QueryString["LessonID"]);
@@ -99,9 +125,10 @@ namespace Aidcademy
                     if (isNewCourse)
                     {
                         string finalCategory = ddlNewCourseCategory.SelectedValue == "Other" ? txtCustomCategory.Text.Trim() : ddlNewCourseCategory.SelectedValue;
-                        string courseQuery = "INSERT INTO Courses (UserID, Title, Category, ApprovalStatus) VALUES (1, @Title, @Category, @Status); SELECT SCOPE_IDENTITY();";
+                        string courseQuery = "INSERT INTO Courses (UserID, Title, Category, ApprovalStatus) VALUES (@UserID, @Title, @Category, @Status); SELECT SCOPE_IDENTITY();";
                         using (SqlCommand cmd = new SqlCommand(courseQuery, conn, transaction))
                         {
+                            cmd.Parameters.AddWithValue("@UserID", Convert.ToInt32(Session["UserID"]));
                             cmd.Parameters.AddWithValue("@Title", txtNewCourseTitle.Text.Trim());
                             cmd.Parameters.AddWithValue("@Category", finalCategory);
                             cmd.Parameters.AddWithValue("@Status", status);
@@ -285,6 +312,29 @@ namespace Aidcademy
                     tx.Rollback();
                     lblMessage.Text = "Error deleting course: " + ex.Message;
                     lblMessage.CssClass = "d-block mb-3 fw-bold text-danger";
+                }
+            }
+        }
+
+        private void BindGlobalCategories()
+        {
+            using (SqlConnection conn = new SqlConnection(connString))
+            {
+                string query = "SELECT DISTINCT Category FROM Courses WHERE Category IS NOT NULL AND Category != ''";
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    conn.Open();
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        ddlNewCourseCategory.Items.Clear();
+                        ddlNewCourseCategory.Items.Add(new ListItem("Category", ""));
+                        while (reader.Read())
+                        {
+                            string cat = reader["Category"].ToString();
+                            ddlNewCourseCategory.Items.Add(new ListItem(cat, cat));
+                        }
+                        ddlNewCourseCategory.Items.Add(new ListItem("Other...", "Other"));
+                    }
                 }
             }
         }

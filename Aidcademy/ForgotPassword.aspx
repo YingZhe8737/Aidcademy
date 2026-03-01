@@ -187,7 +187,7 @@
                     <div class="logo" style="margin-bottom: 20px;">
                         <p style="font-size: 24px; color: #333; font-weight: 600; margin-bottom: 10px;">Forgot Password?
                         </p>
-                        <p>No worries! Enter your email address and we'll send you a link to reset your password.</p>
+                        <p>No worries! Please enter your email address and we'll send you a link to reset your password.</p>
                     </div>
 
                     <div class="form-group">
@@ -209,7 +209,7 @@
                     <div class="logo" style="margin-bottom: 20px;">
                         <p style="font-size: 24px; color: #333; font-weight: 600; margin-bottom: 10px;">Reset Password
                         </p>
-                        <p>Enter your new password below.</p>
+                        <p>Please enter your new password below.</p>
                     </div>
 
                     <div class="info-box">

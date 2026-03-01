@@ -56,6 +56,7 @@ function initLessonSystem(contentBodyId, isNewCourseId, customCategoryId, existi
                 container: [
                     [{ 'header': [1, 2, 3, false] }],
                     ['bold', 'italic', 'underline'],
+                    [{ 'align': [] }], 
                     [{ 'list': 'ordered' }, { 'list': 'bullet' }],
                     ['image', 'video'],
                     ['flipcard']

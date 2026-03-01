@@ -65,11 +65,6 @@
                                     <asp:TextBox ID="txtNewCourseTitle" runat="server" CssClass="form-control border-0 bg-light fw-bold" placeholder="New course name..."></asp:TextBox>
                                     
                                     <asp:DropDownList ID="ddlNewCourseCategory" runat="server" CssClass="form-select border-0 bg-light fw-bold" onchange="toggleCustomCategory(this)" style="max-width: 130px;">
-                                        <asp:ListItem Text="Category" Value=""></asp:ListItem>
-                                        <asp:ListItem Text="General" Value="General"></asp:ListItem>
-                                        <asp:ListItem Text="CPR" Value="CPR"></asp:ListItem>
-                                        <asp:ListItem Text="Trauma" Value="Trauma"></asp:ListItem>
-                                        <asp:ListItem Text="Other..." Value="Other"></asp:ListItem>
                                     </asp:DropDownList>
                                     
                                     <asp:TextBox ID="txtCustomCategory" runat="server" CssClass="form-control border-0 bg-light fw-bold" style="display:none; max-width: 150px;" placeholder="Type category..."></asp:TextBox>
@@ -129,9 +124,8 @@
                 <div class="col-lg-9 d-flex justify-content-between align-items-center">
                     <span class="text-muted small"><i class="fa-solid fa-clock-rotate-left me-1"></i> Don't lose your progress</span>
                     <div>
-                        <asp:Button ID="btnSaveDraft" runat="server" Text="Save as Draft" CssClass="btn btn-outline-secondary fw-bold px-4 me-2" OnClientClick="saveQuillHtml();" OnClick="btnSaveDraft_Click" />
-                        <asp:Button ID="btnSubmitLesson" runat="server" Text="Publish to Admin" CssClass="btn btn-danger fw-bold px-4" OnClientClick="saveQuillHtml();" OnClick="btnSubmitLesson_Click" />
-                    </div>
+                        <asp:Button ID="btnSaveDraft" runat="server" Text="Save as Draft" CssClass="btn btn-outline-secondary fw-bold px-4 me-2" OnClientClick="return validateLessonForm(this);" OnClick="btnSaveDraft_Click" />
+                        <asp:Button ID="btnPublishAdmin" runat="server" Text="Publish to Admin" CssClass="btn btn-danger fw-bold px-4" OnClientClick="return validateLessonForm(this);" OnClick="btnPublishAdmin_Click" />
                 </div>
             </div>
         </div>

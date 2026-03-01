@@ -17,11 +17,9 @@
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <UseIISExpress>true</UseIISExpress>
     <Use64BitIISExpress />
-    <IISExpressSSLPort>44327</IISExpressSSLPort>
-    <IISExpressAnonymousAuthentication>
-    </IISExpressAnonymousAuthentication>
-    <IISExpressWindowsAuthentication>
-    </IISExpressWindowsAuthentication>
+    <IISExpressSSLPort>44310</IISExpressSSLPort>
+    <IISExpressAnonymousAuthentication>enabled</IISExpressAnonymousAuthentication>
+    <IISExpressWindowsAuthentication>disabled</IISExpressWindowsAuthentication>
     <IISExpressUseClassicPipelineMode />
     <UseGlobalApplicationHostFile />
     <NuGetPackageImportStamp>
@@ -175,6 +173,7 @@
     <Content Include="Styles\CustomAdmin.css" />
     <Content Include="SystemReport.aspx" />
     <Content Include="UserManagement.aspx" />
+    <Content Include="ViewLesson.aspx" />
     <Content Include="Web.config" />
     <Content Include="Bundle.config" />
     <Content Include="ChangePassword.aspx" />
@@ -357,6 +356,13 @@
       <DependentUpon>UserManagement.aspx</DependentUpon>
     </Compile>
     <Compile Include="UtilityClasses.cs" />
+    <Compile Include="ViewLesson.aspx.cs">
+      <DependentUpon>ViewLesson.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ViewLesson.aspx.designer.cs">
+      <DependentUpon>ViewLesson.aspx</DependentUpon>
+    </Compile>
     <Compile Include="ViewSwitcher.ascx.cs">
       <DependentUpon>ViewSwitcher.ascx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>

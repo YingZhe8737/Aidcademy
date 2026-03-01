@@ -312,19 +312,19 @@
                     <div id="loginForm" class="form-container active">
                         <div style="margin-bottom: 24px;">
                             <h2 style="font-size: 24px; font-weight: bold; color: #111827;">Welcome back!</h2>
-                            <p style="color: #4b5563; margin-top: 8px;">Enter your credentials to access your account
+                            <p style="color: #4b5563; margin-top: 8px;">Please enter your credentials to access your account
                             </p>
                         </div>
 
                         <div class="form-group">
                             <label>Email or Username</label>
-                            <asp:TextBox ID="txtLoginEmail" runat="server" placeholder="Enter your email or username" />
+                            <asp:TextBox ID="txtLoginEmail" runat="server" placeholder="Please enter your email or username" />
                         </div>
 
                         <div class="form-group">
                             <label>Password</label>
                             <asp:TextBox ID="txtLoginPassword" runat="server" TextMode="Password"
-                                placeholder="Enter your password" />
+                                placeholder="Please enter your password" />
                         </div>
 
                         <div class="forgot-password"
@@ -401,7 +401,7 @@
                         <div class="form-group">
                             <label>Confirm Password</label>
                             <asp:TextBox ID="txtConfirmPassword" runat="server" TextMode="Password"
-                                placeholder="Re-enter your password" />
+                                placeholder="Please Re-enter your password" />
                         </div>
 
                         <asp:Button ID="btnSignup" runat="server" Text="Create Account" CssClass="btn-primary"

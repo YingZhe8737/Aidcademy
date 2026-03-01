@@ -68,11 +68,6 @@
                                 <div class="input-group">
                                     <asp:TextBox ID="txtNewCourseTitle" runat="server" CssClass="form-control border-0 bg-light fw-bold" placeholder="New course name..."></asp:TextBox>
                                     <asp:DropDownList ID="ddlNewCourseCategory" runat="server" CssClass="form-select border-0 bg-light fw-bold" onchange="toggleCustomCategory(this)" style="max-width: 130px;">
-                                        <asp:ListItem Text="Category" Value=""></asp:ListItem>
-                                        <asp:ListItem Text="General" Value="General"></asp:ListItem>
-                                        <asp:ListItem Text="CPR" Value="CPR"></asp:ListItem>
-                                        <asp:ListItem Text="Trauma" Value="Trauma"></asp:ListItem>
-                                        <asp:ListItem Text="Other..." Value="Other"></asp:ListItem>
                                     </asp:DropDownList>
                                     <asp:TextBox ID="txtCustomCategory" runat="server" CssClass="form-control border-0 bg-light fw-bold" style="display:none; max-width: 150px;" placeholder="Type category..."></asp:TextBox>
                                 </div>

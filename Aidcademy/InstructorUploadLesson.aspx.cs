@@ -13,8 +13,9 @@ namespace Aidcademy
         {
             if (!IsPostBack)
             {
-                int currentInstructorId = 1; // Testing ID
+                int currentInstructorId = Convert.ToInt32(Session["UserID"]);
                 BindCoursesDropdown(currentInstructorId);
+                BindGlobalCategories();
             }
         }
 
@@ -41,7 +42,8 @@ namespace Aidcademy
             ProcessSubmission("Draft");
         }
 
-        protected void btnSubmitLesson_Click(object sender, EventArgs e)
+        // Changed this name to match the HTML!
+        protected void btnPublishAdmin_Click(object sender, EventArgs e)
         {
             ProcessSubmission("Pending Admin");
         }
@@ -290,6 +292,34 @@ namespace Aidcademy
             else
             {
                 txtSequenceOrder.Text = "";
+            }
+        }
+
+        private void BindGlobalCategories()
+        {
+            using (SqlConnection conn = new SqlConnection(connString))
+            {
+                // Notice there is NO "WHERE UserID = @InstructorID" here! 
+                // This grabs every unique category ever created across the whole platform.
+                string query = "SELECT DISTINCT Category FROM Courses WHERE Category IS NOT NULL AND Category != ''";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    conn.Open();
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        ddlNewCourseCategory.Items.Clear();
+                        ddlNewCourseCategory.Items.Add(new ListItem("Category", ""));
+
+                        while (reader.Read())
+                        {
+                            string cat = reader["Category"].ToString();
+                            ddlNewCourseCategory.Items.Add(new ListItem(cat, cat));
+                        }
+
+                        ddlNewCourseCategory.Items.Add(new ListItem("Other...", "Other"));
+                    }
+                }
             }
         }
     }
