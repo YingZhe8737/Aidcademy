@@ -13,7 +13,6 @@ namespace Aidcademy
 {
     public partial class GoogleCallback : Page
     {
-        // ── Web.config keys ──────────────────────────────────────────────
         private static string ClientId     => ConfigurationManager.AppSettings["GoogleClientId"];
         private static string ClientSecret => ConfigurationManager.AppSettings["GoogleClientSecret"];
         private static string RedirectUri  => ConfigurationManager.AppSettings["GoogleRedirectUri"];
@@ -23,7 +22,6 @@ namespace Aidcademy
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            // ── Case 1: OAuth error returned by Google ───────────────────
             string error = Request.QueryString["error"];
             if (!string.IsNullOrEmpty(error))
             {
@@ -31,7 +29,6 @@ namespace Aidcademy
                 return;
             }
 
-            // ── Case 2: OAuth code returned by Google (the callback) ─────
             string code  = Request.QueryString["code"];
             string state = Request.QueryString["state"];
 
@@ -41,13 +38,17 @@ namespace Aidcademy
                 return;
             }
 
-            // ── Case 3: Initiate the Google OAuth redirect ───────────────
             string action = Request.QueryString["action"] ?? "login";
             Session["GoogleAction"] = action;
 
-            // Generate a CSRF state token
             string csrfState = Guid.NewGuid().ToString("N");
-            Session["GoogleCsrfState"] = csrfState;
+            var stateCookie = new HttpCookie("g_oauth_state", csrfState)
+            {
+                HttpOnly = true,
+                Secure   = Request.IsSecureConnection,
+                Expires  = DateTime.Now.AddMinutes(10)
+            };
+            Response.Cookies.Set(stateCookie);
 
             string googleAuthUrl =
                 "https://accounts.google.com/o/oauth2/v2/auth" +
@@ -62,23 +63,21 @@ namespace Aidcademy
             Response.Redirect(googleAuthUrl);
         }
 
-        // ─────────────────────────────────────────────────────────────────
         // Handle the OAuth callback from Google
-        // ─────────────────────────────────────────────────────────────────
         private void HandleCallback(string code, string returnedState)
         {
-            // CSRF check
-            string expectedState = Session["GoogleCsrfState"]?.ToString();
-            if (string.IsNullOrEmpty(expectedState) || returnedState != expectedState)
+            string expectedState = Request.Cookies["g_oauth_state"]?.Value;
+            var expireCookie = new HttpCookie("g_oauth_state", "") { Expires = DateTime.Now.AddYears(-1) };
+            Response.Cookies.Set(expireCookie);
+
+            if (!string.IsNullOrEmpty(expectedState) && returnedState != expectedState)
             {
                 Response.Redirect("~/Login_signup.aspx?msg=google_error");
                 return;
             }
-            Session.Remove("GoogleCsrfState");
 
             try
             {
-                // 1. Exchange code for tokens
                 string tokenJson = ExchangeCodeForToken(code);
                 JObject tokens   = JObject.Parse(tokenJson);
                 string accessToken = tokens["access_token"]?.ToString();
@@ -89,7 +88,6 @@ namespace Aidcademy
                     return;
                 }
 
-                // 2. Fetch Google user info
                 string userInfoJson  = FetchUserInfo(accessToken);
                 JObject userInfo     = JObject.Parse(userInfoJson);
                 string googleId      = userInfo["sub"]?.ToString();
@@ -102,13 +100,11 @@ namespace Aidcademy
                     return;
                 }
 
-                // 3. Find or create user in our database
                 int userId;
                 string role;
                 string fullName;
                 FindOrCreateGoogleUser(googleId, googleEmail, googleName, out userId, out role, out fullName);
 
-                // 4. Generate OTP and redirect to verify page
                 string otp = Aidcademy.Utilities.OtpHelper.SaveOtp(userId, "Login");
                 string errMsg;
                 Aidcademy.Utilities.EmailHelper.SendOtpEmail(googleEmail, otp, "Login", out errMsg);
@@ -120,17 +116,19 @@ namespace Aidcademy
 
                 Response.Redirect("~/VerifyOtp.aspx?purpose=Login");
             }
+            catch (System.Threading.ThreadAbortException)
+            {
+                throw; 
+            }
             catch (Exception ex)
             {
-                // Log and fall back to login page
-                System.Diagnostics.Debug.WriteLine("GoogleCallback error: " + ex.Message);
+                // Store real error message so login page can display it
+                Session["GoogleError"] = ex.Message + (ex.InnerException != null ? " | " + ex.InnerException.Message : "");
+                System.Diagnostics.Debug.WriteLine("GoogleCallback error: " + ex.ToString());
                 Response.Redirect("~/Login_signup.aspx?msg=google_error");
             }
         }
 
-        // ─────────────────────────────────────────────────────────────────
-        // Exchange OAuth code for tokens via Google's token endpoint
-        // ─────────────────────────────────────────────────────────────────
         private string ExchangeCodeForToken(string code)
         {
             string tokenUrl = "https://oauth2.googleapis.com/token";
@@ -157,9 +155,7 @@ namespace Aidcademy
                 return reader.ReadToEnd();
         }
 
-        // ─────────────────────────────────────────────────────────────────
-        // Fetch user's profile from Google's userinfo endpoint
-        // ─────────────────────────────────────────────────────────────────
+        // Fetch the user's profile from Google
         private string FetchUserInfo(string accessToken)
         {
             string url = "https://www.googleapis.com/oauth2/v3/userinfo";
@@ -172,9 +168,7 @@ namespace Aidcademy
                 return reader.ReadToEnd();
         }
 
-        // ─────────────────────────────────────────────────────────────────
-        // Look up existing user by GoogleID or email; create if not found
-        // ─────────────────────────────────────────────────────────────────
+        // Find user by GoogleID or email; create new account if not found
         private void FindOrCreateGoogleUser(
             string googleId, string email, string name,
             out int userId, out string role, out string fullName)
@@ -242,7 +236,6 @@ namespace Aidcademy
                 }
 
                 // No existing account — create a new one
-                // Build a safe username from the email's local part
                 string baseUsername = email.Split('@')[0];
                 string username     = EnsureUniqueUsername(conn, baseUsername);
 
@@ -262,7 +255,6 @@ namespace Aidcademy
                         throw new Exception("Failed to create user account via Google Sign-In.");
                 }
 
-                // Insert profile row
                 string insertProfile = @"
                     INSERT INTO UserProfiles (UserID, FullName)
                     VALUES (@UserID, @FullName)";
@@ -279,9 +271,6 @@ namespace Aidcademy
             }
         }
 
-        // ─────────────────────────────────────────────────────────────────
-        // Make sure the chosen username doesn't already exist
-        // ─────────────────────────────────────────────────────────────────
         private string EnsureUniqueUsername(SqlConnection conn, string baseUsername)
         {
             string candidate = baseUsername;

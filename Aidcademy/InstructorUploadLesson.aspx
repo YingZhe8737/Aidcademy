@@ -32,7 +32,32 @@
                             </div>
                             
                             <div id="existingCourseDiv">
-                                <asp:DropDownList ID="ddlCourses" runat="server" CssClass="form-select border-0 bg-light fw-bold"></asp:DropDownList>
+                                <div class="input-group">
+                                    <asp:DropDownList ID="ddlCourses" runat="server" CssClass="form-select border-0 bg-light fw-bold" AutoPostBack="true" OnSelectedIndexChanged="ddlCourses_SelectedIndexChanged"></asp:DropDownList>
+        
+                                    <asp:LinkButton ID="btnEditCoursePrompt" runat="server" CssClass="btn btn-secondary" OnClick="btnEditCoursePrompt_Click" CausesValidation="false" ToolTip="Edit Course Details">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </asp:LinkButton>
+                                    <asp:LinkButton ID="btnDeleteCourse" runat="server" CssClass="btn btn-danger" OnClientClick="return confirm('WARNING: Deleting this course will also delete ALL lessons inside it! Are you sure?');" OnClick="btnDeleteCourse_Click" CausesValidation="false" ToolTip="Delete Course">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </asp:LinkButton>
+                                </div>
+
+                                <asp:Panel ID="pnlEditCourse" runat="server" Visible="false" CssClass="p-3 mt-2 bg-white border border-warning rounded shadow-sm">
+                                    <h6 class="fw-bold text-warning"><i class="fa-solid fa-pen-to-square me-1"></i> Edit Course Details</h6>
+                                    <div class="mb-2">
+                                        <label class="small text-muted fw-bold">Course Title</label>
+                                        <asp:TextBox ID="txtEditCourseTitle" runat="server" CssClass="form-control form-control-sm"></asp:TextBox>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="small text-muted fw-bold">Category</label>
+                                        <asp:TextBox ID="txtEditCourseCategory" runat="server" CssClass="form-control form-control-sm"></asp:TextBox>
+                                    </div>
+                                    <div class="text-end mt-2">
+                                        <asp:Button ID="btnCancelCourseEdit" runat="server" Text="Cancel" CssClass="btn btn-sm btn-light" OnClick="btnCancelCourseEdit_Click" CausesValidation="false" />
+                                        <asp:Button ID="btnSaveCourseEdit" runat="server" Text="Update Course" CssClass="btn btn-sm btn-warning fw-bold" OnClick="btnSaveCourseEdit_Click" CausesValidation="false" />
+                                    </div>
+                                </asp:Panel>
                             </div>
                             
                             <div id="newCourseDiv" style="display:none;">

@@ -36,7 +36,32 @@
                             </div>
                             
                             <div id="existingCourseDiv">
-                                <asp:DropDownList ID="ddlCourses" runat="server" CssClass="form-select border-0 bg-light fw-bold"></asp:DropDownList>
+                                <div class="input-group">
+                                    <asp:DropDownList ID="ddlCourses" runat="server" CssClass="form-select border-0 bg-light fw-bold"></asp:DropDownList>
+        
+                                    <asp:LinkButton ID="btnEditCoursePrompt" runat="server" CssClass="btn btn-secondary" OnClick="btnEditCoursePrompt_Click" CausesValidation="false" ToolTip="Edit Course Details">
+                                        <i class="fa-solid fa-pen"></i>
+                                    </asp:LinkButton>
+                                    <asp:LinkButton ID="btnDeleteCourse" runat="server" CssClass="btn btn-danger" OnClientClick="return confirm('WARNING: Deleting this course will also delete ALL lessons inside it! Are you sure?');" OnClick="btnDeleteCourse_Click" CausesValidation="false" ToolTip="Delete Course">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </asp:LinkButton>
+                                </div>
+
+                                <asp:Panel ID="pnlEditCourse" runat="server" Visible="false" CssClass="p-3 mt-2 bg-white border border-warning rounded shadow-sm">
+                                    <h6 class="fw-bold text-warning"><i class="fa-solid fa-pen-to-square me-1"></i> Edit Course Details</h6>
+                                    <div class="mb-2">
+                                        <label class="small text-muted fw-bold">Course Title</label>
+                                        <asp:TextBox ID="txtEditCourseTitle" runat="server" CssClass="form-control form-control-sm"></asp:TextBox>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="small text-muted fw-bold">Category</label>
+                                        <asp:TextBox ID="txtEditCourseCategory" runat="server" CssClass="form-control form-control-sm"></asp:TextBox>
+                                    </div>
+                                    <div class="text-end mt-2">
+                                        <asp:Button ID="btnCancelCourseEdit" runat="server" Text="Cancel" CssClass="btn btn-sm btn-light" OnClick="btnCancelCourseEdit_Click" CausesValidation="false" />
+                                        <asp:Button ID="btnSaveCourseEdit" runat="server" Text="Update Course" CssClass="btn btn-sm btn-warning fw-bold" OnClick="btnSaveCourseEdit_Click" CausesValidation="false" />
+                                    </div>
+                                </asp:Panel>
                             </div>
                             
                             <div id="newCourseDiv" style="display:none;">
@@ -67,6 +92,32 @@
                     <div class="mb-3"><div id="editor-container"></div></div>
                     <asp:HiddenField ID="hfContentBody" runat="server" />
                 </div>
+
+                <div class="card creator-card shadow-sm p-4 mb-4 border-warning">
+                    <h5 class="fw-bold"><i class="fa-solid fa-clipboard-question text-warning me-2"></i>Edit Knowledge Check (Optional)</h5>
+                    <p class="text-muted small">Update the quick question at the end of this lesson.</p>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Question Text</label>
+                        <asp:TextBox ID="txtQuizQuestion" runat="server" CssClass="form-control" placeholder="e.g., What is the correct compression depth for an adult CPR?"></asp:TextBox>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-2"><asp:TextBox ID="txtOptA" runat="server" CssClass="form-control" placeholder="Option A"></asp:TextBox></div>
+                        <div class="col-md-6 mb-2"><asp:TextBox ID="txtOptB" runat="server" CssClass="form-control" placeholder="Option B"></asp:TextBox></div>
+                        <div class="col-md-6 mb-2"><asp:TextBox ID="txtOptC" runat="server" CssClass="form-control" placeholder="Option C"></asp:TextBox></div>
+                        <div class="col-md-6 mb-2"><asp:TextBox ID="txtOptD" runat="server" CssClass="form-control" placeholder="Option D"></asp:TextBox></div>
+                    </div>
+                    <div class="mt-2">
+                        <label class="form-label fw-bold me-2">Correct Answer:</label>
+                        <asp:DropDownList ID="ddlCorrectAnswer" runat="server" CssClass="form-select w-auto d-inline-block">
+                            <asp:ListItem Value="A">A</asp:ListItem>
+                            <asp:ListItem Value="B">B</asp:ListItem>
+                            <asp:ListItem Value="C">C</asp:ListItem>
+                            <asp:ListItem Value="D">D</asp:ListItem>
+                        </asp:DropDownList>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
@@ -75,8 +126,8 @@
         <div class="container">
             <div class="row justify-content-center">
                 <div class="col-lg-9 d-flex justify-content-end align-items-center">
-                    <asp:Button ID="btnSaveDraft" runat="server" Text="Save as Draft" CssClass="btn btn-outline-secondary fw-bold px-4 me-2" OnClientClick="saveQuillHtml();" OnClick="btnSaveDraft_Click" />
-                    <asp:Button ID="btnPublishAdmin" runat="server" Text="Publish to Admin" CssClass="btn btn-danger fw-bold px-4" OnClientClick="saveQuillHtml();" OnClick="btnPublishAdmin_Click" />
+                    <asp:Button ID="btnSaveDraft" runat="server" Text="Save as Draft" CssClass="btn btn-outline-secondary fw-bold px-4 me-2" OnClientClick="return validateLessonForm(this);" OnClick="btnSaveDraft_Click" />
+                    <asp:Button ID="btnPublishAdmin" runat="server" Text="Publish to Admin" CssClass="btn btn-danger fw-bold px-4" OnClientClick="return validateLessonForm(this);" OnClick="btnPublishAdmin_Click" />
                 </div>
             </div>
         </div>

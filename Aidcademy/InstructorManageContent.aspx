@@ -66,40 +66,51 @@
             </div>
 
             <h5 class="section-header">Manage Content</h5>
+
+            <asp:Repeater ID="rptCourses" runat="server" OnItemDataBound="rptCourses_ItemDataBound">
+                <ItemTemplate>
+                    <div class="category-group mb-5">
             
-            <div class="row g-4">
-                <asp:Repeater ID="rptLessons" runat="server" OnItemCommand="rptLessons_ItemCommand">
-                    <ItemTemplate>
-                        <div class="col-md-3">
-                            <div class="card lesson-card shadow-sm">
-                                <div class="lesson-card-top" style='<%# Eval("ApprovalStatus").ToString() == "Draft" ? "background-color: #6c757d;" : (Eval("ApprovalStatus").ToString() == "Pending Admin" ? "background-color: #e0a800;" : "background-color: #c9242b;") %>'>
-                                    <i class="fa-solid fa-heart-pulse"></i>
-                                </div>
-                                <div class="card-body">
-                                    <h6 class="fw-bold"><%# Eval("LessonTitle") %></h6>
-                                    <p class="text-muted small mb-2">Category: <%# Eval("Category") %></p>
-                        
-                                    <div class="d-flex justify-content-between align-items-center mt-3">
-                                        <span class="badge bg-secondary"><%# Eval("ApprovalStatus") %></span>
-                                        <div>
-                                            <asp:LinkButton ID="btnEdit" runat="server" CssClass="btn btn-sm btn-outline-danger" 
-                                                CommandName="EditLesson" CommandArgument='<%# Eval("LessonID") %>'>
-                                                <i class="fa-solid fa-pen"></i>
-                                            </asp:LinkButton>
-                                
-                                            <asp:LinkButton ID="btnDel" runat="server" CssClass="btn btn-sm btn-outline-secondary" 
-                                                CommandName="DeleteLesson" CommandArgument='<%# Eval("LessonID") %>'
-                                                OnClientClick="return confirm('Are you sure you want to delete this lesson?');">
-                                                <i class="fa-solid fa-trash"></i>
-                                            </asp:LinkButton>
+                        <h4 class="fw-bold border-bottom pb-2 text-danger mb-3">
+                            <i class="fa-solid fa-book-medical me-2"></i><%# Eval("CourseTitle") %> 
+                            <span class="badge bg-secondary fs-6 ms-2 align-middle"><%# Eval("Category") %></span>
+                        </h4>
+            
+                        <div class="row g-4">
+                            <asp:Repeater ID="rptLessons" runat="server">
+                                <ItemTemplate>
+                                    <div class="col-md-3">
+                                        <div class="card lesson-card shadow-sm">
+                                            <div class="lesson-card-top" style='<%# Eval("ApprovalStatus").ToString() == "Draft" ? "background-color: #6c757d;" : (Eval("ApprovalStatus").ToString() == "Pending Admin" ? "background-color: #e0a800;" : "background-color: #c9242b;") %>'>
+                                                <h1 class="text-white opacity-50 m-0 fw-bold">#<%# Eval("SequenceOrder") %></h1>
+                                            </div>
+                                            <div class="card-body">
+                                                <h6 class="fw-bold"><%# Eval("LessonTitle") %></h6>
+                                    
+                                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                                    <span class="badge bg-secondary"><%# Eval("ApprovalStatus") %></span>
+                                                    <div>
+                                                        <asp:LinkButton ID="btnEdit" runat="server" CssClass="btn btn-sm btn-outline-danger" 
+                                                            CommandArgument='<%# Eval("LessonID") %>' OnClick="btnEditLesson_Click">
+                                                            <i class="fa-solid fa-pen"></i>
+                                                        </asp:LinkButton>
+                                            
+                                                        <asp:LinkButton ID="btnDel" runat="server" CssClass="btn btn-sm btn-outline-secondary" 
+                                                            CommandArgument='<%# Eval("LessonID") %>' OnClick="btnDeleteLesson_Click"
+                                                            OnClientClick="return confirm('Are you sure you want to delete this lesson?');">
+                                                            <i class="fa-solid fa-trash"></i>
+                                                        </asp:LinkButton>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
+                                </ItemTemplate>
+                            </asp:Repeater>
                         </div>
-                    </ItemTemplate>
-                </asp:Repeater>
-            </div>
+                    </div>
+                </ItemTemplate>
+            </asp:Repeater>
             
             
         </div>

@@ -31,7 +31,6 @@ namespace Aidcademy
             {
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 {
-                    // Username and Email are in Users; profile fields are in UserProfiles
                     string query = @"
                         SELECT u.Username, u.Email,
                                p.FullName, p.PhoneNumber, p.ProfilePhoto, p.Bio

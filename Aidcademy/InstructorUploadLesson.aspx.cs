@@ -176,5 +176,121 @@ namespace Aidcademy
                 }
             }
         }
+
+        // --- NEW COURSE EDIT/DELETE LOGIC ---
+
+        protected void btnEditCoursePrompt_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(ddlCourses.SelectedValue)) return;
+
+            // Fetch current course details and display them in the edit boxes
+            using (SqlConnection conn = new SqlConnection(connString))
+            {
+                SqlCommand cmd = new SqlCommand("SELECT Title, Category FROM Courses WHERE CourseID = @CourseID", conn);
+                cmd.Parameters.AddWithValue("@CourseID", ddlCourses.SelectedValue);
+                conn.Open();
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        txtEditCourseTitle.Text = reader["Title"].ToString();
+                        txtEditCourseCategory.Text = reader["Category"].ToString();
+                        pnlEditCourse.Visible = true; // Reveal the panel
+                    }
+                }
+            }
+        }
+
+        protected void btnCancelCourseEdit_Click(object sender, EventArgs e)
+        {
+            pnlEditCourse.Visible = false; // Hide the panel
+        }
+
+        protected void btnSaveCourseEdit_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(ddlCourses.SelectedValue) || string.IsNullOrEmpty(txtEditCourseTitle.Text)) return;
+
+            // Update the database with the new name/category
+            using (SqlConnection conn = new SqlConnection(connString))
+            {
+                SqlCommand cmd = new SqlCommand("UPDATE Courses SET Title = @Title, Category = @Category WHERE CourseID = @CourseID", conn);
+                cmd.Parameters.AddWithValue("@Title", txtEditCourseTitle.Text.Trim());
+                cmd.Parameters.AddWithValue("@Category", txtEditCourseCategory.Text.Trim());
+                cmd.Parameters.AddWithValue("@CourseID", ddlCourses.SelectedValue);
+                conn.Open();
+                cmd.ExecuteNonQuery();
+            }
+
+            pnlEditCourse.Visible = false;
+            BindCoursesDropdown(1); // Refresh the dropdown
+
+            lblMessage.Text = "Course details updated successfully!";
+            lblMessage.CssClass = "d-block mb-3 fw-bold text-success";
+        }
+
+        protected void btnDeleteCourse_Click(object sender, EventArgs e)
+        {
+            if (string.IsNullOrEmpty(ddlCourses.SelectedValue)) return;
+            int courseId = Convert.ToInt32(ddlCourses.SelectedValue);
+
+            using (SqlConnection conn = new SqlConnection(connString))
+            {
+                conn.Open();
+                SqlTransaction tx = conn.BeginTransaction();
+                try
+                {
+                    // 1. Delete Quiz Questions attached to the lessons in this course
+                    string q1 = "DELETE FROM QuizQuestions WHERE QuizID IN (SELECT QuizID FROM Quizzes WHERE LessonID IN (SELECT LessonID FROM Lessons WHERE CourseID = @CourseID))";
+                    using (SqlCommand cmd = new SqlCommand(q1, conn, tx)) { cmd.Parameters.AddWithValue("@CourseID", courseId); cmd.ExecuteNonQuery(); }
+
+                    // 2. Delete Quizzes attached to the lessons
+                    string q2 = "DELETE FROM Quizzes WHERE LessonID IN (SELECT LessonID FROM Lessons WHERE CourseID = @CourseID)";
+                    using (SqlCommand cmd = new SqlCommand(q2, conn, tx)) { cmd.Parameters.AddWithValue("@CourseID", courseId); cmd.ExecuteNonQuery(); }
+
+                    // 3. Delete the Lessons
+                    string q3 = "DELETE FROM Lessons WHERE CourseID = @CourseID";
+                    using (SqlCommand cmd = new SqlCommand(q3, conn, tx)) { cmd.Parameters.AddWithValue("@CourseID", courseId); cmd.ExecuteNonQuery(); }
+
+                    // 4. Finally, delete the Course itself
+                    string q4 = "DELETE FROM Courses WHERE CourseID = @CourseID";
+                    using (SqlCommand cmd = new SqlCommand(q4, conn, tx)) { cmd.Parameters.AddWithValue("@CourseID", courseId); cmd.ExecuteNonQuery(); }
+
+                    tx.Commit();
+                    lblMessage.Text = "Course and all related lessons deleted successfully.";
+                    lblMessage.CssClass = "d-block mb-3 fw-bold text-success";
+
+                    BindCoursesDropdown(1);
+                    pnlEditCourse.Visible = false;
+                }
+                catch (Exception ex)
+                {
+                    tx.Rollback();
+                    lblMessage.Text = "Error deleting course: " + ex.Message;
+                    lblMessage.CssClass = "d-block mb-3 fw-bold text-danger";
+                }
+            }
+        }
+
+        protected void ddlCourses_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (!string.IsNullOrEmpty(ddlCourses.SelectedValue))
+            {
+                using (SqlConnection conn = new SqlConnection(connString))
+                {
+                    // Gets the highest SequenceOrder in the selected course and adds 1
+                    string query = "SELECT ISNULL(MAX(SequenceOrder), 0) + 1 FROM Lessons WHERE CourseID = @CourseID";
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@CourseID", ddlCourses.SelectedValue);
+                        conn.Open();
+                        txtSequenceOrder.Text = cmd.ExecuteScalar().ToString();
+                    }
+                }
+            }
+            else
+            {
+                txtSequenceOrder.Text = "";
+            }
+        }
     }
 }

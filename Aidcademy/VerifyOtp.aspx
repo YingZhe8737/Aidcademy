@@ -128,13 +128,17 @@
                 background: #fff5f5;
             }
 
-            /* Messages */
             .message {
+                display: block;
                 padding: 14px 16px;
                 border-radius: 0.5rem;
-                margin-bottom: 20px;
+                margin-top: 16px;
+                margin-bottom: 16px;
                 font-size: 14px;
                 text-align: left;
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+                line-height: 1.5;
             }
 
             .message.success {
@@ -199,7 +203,7 @@
                     Enter it below. The code expires in <strong>10 minutes</strong>.
                 </asp:Label>
 
-                <!-- Message panel -->
+                <!-- Message panel — appears after subtitle, before OTP inputs -->
                 <asp:Panel ID="pnlMessage" runat="server" Visible="false">
                     <asp:Label ID="lblMessage" runat="server" CssClass="message"></asp:Label>
                 </asp:Panel>
