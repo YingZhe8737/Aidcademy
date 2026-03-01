@@ -31,9 +31,7 @@ namespace Aidcademy
             }
         }
 
-        // ─────────────────────────────────────────────────────────────────
         // Verify OTP button
-        // ─────────────────────────────────────────────────────────────────
         protected void btnVerify_Click(object sender, EventArgs e)
         {
             string code = txtOtp.Value?.Trim() ?? "";
@@ -57,9 +55,7 @@ namespace Aidcademy
             }
         }
 
-        // ─────────────────────────────────────────────────────────────────
         // Resend OTP button
-        // ─────────────────────────────────────────────────────────────────
         protected void btnResend_Click(object sender, EventArgs e)
         {
             try
@@ -105,9 +101,7 @@ namespace Aidcademy
             }
         }
 
-        // ─────────────────────────────────────────────────────────────────
         // Private helpers
-        // ─────────────────────────────────────────────────────────────────
         private void HandleLoginVerification(string code)
         {
             int userID = Convert.ToInt32(Session["PendingUserID"]);

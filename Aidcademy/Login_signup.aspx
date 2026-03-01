@@ -130,10 +130,13 @@
             }
 
             .message {
-                padding: 15px;
+                padding: 12px 16px;
                 border-radius: 8px;
                 margin-bottom: 20px;
                 font-size: 14px;
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+                line-height: 1.5;
             }
 
             .message.success {

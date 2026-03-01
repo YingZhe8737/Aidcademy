@@ -14,15 +14,18 @@ namespace Aidcademy
         {
             if (!IsPostBack)
             {
-                // Already fully logged in → go to dashboard
                 if (Session["UserID"] != null)
                     RedirectByRole(Session["UserRole"]?.ToString() ?? "Member");
+
+                if (Request.QueryString["msg"] == "google_error")
+                {
+                    Session.Remove("GoogleError"); 
+                    ShowMessage("⚠️ Google Sign-In failed. Please try again or use email and password.", false);
+                }
             }
         }
 
-        // ─────────────────────────────────────────────────────────────────
         // LOGIN
-        // ─────────────────────────────────────────────────────────────────
         protected void btnLogin_Click(object sender, EventArgs e)
         {
             string login    = txtLoginEmail.Text.Trim();
@@ -65,12 +68,11 @@ namespace Aidcademy
                                 }
                                 catch (SaltParseException)
                                 {
-                                    // Fallback: The hash in the DB is likely the old SHA256 format.
                                     if (Aidcademy.Utilities.SecurityHelper.VerifyPassword(password, storedHash))
                                     {
                                         isPasswordValid = true;
 
-                                        // Upgrade their hash to BCrypt for future logins
+                                        // hash to BCrypt 
                                         var pm = new PasswordManager();
                                         string newBcryptHash = pm.HashPassword(password);
                                         
@@ -100,7 +102,7 @@ namespace Aidcademy
                                     return;
                                 }
 
-                                // Credentials valid — send OTP before creating a full session
+                                // Credentials valid 
                                 string sessionRole  = reader["Role"].ToString();
                                 string sessionName  = reader["FullName"]?.ToString() ?? "";
                                 string sessionEmail = reader["Email"].ToString();
@@ -111,17 +113,14 @@ namespace Aidcademy
                                 // Generate & save OTP
                                 string otp = Aidcademy.Utilities.OtpHelper.SaveOtp(sessionUserId, "Login");
 
-                                // Email the OTP
                                 string errMsg;
                                 Aidcademy.Utilities.EmailHelper.SendOtpEmail(sessionEmail, otp, "Login", out errMsg);
 
-                                // Store pending login info in session
                                 Session["PendingUserID"] = sessionUserId;
                                 Session["PendingEmail"]  = sessionEmail;
                                 Session["PendingName"]   = sessionName;
                                 Session["PendingRole"]   = sessionRole;
 
-                                // Redirect to OTP verification
                                 Response.Redirect("VerifyOtp.aspx?purpose=Login");
                             }
                             else
@@ -138,9 +137,7 @@ namespace Aidcademy
             }
         }
 
-        // ─────────────────────────────────────────────────────────────────
         // SIGNUP
-        // ─────────────────────────────────────────────────────────────────
         protected void btnSignup_Click(object sender, EventArgs e)
         {
             string fullName = txtSignupFullName.Text.Trim();
@@ -211,7 +208,6 @@ namespace Aidcademy
 
                     using (SqlCommand cmd = new SqlCommand(insertQuery, conn))
                     {
-                        // Use PasswordManager as per LAB instructions
                         var passwordManager = new PasswordManager();
                         string hashedPassword = passwordManager.HashPassword(password);
 
@@ -235,25 +231,17 @@ namespace Aidcademy
                                 profCmd.ExecuteNonQuery();
                             }
 
-                            // ===== OTP PART =====
-                            string otp = Aidcademy.Utilities.OtpHelper.GenerateNumericOtp();
-                            string secret = System.Configuration.ConfigurationManager.AppSettings["OtpSecret"];
-                            string otpHash = Aidcademy.Utilities.OtpHelper.HmacOtp(otp, secret);
-
-                            // Save OTP into EmailOtp table (OtpCodes)
-                            Aidcademy.Utilities.OtpHelper.SaveOtpToDb(newUserId, otpHash, DateTime.UtcNow.AddMinutes(10));
+                            string otp = Aidcademy.Utilities.OtpHelper.SaveOtp(newUserId, "Login");
 
                             // Send OTP email
                             string errMsg;
                             Aidcademy.Utilities.EmailHelper.SendOtpEmail(email, otp, "Login", out errMsg);
 
-                            // Set Session pending variables for VerifyOtp
                             Session["PendingUserID"] = newUserId;
                             Session["PendingEmail"]  = email;
                             Session["PendingName"]   = fullName;
                             Session["PendingRole"]   = "Member";
 
-                            // Redirect to OTP verification page
                             Response.Redirect("VerifyOtp.aspx?purpose=Login");
                         }
                         else
@@ -269,9 +257,6 @@ namespace Aidcademy
             }
         }
 
-        // ─────────────────────────────────────────────────────────────────
-        // Helpers
-        // ─────────────────────────────────────────────────────────────────
         private void RedirectByRole(string role)
         {
             if (role == "Admin")
@@ -315,7 +300,6 @@ namespace Aidcademy
 
     public class PasswordManager
     {
-        // Method to hash the password exactly as specified in the lab instruction
         public string HashPassword(string plainTextPassword)
         {
             string hashedPassword = BCrypt.Net.BCrypt.HashPassword(plainTextPassword);

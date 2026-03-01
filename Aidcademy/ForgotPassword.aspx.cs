@@ -21,23 +21,18 @@ namespace Aidcademy
 
                 if (step == "reset")
                 {
-                    // OTP was already verified — show the new-password form
+                    // OTP was already verified 
                     if (Session["ResetVerifiedUserID"] == null)
                     {
-                        // No verified session → start over
                         Response.Redirect("~/ForgotPassword.aspx");
                         return;
                     }
                     pnlEmailForm.Visible = false;
                     pnlResetForm.Visible = true;
                 }
-                // else: show Step 1 (email form) by default
             }
         }
 
-        // ─────────────────────────────────────────────────────────────────
-        // Step 1: look up email, generate OTP, redirect to VerifyOtp
-        // ─────────────────────────────────────────────────────────────────
         protected void btnSubmit_Click(object sender, EventArgs e)
         {
             string email = txtEmail.Text.Trim();
@@ -61,14 +56,12 @@ namespace Aidcademy
 
                         if (result == null)
                         {
-                            // Don't reveal whether the email exists — still show a neutral message
                             ShowMessage("If that email is registered, you'll receive a code shortly.", true);
                             return;
                         }
 
                         int userID = Convert.ToInt32(result);
 
-                        // Store pending data for the OTP verification step
                         Session["ResetPendingUserID"] = userID;
                         Session["ResetPendingEmail"]  = email;
 
@@ -78,12 +71,9 @@ namespace Aidcademy
 
                         if (!EmailHelper.SendOtpEmail(email, otp, "ForgotPassword", out errMsg))
                         {
-                            // Dev fallback — show on-screen
                             ShowMessage($"OTP generated (dev mode — code: {otp}). Configure SMTP to receive by email.", true);
-                            // Still redirect so the flow continues
                         }
 
-                        // Redirect to shared OTP page
                         Response.Redirect("~/VerifyOtp.aspx?purpose=ForgotPassword");
                     }
                 }
@@ -94,9 +84,6 @@ namespace Aidcademy
             }
         }
 
-        // ─────────────────────────────────────────────────────────────────
-        // Step 2 (post OTP): Reset password
-        // ─────────────────────────────────────────────────────────────────
         protected void btnReset_Click(object sender, EventArgs e)
         {
             if (Session["ResetVerifiedUserID"] == null)

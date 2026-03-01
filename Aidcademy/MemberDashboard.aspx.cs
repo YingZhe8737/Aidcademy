@@ -28,7 +28,7 @@ namespace Aidcademy
         {
             int userID = Convert.ToInt32(Session["UserID"]);
 
-            // Display name from session (set at login)
+            // Display name
             lblMemberName.Text = Session["UserName"]?.ToString() ?? "Member";
 
             try
@@ -37,7 +37,6 @@ namespace Aidcademy
                 {
                     conn.Open();
 
-                    // Get streak and points from Leaderboard
                     string queryStats = @"
                         SELECT
                             ISNULL(lb.DailyStreak, 0) AS DailyStreak,
@@ -63,7 +62,6 @@ namespace Aidcademy
                         }
                     }
 
-                    // Count enrolled courses
                     string queryEnrolled = "SELECT COUNT(*) FROM Enrollments WHERE UserID = @UserID";
                     using (SqlCommand cmd = new SqlCommand(queryEnrolled, conn))
                     {
@@ -71,7 +69,6 @@ namespace Aidcademy
                         lblEnrolledCourses.Text = cmd.ExecuteScalar().ToString();
                     }
 
-                    // Count completed courses
                     string queryCompleted = "SELECT COUNT(*) FROM Enrollments WHERE UserID = @UserID AND IsCompleted = 1";
                     using (SqlCommand cmd = new SqlCommand(queryCompleted, conn))
                     {
@@ -98,7 +95,6 @@ namespace Aidcademy
                         pnlNoCourses.Visible = dt.Rows.Count == 0;
                     }
 
-                    // Load recent lesson activity
                     string queryActivity = @"
                         SELECT TOP 5
                             l.Title      AS LessonTitle,
