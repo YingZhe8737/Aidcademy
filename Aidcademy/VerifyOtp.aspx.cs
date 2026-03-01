@@ -132,9 +132,9 @@ namespace Aidcademy
 
             // Redirect by role
             if (role == "Admin")
-                Response.Redirect("~/Admin/AdminDashboard.aspx");
+                Response.Redirect("~/AdminDashboard.aspx");
             else if (role == "Instructor")
-                Response.Redirect("~/Instructor/InstructorDashboard.aspx");
+                Response.Redirect("~/InstructorManageContent.aspx");
             else
                 Response.Redirect("~/MemberDashboard.aspx");
         }

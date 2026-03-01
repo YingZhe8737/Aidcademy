@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Data.SqlClient;
-using System.Text.RegularExpressions;
 using System.Web.UI;
-using Aidcademy.Utilities;
+using BCrypt.Net;
 
 namespace Aidcademy
 {
@@ -16,13 +15,13 @@ namespace Aidcademy
             if (!IsPostBack)
             {
                 // Already fully logged in → go to dashboard
-                if (SessionHelper.IsUserLoggedIn())
-                    RedirectByRole(SessionHelper.GetRole());
+                if (Session["UserID"] != null)
+                    RedirectByRole(Session["UserRole"]?.ToString() ?? "Member");
             }
         }
 
         // ─────────────────────────────────────────────────────────────────
-        // LOGIN — Step 1: validate credentials, then send OTP
+        // LOGIN
         // ─────────────────────────────────────────────────────────────────
         protected void btnLogin_Click(object sender, EventArgs e)
         {
@@ -35,8 +34,6 @@ namespace Aidcademy
                 return;
             }
 
-            string hashedPassword = SecurityHelper.HashPassword(password);
-
             try
             {
                 using (SqlConnection conn = new SqlConnection(connectionString))
@@ -44,63 +41,92 @@ namespace Aidcademy
                     conn.Open();
 
                     string query = @"
-                        SELECT u.UserID, u.Email, u.Role, u.Status, p.FullName
+                        SELECT u.UserID, p.FullName, u.Email, u.Role, u.Status, u.PasswordHash
                         FROM Users u
                         LEFT JOIN UserProfiles p ON u.UserID = p.UserID
-                        WHERE (u.Email = @Login OR u.Username = @Login)
-                          AND u.PasswordHash = @PasswordHash";
+                        WHERE (u.Email = @Login OR u.Username = @Login)";
 
                     using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@Login", login);
-                        cmd.Parameters.AddWithValue("@PasswordHash", hashedPassword);
 
                         using (SqlDataReader reader = cmd.ExecuteReader())
                         {
                             if (reader.Read())
                             {
-                                string status = reader["Status"].ToString();
-                                if (status == "Suspended")
+                                string storedHash = reader["PasswordHash"].ToString();
+                                
+                                bool isPasswordValid = false;
+
+                                try
                                 {
-                                    ShowMessage("Your account has been suspended. Please contact support.", false);
+                                    // Verify password with BCrypt
+                                    isPasswordValid = BCrypt.Net.BCrypt.Verify(password, storedHash);
+                                }
+                                catch (SaltParseException)
+                                {
+                                    // Fallback: The hash in the DB is likely the old SHA256 format.
+                                    if (Aidcademy.Utilities.SecurityHelper.VerifyPassword(password, storedHash))
+                                    {
+                                        isPasswordValid = true;
+
+                                        // Upgrade their hash to BCrypt for future logins
+                                        var pm = new PasswordManager();
+                                        string newBcryptHash = pm.HashPassword(password);
+                                        
+                                        using (SqlConnection updateConn = new SqlConnection(connectionString))
+                                        {
+                                            updateConn.Open();
+                                            string updateQuery = "UPDATE Users SET PasswordHash = @NewHash WHERE UserID = @UserID";
+                                            using (SqlCommand updateCmd = new SqlCommand(updateQuery, updateConn))
+                                            {
+                                                updateCmd.Parameters.AddWithValue("@NewHash", newBcryptHash);
+                                                updateCmd.Parameters.AddWithValue("@UserID", reader["UserID"]);
+                                                updateCmd.ExecuteNonQuery();
+                                            }
+                                        }
+                                    }
+                                }
+
+                                if (!isPasswordValid)
+                                {
+                                    ShowMessage("❌ Incorrect password. Please try again.", false);
                                     return;
                                 }
-                                if (status == "Deactivated")
+                                string status = reader["Status"].ToString();
+                                if (status == "Suspended" || status == "Deactivated")
                                 {
-                                    ShowMessage("Your account is not active. Please contact support.", false);
+                                    ShowMessage("Your account has been " + status.ToLower() + ". Please contact support.", false);
                                     return;
                                 }
 
-                                int    userID   = Convert.ToInt32(reader["UserID"]);
-                                string role     = reader["Role"].ToString();
-                                string email    = reader["Email"].ToString();
-                                string fullName = reader["FullName"] != DBNull.Value
-                                                  ? reader["FullName"].ToString()
-                                                  : "Member";
+                                // Credentials valid — send OTP before creating a full session
+                                string sessionRole  = reader["Role"].ToString();
+                                string sessionName  = reader["FullName"]?.ToString() ?? "";
+                                string sessionEmail = reader["Email"].ToString();
+                                int sessionUserId   = Convert.ToInt32(reader["UserID"]);
+
                                 reader.Close();
 
-                                // Store pending session (NOT fully logged in yet)
-                                Session["PendingUserID"] = userID;
-                                Session["PendingRole"]   = role;
-                                Session["PendingName"]   = fullName;
-                                Session["PendingEmail"]  = email;
+                                // Generate & save OTP
+                                string otp = Aidcademy.Utilities.OtpHelper.SaveOtp(sessionUserId, "Login");
 
-                                // Generate OTP and email it
-                                string otp = OtpHelper.SaveOtp(userID, "Login");
+                                // Email the OTP
                                 string errMsg;
+                                Aidcademy.Utilities.EmailHelper.SendOtpEmail(sessionEmail, otp, "Login", out errMsg);
 
-                                if (!EmailHelper.SendOtpEmail(email, otp, "Login", out errMsg))
-                                {
-                                    ShowMessage("Could not send verification email. Please try again or contact support. (" + errMsg + ")", false);
-                                    return;
-                                }
+                                // Store pending login info in session
+                                Session["PendingUserID"] = sessionUserId;
+                                Session["PendingEmail"]  = sessionEmail;
+                                Session["PendingName"]   = sessionName;
+                                Session["PendingRole"]   = sessionRole;
 
-                                // Redirect to OTP verification page
-                                Response.Redirect("~/VerifyOtp.aspx?purpose=Login");
+                                // Redirect to OTP verification
+                                Response.Redirect("VerifyOtp.aspx?purpose=Login");
                             }
                             else
                             {
-                                ShowMessage("Invalid email/username or password. Please try again.", false);
+                                ShowMessage("❌ No account found with that email or username.", false);
                             }
                         }
                     }
@@ -118,29 +144,32 @@ namespace Aidcademy
         protected void btnSignup_Click(object sender, EventArgs e)
         {
             string fullName = txtSignupFullName.Text.Trim();
-            string username = txtSignupUsername.Text.Trim();
-            string email    = txtSignupEmail.Text.Trim();
-            string password = txtSignupPassword.Text.Trim();
-            string confirm  = txtConfirmPassword.Text.Trim();
+            int spaceIndex  = fullName.IndexOf(' ');
+            string firstName = spaceIndex >= 0 ? fullName.Substring(0, spaceIndex).Trim() : fullName;
+            string lastName  = spaceIndex >= 0 ? fullName.Substring(spaceIndex + 1).Trim() : "";
+
+            string username       = txtSignupUsername.Text.Trim();
+            string email          = txtSignupEmail.Text.Trim();
+            string phone          = txtSignupPhone.Text.Trim();
+            string password       = txtSignupPassword.Text.Trim();
+            string confirmPassword = txtConfirmPassword.Text.Trim();
 
             if (string.IsNullOrEmpty(fullName) || string.IsNullOrEmpty(username) ||
-                string.IsNullOrEmpty(email)    || string.IsNullOrEmpty(password) ||
-                string.IsNullOrEmpty(confirm))
+                string.IsNullOrEmpty(email)    || string.IsNullOrEmpty(password))
             {
                 ShowMessage("Please fill in all required fields.", false);
                 return;
             }
 
-            if (password != confirm)
+            if (password != confirmPassword)
             {
                 ShowMessage("Passwords do not match.", false);
                 return;
             }
 
-            string pwdError;
-            if (!SecurityHelper.IsPasswordValid(password, out pwdError))
+            if (!ValidatePassword(password))
             {
-                ShowMessage(pwdError, false);
+                ShowMessage("Password must be at least 8 characters with uppercase, lowercase, and numbers.", false);
                 return;
             }
 
@@ -150,53 +179,88 @@ namespace Aidcademy
                 {
                     conn.Open();
 
-                    // Check for duplicates
-                    string checkQuery = "SELECT COUNT(*) FROM Users WHERE Email = @Email OR Username = @Username";
-                    using (SqlCommand checkCmd = new SqlCommand(checkQuery, conn))
+                    // Check if email already exists
+                    string checkEmail = "SELECT COUNT(*) FROM Users WHERE Email = @Email";
+                    using (SqlCommand cmdCheck = new SqlCommand(checkEmail, conn))
                     {
-                        checkCmd.Parameters.AddWithValue("@Email",    email);
-                        checkCmd.Parameters.AddWithValue("@Username", username);
-                        if ((int)checkCmd.ExecuteScalar() > 0)
+                        cmdCheck.Parameters.AddWithValue("@Email", email);
+                        if ((int)cmdCheck.ExecuteScalar() > 0)
                         {
-                            ShowMessage("Email or username already exists. Please choose another.", false);
+                            ShowMessage("This email is already registered.", false);
                             return;
                         }
                     }
 
-                    // Insert the new user account
-                    string insertUser = @"
+                    // Check if username already exists
+                    string checkUsername = "SELECT COUNT(*) FROM Users WHERE Username = @Username";
+                    using (SqlCommand cmdCheck = new SqlCommand(checkUsername, conn))
+                    {
+                        cmdCheck.Parameters.AddWithValue("@Username", username);
+                        if ((int)cmdCheck.ExecuteScalar() > 0)
+                        {
+                            ShowMessage("This username is already taken.", false);
+                            return;
+                        }
+                    }
+
+                    // Insert new user and profile
+                    string insertQuery = @"
                         INSERT INTO Users (Username, Email, PasswordHash, Role, Status, CreatedAt)
-                        OUTPUT INSERTED.UserID
-                        VALUES (@Username, @Email, @PasswordHash, 'Member', 'Active', GETDATE())";
+                        VALUES (@Username, @Email, @Password, 'Member', 'Active', GETDATE());
+                        SELECT SCOPE_IDENTITY();";
 
-                    int newUserID;
-                    using (SqlCommand insertCmd = new SqlCommand(insertUser, conn))
+                    using (SqlCommand cmd = new SqlCommand(insertQuery, conn))
                     {
-                        insertCmd.Parameters.AddWithValue("@Username",     username);
-                        insertCmd.Parameters.AddWithValue("@Email",        email);
-                        insertCmd.Parameters.AddWithValue("@PasswordHash", SecurityHelper.HashPassword(password));
-                        newUserID = (int)insertCmd.ExecuteScalar();
-                    }
+                        // Use PasswordManager as per LAB instructions
+                        var passwordManager = new PasswordManager();
+                        string hashedPassword = passwordManager.HashPassword(password);
 
-                    // Save full name to UserProfiles
-                    string insertProfile = "INSERT INTO UserProfiles (UserID, FullName) VALUES (@UserID, @FullName)";
-                    using (SqlCommand profileCmd = new SqlCommand(insertProfile, conn))
-                    {
-                        profileCmd.Parameters.AddWithValue("@UserID",   newUserID);
-                        profileCmd.Parameters.AddWithValue("@FullName", fullName);
-                        profileCmd.ExecuteNonQuery();
-                    }
+                        cmd.Parameters.AddWithValue("@Username",  username);
+                        cmd.Parameters.AddWithValue("@Email",     email);
+                        cmd.Parameters.AddWithValue("@Password",  hashedPassword);
 
-                    // Create a Leaderboard entry
-                    string insertLb = "INSERT INTO Leaderboard (UserID, TotalPoints, DailyStreak) VALUES (@UserID, 0, 0)";
-                    using (SqlCommand lbCmd = new SqlCommand(insertLb, conn))
-                    {
-                        lbCmd.Parameters.AddWithValue("@UserID", newUserID);
-                        lbCmd.ExecuteNonQuery();
-                    }
+                        object newUserIdObj = cmd.ExecuteScalar();
 
-                    ShowMessage("Account created successfully! You can now log in.", true);
-                    ClearSignupForm();
+                        if (newUserIdObj != null && int.TryParse(newUserIdObj.ToString(), out int newUserId))
+                        {
+                            string insertProfile = @"
+                                INSERT INTO UserProfiles (UserID, FullName, PhoneNumber)
+                                VALUES (@UserID, @FullName, @Phone)";
+
+                            using (SqlCommand profCmd = new SqlCommand(insertProfile, conn))
+                            {
+                                profCmd.Parameters.AddWithValue("@UserID", newUserId);
+                                profCmd.Parameters.AddWithValue("@FullName", fullName);
+                                profCmd.Parameters.AddWithValue("@Phone", string.IsNullOrEmpty(phone) ? (object)DBNull.Value : phone);
+                                profCmd.ExecuteNonQuery();
+                            }
+
+                            // ===== OTP PART =====
+                            string otp = Aidcademy.Utilities.OtpHelper.GenerateNumericOtp();
+                            string secret = System.Configuration.ConfigurationManager.AppSettings["OtpSecret"];
+                            string otpHash = Aidcademy.Utilities.OtpHelper.HmacOtp(otp, secret);
+
+                            // Save OTP into EmailOtp table (OtpCodes)
+                            Aidcademy.Utilities.OtpHelper.SaveOtpToDb(newUserId, otpHash, DateTime.UtcNow.AddMinutes(10));
+
+                            // Send OTP email
+                            string errMsg;
+                            Aidcademy.Utilities.EmailHelper.SendOtpEmail(email, otp, "Login", out errMsg);
+
+                            // Set Session pending variables for VerifyOtp
+                            Session["PendingUserID"] = newUserId;
+                            Session["PendingEmail"]  = email;
+                            Session["PendingName"]   = fullName;
+                            Session["PendingRole"]   = "Member";
+
+                            // Redirect to OTP verification page
+                            Response.Redirect("VerifyOtp.aspx?purpose=Login");
+                        }
+                        else
+                        {
+                            ShowMessage("Failed to create account. Please try again.", false);
+                        }
+                    }
                 }
             }
             catch (Exception ex)
@@ -211,17 +275,30 @@ namespace Aidcademy
         private void RedirectByRole(string role)
         {
             if (role == "Admin")
-                Response.Redirect("~/Admin/AdminDashboard.aspx");
+                Response.Redirect("~/AdminDashboard.aspx");
             else if (role == "Instructor")
-                Response.Redirect("~/Instructor/InstructorDashboard.aspx");
+                Response.Redirect("~/InstructorManageContent.aspx");
             else
                 Response.Redirect("~/MemberDashboard.aspx");
         }
 
+        private bool ValidatePassword(string password)
+        {
+            if (password.Length < 8) return false;
+            bool hasUpper = false, hasLower = false, hasDigit = false;
+            foreach (char c in password)
+            {
+                if (char.IsUpper(c)) hasUpper = true;
+                if (char.IsLower(c)) hasLower = true;
+                if (char.IsDigit(c)) hasDigit = true;
+            }
+            return hasUpper && hasLower && hasDigit;
+        }
+
         private void ShowMessage(string message, bool isSuccess)
         {
-            pnlMessage.Visible = true;
-            lblMessage.Text    = message;
+            pnlMessage.Visible  = true;
+            lblMessage.Text     = message;
             lblMessage.CssClass = isSuccess ? "message success" : "message error";
         }
 
@@ -233,6 +310,16 @@ namespace Aidcademy
             txtSignupPhone.Text     = "";
             txtSignupPassword.Text  = "";
             txtConfirmPassword.Text = "";
+        }
+    }
+
+    public class PasswordManager
+    {
+        // Method to hash the password exactly as specified in the lab instruction
+        public string HashPassword(string plainTextPassword)
+        {
+            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(plainTextPassword);
+            return hashedPassword;
         }
     }
 }
