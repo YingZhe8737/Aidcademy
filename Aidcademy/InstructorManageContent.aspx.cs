@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
-using System.Configuration;
+using System.Web.UI;
 using System.Web.UI.WebControls;
 
 namespace Aidcademy
@@ -9,57 +10,91 @@ namespace Aidcademy
     public partial class InstructorManageContent : System.Web.UI.Page
     {
         string connString = ConfigurationManager.ConnectionStrings["AidcademyDB"].ConnectionString;
+        int currentInstructorId = 1; // Testing ID
 
         protected void Page_Load(object sender, EventArgs e)
         {
             if (!IsPostBack)
             {
-                int currentInstructorId = 1; // Your testing ID
-                BindDashboardCards(currentInstructorId);
-                // You can also write a quick method here to count Total Lessons for your top stat cards!
+                BindCourses(); // Updated to call BindCourses
             }
         }
 
-        private void BindDashboardCards(int instructorId)
+        // 1. Bind the Outer Repeater (Courses)
+        private void BindCourses()
         {
             using (SqlConnection conn = new SqlConnection(connString))
             {
-                // Join Lessons and Courses to get all the info for the card
-                string query = @"SELECT l.LessonID, l.Title AS LessonTitle, c.Category, c.ApprovalStatus 
-                                 FROM Lessons l 
-                                 INNER JOIN Courses c ON l.CourseID = c.CourseID 
-                                 WHERE c.UserID = @InstructorID
-                                 ORDER BY l.LessonID DESC";
-
+                string query = "SELECT CourseID, Title AS CourseTitle, Category FROM Courses WHERE UserID = @InstructorID ORDER BY CourseID DESC";
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
-                    cmd.Parameters.AddWithValue("@InstructorID", instructorId);
+                    cmd.Parameters.AddWithValue("@InstructorID", currentInstructorId);
                     using (SqlDataAdapter sda = new SqlDataAdapter(cmd))
                     {
                         DataTable dt = new DataTable();
                         sda.Fill(dt);
-                        rptLessons.DataSource = dt;
-                        rptLessons.DataBind();
+
+                        // Using the new rptCourses ID!
+                        rptCourses.DataSource = dt;
+                        rptCourses.DataBind();
                     }
                 }
             }
         }
 
-        // This handles what happens when an instructor clicks Edit or Delete
-        protected void rptLessons_ItemCommand(object source, RepeaterCommandEventArgs e)
+        // 2. Bind the Inner Repeater (Lessons per Course)
+        protected void rptCourses_ItemDataBound(object sender, RepeaterItemEventArgs e)
         {
-            int lessonId = Convert.ToInt32(e.CommandArgument);
+            if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
+            {
+                int courseId = Convert.ToInt32(DataBinder.Eval(e.Item.DataItem, "CourseID"));
+                Repeater rptLessons = (Repeater)e.Item.FindControl("rptLessons");
 
-            if (e.CommandName == "EditLesson")
-            {
-                // Redirect to the Edit page, attaching the ID to the URL
-                Response.Redirect("InstructorEditContent.aspx?LessonID=" + lessonId);
+                using (SqlConnection conn = new SqlConnection(connString))
+                {
+                    string query = @"SELECT l.LessonID, l.Title AS LessonTitle, l.SequenceOrder, c.ApprovalStatus 
+                                     FROM Lessons l 
+                                     INNER JOIN Courses c ON l.CourseID = c.CourseID 
+                                     WHERE l.CourseID = @CourseID
+                                     ORDER BY l.SequenceOrder ASC";
+
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@CourseID", courseId);
+                        using (SqlDataAdapter sda = new SqlDataAdapter(cmd))
+                        {
+                            DataTable dt = new DataTable();
+                            sda.Fill(dt);
+                            rptLessons.DataSource = dt;
+                            rptLessons.DataBind();
+                        }
+                    }
+                }
             }
-            else if (e.CommandName == "DeleteLesson")
+        }
+
+        // 3. Button Click Handlers
+        protected void btnEditLesson_Click(object sender, EventArgs e)
+        {
+            LinkButton btn = (LinkButton)sender;
+            Response.Redirect("InstructorEditContent.aspx?LessonID=" + btn.CommandArgument);
+        }
+
+        protected void btnDeleteLesson_Click(object sender, EventArgs e)
+        {
+            LinkButton btn = (LinkButton)sender;
+            int lessonId = Convert.ToInt32(btn.CommandArgument);
+
+            using (SqlConnection conn = new SqlConnection(connString))
             {
-                // Write your DELETE SQL command here using the lessonId
-                // BindDashboardCards(1); // Refresh the page after deleting
+                conn.Open();
+                // Delete associated quizzes first to prevent constraint errors
+                new SqlCommand($"DELETE FROM QuizQuestions WHERE QuizID IN (SELECT QuizID FROM Quizzes WHERE LessonID = {lessonId})", conn).ExecuteNonQuery();
+                new SqlCommand($"DELETE FROM Quizzes WHERE LessonID = {lessonId}", conn).ExecuteNonQuery();
+                new SqlCommand($"DELETE FROM Lessons WHERE LessonID = {lessonId}", conn).ExecuteNonQuery();
             }
+
+            BindCourses(); // Refreshes the new Course list!
         }
     }
 }

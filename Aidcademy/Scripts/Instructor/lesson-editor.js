@@ -155,6 +155,52 @@ function insertFlipCard() {
     }
 }
 
+// Add this to lesson-editor.js
+function validateLessonForm(btnElement) {
+    let isValid = true;
+
+    // 1. Remove old red outlines
+    document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+
+    // 2. Define the inputs to check based on whether it's a new course or existing
+    let isNewCourse = document.getElementById(glbIsNewCourseId).value === "1";
+
+    // Title & Sequence are always required
+    let title = document.querySelector('input[id*="txtLessonTitle"]');
+    let sequence = document.querySelector('input[id*="txtSequenceOrder"]');
+
+    if (!title.value.trim()) { title.classList.add('is-invalid'); isValid = false; }
+    if (!sequence.value.trim()) { sequence.classList.add('is-invalid'); isValid = false; }
+
+    // Course Validation
+    if (isNewCourse) {
+        let newTitle = document.querySelector('input[id*="txtNewCourseTitle"]');
+        let newCat = document.querySelector('select[id*="ddlNewCourseCategory"]');
+        if (!newTitle.value.trim()) { newTitle.classList.add('is-invalid'); isValid = false; }
+        if (newCat.value === "") { newCat.classList.add('is-invalid'); isValid = false; }
+    } else {
+        let existingCourse = document.querySelector('select[id*="ddlCourses"]');
+        if (existingCourse && existingCourse.value === "") { existingCourse.classList.add('is-invalid'); isValid = false; }
+    }
+
+    // Editor Validation (Quill)
+    let editorContent = window.quill.getText().trim();
+    if (editorContent.length === 0 && !window.quill.root.innerHTML.includes('<img')) {
+        document.getElementById('editor-container').classList.add('border-danger', 'border-2');
+        isValid = false;
+    } else {
+        document.getElementById('editor-container').classList.remove('border-danger', 'border-2');
+        saveQuillHtml(); // Save HTML to hidden field if valid
+    }
+
+    if (!isValid) {
+        alert("Please fill in all required fields highlighted in red.");
+        return false; // Stops the button from submitting to the C# backend
+    }
+
+    return true; // Allows the C# code to run
+}
+
 function saveQuillHtml() {
     document.getElementById(glbContentBodyId).value = document.querySelector('.ql-editor').innerHTML;
 }
