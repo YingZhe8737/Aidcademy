@@ -97,5 +97,11 @@ namespace Aidcademy
             ScriptManager.RegisterStartupScript(this, GetType(), "msg",
                 string.Format("alert('{0}');", message.Replace("'", "\\'")), true);
         }
+
+        protected void btnLogout_Click(object sender, EventArgs e)
+        {
+            SessionHelper.SignOut();
+            Response.Redirect("~/Login_signup.aspx");
+        }
     }
 }

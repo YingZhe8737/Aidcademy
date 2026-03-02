@@ -128,5 +128,11 @@ namespace Aidcademy
             pnlMessage.Visible = true;
             pnlMessage.CssClass = isSuccess ? "message success" : "message error";
         }
+
+        protected void btnLogout_Click(object sender, EventArgs e)
+        {
+            SessionHelper.SignOut();
+            Response.Redirect("~/Login_signup.aspx");
+        }
     }
 }

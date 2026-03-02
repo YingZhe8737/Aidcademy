@@ -3,6 +3,7 @@ using System.Data.SqlClient;
 using System.Configuration;
 using System.IO;
 using System.Web.UI;
+using Aidcademy.Utilities;
 
 namespace Aidcademy
 {
@@ -183,6 +184,12 @@ namespace Aidcademy
             pnlMessage.Visible = true;
             lblMessage.Text = message;
             pnlMessage.CssClass = isSuccess ? "message success" : "message error";
+        }
+
+        protected void btnLogout_Click(object sender, EventArgs e)
+        {
+            SessionHelper.SignOut();
+            Response.Redirect("~/Login_signup.aspx");
         }
     }
 }

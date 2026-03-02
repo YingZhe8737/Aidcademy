@@ -61,5 +61,11 @@ namespace Aidcademy
                 pnlNoProgress.Visible = true;
             }
         }
+
+        protected void btnLogout_Click(object sender, EventArgs e)
+        {
+            SessionHelper.SignOut();
+            Response.Redirect("~/Login_signup.aspx");
+        }
     }
 }
