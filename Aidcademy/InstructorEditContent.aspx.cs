@@ -13,11 +13,13 @@ namespace Aidcademy
         {
             if (!IsPostBack)
             {
-                BindCoursesDropdown(1); // 1 = Test Instructor ID
+                int currentInstructorId = Convert.ToInt32(Session["UserID"]);
+                BindCoursesDropdown(currentInstructorId);
                 if (Request.QueryString["LessonID"] != null)
                 {
                     LoadLessonData(Convert.ToInt32(Request.QueryString["LessonID"]));
                 }
+                BindGlobalCategories();
             }
         }
 
@@ -39,13 +41,22 @@ namespace Aidcademy
 
         private void LoadLessonData(int lessonId)
         {
+            int currentInstructorId = Convert.ToInt32(Session["UserID"]);
+
             using (SqlConnection conn = new SqlConnection(connString))
             {
-                // Load Lesson Data
-                using (SqlCommand cmd = new SqlCommand("SELECT CourseID, Title, ContentBody, SequenceOrder FROM Lessons WHERE LessonID = @LessonID", conn))
+                // SECURE QUERY: Joins the Course table to prove Ownership!
+                string query = @"SELECT l.CourseID, l.Title, l.ContentBody, l.SequenceOrder 
+                         FROM Lessons l
+                         INNER JOIN Courses c ON l.CourseID = c.CourseID
+                         WHERE l.LessonID = @LessonID AND c.UserID = @InstructorID";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
                     cmd.Parameters.AddWithValue("@LessonID", lessonId);
+                    cmd.Parameters.AddWithValue("@InstructorID", currentInstructorId);
                     conn.Open();
+
                     using (SqlDataReader reader = cmd.ExecuteReader())
                     {
                         if (reader.Read())
@@ -55,31 +66,24 @@ namespace Aidcademy
                             txtSequenceOrder.Text = reader["SequenceOrder"].ToString();
                             hfContentBody.Value = reader["ContentBody"].ToString();
                         }
-                    }
-                }
-
-                // Load Attached Quiz Data
-                string quizQuery = @"SELECT top 1 qq.* FROM QuizQuestions qq 
-                                     INNER JOIN Quizzes q ON qq.QuizID = q.QuizID 
-                                     WHERE q.LessonID = @LessonID";
-                using (SqlCommand cmdQuiz = new SqlCommand(quizQuery, conn))
-                {
-                    cmdQuiz.Parameters.AddWithValue("@LessonID", lessonId);
-                    using (SqlDataReader reader = cmdQuiz.ExecuteReader())
-                    {
-                        if (reader.Read())
+                        else
                         {
-                            txtQuizQuestion.Text = reader["QuestionText"].ToString();
-                            txtOptA.Text = reader["OptionA"].ToString();
-                            txtOptB.Text = reader["OptionB"].ToString();
-                            txtOptC.Text = reader["OptionC"].ToString();
-                            txtOptD.Text = reader["OptionD"].ToString();
-                            if (ddlCorrectAnswer.Items.FindByValue(reader["CorrectAnswer"].ToString()) != null)
-                                ddlCorrectAnswer.SelectedValue = reader["CorrectAnswer"].ToString();
+                            // IDOR BLOCKED! The lesson either doesn't exist, or they don't own it.
+                            Response.Redirect("InstructorManageContent.aspx");
                         }
                     }
                 }
             }
+        }
+
+        protected void btnSaveDraft_Click(object sender, EventArgs e)
+        {
+            ProcessUpdate("Draft");
+        }
+
+        protected void btnPublishAdmin_Click(object sender, EventArgs e)
+        {
+            ProcessUpdate("Pending Admin");
         }
 
         private void ProcessUpdate(string status)
@@ -99,9 +103,10 @@ namespace Aidcademy
                     if (isNewCourse)
                     {
                         string finalCategory = ddlNewCourseCategory.SelectedValue == "Other" ? txtCustomCategory.Text.Trim() : ddlNewCourseCategory.SelectedValue;
-                        string courseQuery = "INSERT INTO Courses (UserID, Title, Category, ApprovalStatus) VALUES (1, @Title, @Category, @Status); SELECT SCOPE_IDENTITY();";
+                        string courseQuery = "INSERT INTO Courses (UserID, Title, Category, ApprovalStatus) VALUES (@UserID, @Title, @Category, @Status); SELECT SCOPE_IDENTITY();";
                         using (SqlCommand cmd = new SqlCommand(courseQuery, conn, transaction))
                         {
+                            cmd.Parameters.AddWithValue("@UserID", Convert.ToInt32(Session["UserID"]));
                             cmd.Parameters.AddWithValue("@Title", txtNewCourseTitle.Text.Trim());
                             cmd.Parameters.AddWithValue("@Category", finalCategory);
                             cmd.Parameters.AddWithValue("@Status", status);
@@ -129,58 +134,6 @@ namespace Aidcademy
                         cmd.Parameters.AddWithValue("@SequenceOrder", Convert.ToInt32(txtSequenceOrder.Text));
                         cmd.Parameters.AddWithValue("@LessonID", lessonId);
                         cmd.ExecuteNonQuery();
-                    }
-
-                    // 3. Update or Insert Quiz
-                    if (!string.IsNullOrEmpty(txtQuizQuestion.Text) && !string.IsNullOrEmpty(txtOptA.Text))
-                    {
-                        // Check if a quiz already exists for this lesson
-                        int existingQuizId = 0;
-                        using (SqlCommand checkQuiz = new SqlCommand("SELECT QuizID FROM Quizzes WHERE LessonID = @LessonID", conn, transaction))
-                        {
-                            checkQuiz.Parameters.AddWithValue("@LessonID", lessonId);
-                            object result = checkQuiz.ExecuteScalar();
-                            if (result != null) existingQuizId = Convert.ToInt32(result);
-                        }
-
-                        if (existingQuizId == 0)
-                        {
-                            // Did not exist before, Insert it
-                            using (SqlCommand cmd = new SqlCommand("INSERT INTO Quizzes (LessonID, Title) VALUES (@LessonID, @QuizTitle); SELECT SCOPE_IDENTITY();", conn, transaction))
-                            {
-                                cmd.Parameters.AddWithValue("@LessonID", lessonId);
-                                cmd.Parameters.AddWithValue("@QuizTitle", "Knowledge Check: " + txtLessonTitle.Text.Trim());
-                                existingQuizId = Convert.ToInt32(cmd.ExecuteScalar());
-                            }
-                            string insertQ = "INSERT INTO QuizQuestions (QuizID, QuestionText, OptionA, OptionB, OptionC, OptionD, CorrectAnswer) VALUES (@QuizID, @Q, @A, @B, @C, @D, @Ans)";
-                            using (SqlCommand cmd = new SqlCommand(insertQ, conn, transaction))
-                            {
-                                cmd.Parameters.AddWithValue("@QuizID", existingQuizId);
-                                cmd.Parameters.AddWithValue("@Q", txtQuizQuestion.Text.Trim());
-                                cmd.Parameters.AddWithValue("@A", txtOptA.Text.Trim());
-                                cmd.Parameters.AddWithValue("@B", txtOptB.Text.Trim());
-                                cmd.Parameters.AddWithValue("@C", txtOptC.Text.Trim());
-                                cmd.Parameters.AddWithValue("@D", txtOptD.Text.Trim());
-                                cmd.Parameters.AddWithValue("@Ans", ddlCorrectAnswer.SelectedValue);
-                                cmd.ExecuteNonQuery();
-                            }
-                        }
-                        else
-                        {
-                            // Existed, Update it
-                            string updateQ = "UPDATE QuizQuestions SET QuestionText=@Q, OptionA=@A, OptionB=@B, OptionC=@C, OptionD=@D, CorrectAnswer=@Ans WHERE QuizID=@QuizID";
-                            using (SqlCommand cmd = new SqlCommand(updateQ, conn, transaction))
-                            {
-                                cmd.Parameters.AddWithValue("@QuizID", existingQuizId);
-                                cmd.Parameters.AddWithValue("@Q", txtQuizQuestion.Text.Trim());
-                                cmd.Parameters.AddWithValue("@A", txtOptA.Text.Trim());
-                                cmd.Parameters.AddWithValue("@B", txtOptB.Text.Trim());
-                                cmd.Parameters.AddWithValue("@C", txtOptC.Text.Trim());
-                                cmd.Parameters.AddWithValue("@D", txtOptD.Text.Trim());
-                                cmd.Parameters.AddWithValue("@Ans", ddlCorrectAnswer.SelectedValue);
-                                cmd.ExecuteNonQuery();
-                            }
-                        }
                     }
 
                     transaction.Commit();
@@ -285,6 +238,29 @@ namespace Aidcademy
                     tx.Rollback();
                     lblMessage.Text = "Error deleting course: " + ex.Message;
                     lblMessage.CssClass = "d-block mb-3 fw-bold text-danger";
+                }
+            }
+        }
+
+        private void BindGlobalCategories()
+        {
+            using (SqlConnection conn = new SqlConnection(connString))
+            {
+                string query = "SELECT DISTINCT Category FROM Courses WHERE Category IS NOT NULL AND Category != ''";
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    conn.Open();
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        ddlNewCourseCategory.Items.Clear();
+                        ddlNewCourseCategory.Items.Add(new ListItem("Category", ""));
+                        while (reader.Read())
+                        {
+                            string cat = reader["Category"].ToString();
+                            ddlNewCourseCategory.Items.Add(new ListItem(cat, cat));
+                        }
+                        ddlNewCourseCategory.Items.Add(new ListItem("Other...", "Other"));
+                    }
                 }
             }
         }

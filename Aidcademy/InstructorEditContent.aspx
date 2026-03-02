@@ -18,6 +18,7 @@
     <div class="container mt-4 mb-5">
         <div class="row justify-content-center">
             <div class="col-lg-9">
+                
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h4 class="fw-bold m-0"><i class="fa-solid fa-pen-to-square me-2 text-danger"></i>Editing Lesson</h4>
                     <a href="InstructorManageContent.aspx" class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-arrow-left me-1"></i> Back</a>
@@ -68,11 +69,6 @@
                                 <div class="input-group">
                                     <asp:TextBox ID="txtNewCourseTitle" runat="server" CssClass="form-control border-0 bg-light fw-bold" placeholder="New course name..."></asp:TextBox>
                                     <asp:DropDownList ID="ddlNewCourseCategory" runat="server" CssClass="form-select border-0 bg-light fw-bold" onchange="toggleCustomCategory(this)" style="max-width: 130px;">
-                                        <asp:ListItem Text="Category" Value=""></asp:ListItem>
-                                        <asp:ListItem Text="General" Value="General"></asp:ListItem>
-                                        <asp:ListItem Text="CPR" Value="CPR"></asp:ListItem>
-                                        <asp:ListItem Text="Trauma" Value="Trauma"></asp:ListItem>
-                                        <asp:ListItem Text="Other..." Value="Other"></asp:ListItem>
                                     </asp:DropDownList>
                                     <asp:TextBox ID="txtCustomCategory" runat="server" CssClass="form-control border-0 bg-light fw-bold" style="display:none; max-width: 150px;" placeholder="Type category..."></asp:TextBox>
                                 </div>
@@ -92,32 +88,6 @@
                     <div class="mb-3"><div id="editor-container"></div></div>
                     <asp:HiddenField ID="hfContentBody" runat="server" />
                 </div>
-
-                <div class="card creator-card shadow-sm p-4 mb-4 border-warning">
-                    <h5 class="fw-bold"><i class="fa-solid fa-clipboard-question text-warning me-2"></i>Edit Knowledge Check (Optional)</h5>
-                    <p class="text-muted small">Update the quick question at the end of this lesson.</p>
-                    
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Question Text</label>
-                        <asp:TextBox ID="txtQuizQuestion" runat="server" CssClass="form-control" placeholder="e.g., What is the correct compression depth for an adult CPR?"></asp:TextBox>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-2"><asp:TextBox ID="txtOptA" runat="server" CssClass="form-control" placeholder="Option A"></asp:TextBox></div>
-                        <div class="col-md-6 mb-2"><asp:TextBox ID="txtOptB" runat="server" CssClass="form-control" placeholder="Option B"></asp:TextBox></div>
-                        <div class="col-md-6 mb-2"><asp:TextBox ID="txtOptC" runat="server" CssClass="form-control" placeholder="Option C"></asp:TextBox></div>
-                        <div class="col-md-6 mb-2"><asp:TextBox ID="txtOptD" runat="server" CssClass="form-control" placeholder="Option D"></asp:TextBox></div>
-                    </div>
-                    <div class="mt-2">
-                        <label class="form-label fw-bold me-2">Correct Answer:</label>
-                        <asp:DropDownList ID="ddlCorrectAnswer" runat="server" CssClass="form-select w-auto d-inline-block">
-                            <asp:ListItem Value="A">A</asp:ListItem>
-                            <asp:ListItem Value="B">B</asp:ListItem>
-                            <asp:ListItem Value="C">C</asp:ListItem>
-                            <asp:ListItem Value="D">D</asp:ListItem>
-                        </asp:DropDownList>
-                    </div>
-                </div>
-
             </div>
         </div>
     </div>

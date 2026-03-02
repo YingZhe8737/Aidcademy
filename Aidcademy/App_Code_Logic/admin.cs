@@ -4,7 +4,6 @@ using System.Configuration;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Web;
-using System.Collections.Generic;
 
 namespace Aidcademy.App_Code_Logic
 {

@@ -56,6 +56,7 @@ function initLessonSystem(contentBodyId, isNewCourseId, customCategoryId, existi
                 container: [
                     [{ 'header': [1, 2, 3, false] }],
                     ['bold', 'italic', 'underline'],
+                    [{ 'align': [] }], 
                     [{ 'list': 'ordered' }, { 'list': 'bullet' }],
                     ['image', 'video'],
                     ['flipcard']
@@ -83,10 +84,6 @@ function initLessonSystem(contentBodyId, isNewCourseId, customCategoryId, existi
         window.quill.root.innerHTML = existingHtml;
     }
 }
-
-// ==========================================
-// SHARED UTILITY FUNCTIONS
-// ==========================================
 
 function toggleCustomCategory(dropdown) {
     var customInput = document.getElementById(glbCustomCategoryId);
@@ -121,10 +118,10 @@ function toggleNewCourse() {
 }
 
 function insertFlipCard() {
+    var frontText = document.getElementById('fcFront').value;
+    var backText = document.getElementById('fcBack').value.replace(/\n/g, '<br>');
     var fileInput = document.getElementById('fcImageFile');
     var imgUrl = document.getElementById('fcImageUrl').value.trim();
-    var frontText = document.getElementById('fcFront').value.trim();
-    var backText = document.getElementById('fcBack').value.trim();
 
     if (frontText === "" || backText === "") {
         alert("Please fill in both the Front Text and Back Text.");
