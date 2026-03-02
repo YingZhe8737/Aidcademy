@@ -16,7 +16,43 @@ namespace Aidcademy
                 int currentInstructorId = Convert.ToInt32(Session["UserID"]);
                 BindCoursesDropdown(currentInstructorId);
                 BindGlobalCategories();
+
+                if (ddlCourses.Items.Count > 1)
+                {
+                    ddlCourses.SelectedIndex = 1; 
+                    CalculateNextStep(); 
+                }
+                else
+                {
+                    txtSequenceOrder.Text = "1";
+                }
             }
+        }
+
+        private void CalculateNextStep()
+        {
+            if (!string.IsNullOrEmpty(ddlCourses.SelectedValue))
+            {
+                using (SqlConnection conn = new SqlConnection(connString))
+                {
+                    string query = "SELECT ISNULL(MAX(SequenceOrder), 0) + 1 FROM Lessons WHERE CourseID = @CourseID";
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@CourseID", ddlCourses.SelectedValue);
+                        conn.Open();
+                        txtSequenceOrder.Text = cmd.ExecuteScalar().ToString();
+                    }
+                }
+            }
+            else
+            {
+                txtSequenceOrder.Text = "1";
+            }
+        }
+
+        protected void ddlCourses_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            CalculateNextStep();
         }
 
         private void BindCoursesDropdown(int instructorId)
@@ -119,34 +155,6 @@ namespace Aidcademy
                         finalLessonId = Convert.ToInt32(cmd.ExecuteScalar());
                     }
 
-                    // 3. Attach the Knowledge Check Quiz (if provided)
-                    if (!string.IsNullOrEmpty(txtQuizQuestion.Text) && !string.IsNullOrEmpty(txtOptA.Text))
-                    {
-                        string quizQuery = "INSERT INTO Quizzes (LessonID, Title) VALUES (@LessonID, @QuizTitle); SELECT SCOPE_IDENTITY();";
-                        int finalQuizId = 0;
-                        using (SqlCommand cmd = new SqlCommand(quizQuery, conn, transaction))
-                        {
-                            cmd.Parameters.AddWithValue("@LessonID", finalLessonId);
-                            cmd.Parameters.AddWithValue("@QuizTitle", "Knowledge Check: " + txtLessonTitle.Text.Trim());
-                            finalQuizId = Convert.ToInt32(cmd.ExecuteScalar());
-                        }
-
-                        string questionQuery = @"INSERT INTO QuizQuestions (QuizID, QuestionText, OptionA, OptionB, OptionC, OptionD, CorrectAnswer)
-                                                 VALUES (@QuizID, @QuestionText, @OptA, @OptB, @OptC, @OptD, @CorrectAns)";
-                        using (SqlCommand cmd = new SqlCommand(questionQuery, conn, transaction))
-                        {
-                            cmd.Parameters.AddWithValue("@QuizID", finalQuizId);
-                            cmd.Parameters.AddWithValue("@QuestionText", txtQuizQuestion.Text.Trim());
-                            cmd.Parameters.AddWithValue("@OptA", txtOptA.Text.Trim());
-                            cmd.Parameters.AddWithValue("@OptB", txtOptB.Text.Trim());
-                            cmd.Parameters.AddWithValue("@OptC", txtOptC.Text.Trim());
-                            cmd.Parameters.AddWithValue("@OptD", txtOptD.Text.Trim());
-                            cmd.Parameters.AddWithValue("@CorrectAns", ddlCorrectAnswer.SelectedValue);
-
-                            cmd.ExecuteNonQuery();
-                        }
-                    }
-
                     transaction.Commit();
 
                     lblMessage.Text = isNewCourse
@@ -160,9 +168,6 @@ namespace Aidcademy
                     txtNewCourseTitle.Text = "";
                     txtCustomCategory.Text = "";
                     ddlNewCourseCategory.SelectedIndex = 0;
-                    txtQuizQuestion.Text = "";
-                    txtOptA.Text = ""; txtOptB.Text = ""; txtOptC.Text = ""; txtOptD.Text = "";
-                    ddlCorrectAnswer.SelectedIndex = 0;
 
                     if (isNewCourse)
                     {
@@ -178,8 +183,6 @@ namespace Aidcademy
                 }
             }
         }
-
-        // --- NEW COURSE EDIT/DELETE LOGIC ---
 
         protected void btnEditCoursePrompt_Click(object sender, EventArgs e)
         {
@@ -272,29 +275,7 @@ namespace Aidcademy
                 }
             }
         }
-
-        protected void ddlCourses_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (!string.IsNullOrEmpty(ddlCourses.SelectedValue))
-            {
-                using (SqlConnection conn = new SqlConnection(connString))
-                {
-                    // Gets the highest SequenceOrder in the selected course and adds 1
-                    string query = "SELECT ISNULL(MAX(SequenceOrder), 0) + 1 FROM Lessons WHERE CourseID = @CourseID";
-                    using (SqlCommand cmd = new SqlCommand(query, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@CourseID", ddlCourses.SelectedValue);
-                        conn.Open();
-                        txtSequenceOrder.Text = cmd.ExecuteScalar().ToString();
-                    }
-                }
-            }
-            else
-            {
-                txtSequenceOrder.Text = "";
-            }
-        }
-
+        
         private void BindGlobalCategories()
         {
             using (SqlConnection conn = new SqlConnection(connString))

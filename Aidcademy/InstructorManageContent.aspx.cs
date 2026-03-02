@@ -51,7 +51,7 @@ namespace Aidcademy
                 }
                 try
                 {
-                    using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM CourseQuestions cq INNER JOIN Courses c ON cq.CourseID = c.CourseID WHERE c.UserID = @ID AND cq.Status = 'Unanswered'", conn))
+                    using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM CourseQuestions cq INNER JOIN Courses c ON cq.CourseID = c.CourseID WHERE c.UserID = @ID AND cq.Status = 'Open'", conn))
                     {
                         cmd.Parameters.AddWithValue("@ID", currentInstructorId);
                         lblQueries.Text = cmd.ExecuteScalar().ToString();

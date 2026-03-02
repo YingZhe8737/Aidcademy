@@ -19,6 +19,11 @@
         <div class="row justify-content-center">
             <div class="col-lg-9">
                 
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="fw-bold m-0"><i class="fa-solid fa-cloud-arrow-up text-danger me-2"></i>Upload New Lesson</h3>
+                    <a href="InstructorManageContent.aspx" class="btn btn-outline-secondary btn-sm fw-bold"><i class="fa-solid fa-arrow-left me-1"></i>Back to Dashboard</a>
+                </div>
+                
                 <asp:Label ID="lblMessage" runat="server" CssClass="d-block mb-3"></asp:Label>
 
                 <div class="card creator-card shadow-sm p-4 mb-4">
@@ -89,31 +94,6 @@
                     <asp:HiddenField ID="hfContentBody" runat="server" />
                 </div>
 
-                <div class="card creator-card shadow-sm p-4 mb-4 border-warning">
-                    <h5 class="fw-bold"><i class="fa-solid fa-clipboard-question text-warning me-2"></i>Attach Knowledge Check (Optional)</h5>
-                    <p class="text-muted small">Add a quick question at the end of this lesson to test the member's understanding.</p>
-                    
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Question Text</label>
-                        <asp:TextBox ID="txtQuizQuestion" runat="server" CssClass="form-control" placeholder="e.g., What is the correct compression depth for an adult CPR?"></asp:TextBox>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-2"><asp:TextBox ID="txtOptA" runat="server" CssClass="form-control" placeholder="Option A"></asp:TextBox></div>
-                        <div class="col-md-6 mb-2"><asp:TextBox ID="txtOptB" runat="server" CssClass="form-control" placeholder="Option B"></asp:TextBox></div>
-                        <div class="col-md-6 mb-2"><asp:TextBox ID="txtOptC" runat="server" CssClass="form-control" placeholder="Option C"></asp:TextBox></div>
-                        <div class="col-md-6 mb-2"><asp:TextBox ID="txtOptD" runat="server" CssClass="form-control" placeholder="Option D"></asp:TextBox></div>
-                    </div>
-                    <div class="mt-2">
-                        <label class="form-label fw-bold me-2">Correct Answer:</label>
-                        <asp:DropDownList ID="ddlCorrectAnswer" runat="server" CssClass="form-select w-auto d-inline-block">
-                            <asp:ListItem Value="A">A</asp:ListItem>
-                            <asp:ListItem Value="B">B</asp:ListItem>
-                            <asp:ListItem Value="C">C</asp:ListItem>
-                            <asp:ListItem Value="D">D</asp:ListItem>
-                        </asp:DropDownList>
-                    </div>
-                </div>
-
             </div>
         </div>
     </div>
@@ -130,6 +110,7 @@
             </div>
         </div>
     </div>
+
 
     <div class="modal fade" id="flipCardModal" tabindex="-1">
         <div class="modal-dialog">

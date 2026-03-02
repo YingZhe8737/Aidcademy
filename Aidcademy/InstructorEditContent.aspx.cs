@@ -73,28 +73,6 @@ namespace Aidcademy
                         }
                     }
                 }
-
-                // Load Attached Quiz Data
-                string quizQuery = @"SELECT top 1 qq.* FROM QuizQuestions qq 
-                                     INNER JOIN Quizzes q ON qq.QuizID = q.QuizID 
-                                     WHERE q.LessonID = @LessonID";
-                using (SqlCommand cmdQuiz = new SqlCommand(quizQuery, conn))
-                {
-                    cmdQuiz.Parameters.AddWithValue("@LessonID", lessonId);
-                    using (SqlDataReader reader = cmdQuiz.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            txtQuizQuestion.Text = reader["QuestionText"].ToString();
-                            txtOptA.Text = reader["OptionA"].ToString();
-                            txtOptB.Text = reader["OptionB"].ToString();
-                            txtOptC.Text = reader["OptionC"].ToString();
-                            txtOptD.Text = reader["OptionD"].ToString();
-                            if (ddlCorrectAnswer.Items.FindByValue(reader["CorrectAnswer"].ToString()) != null)
-                                ddlCorrectAnswer.SelectedValue = reader["CorrectAnswer"].ToString();
-                        }
-                    }
-                }
             }
         }
 
@@ -156,58 +134,6 @@ namespace Aidcademy
                         cmd.Parameters.AddWithValue("@SequenceOrder", Convert.ToInt32(txtSequenceOrder.Text));
                         cmd.Parameters.AddWithValue("@LessonID", lessonId);
                         cmd.ExecuteNonQuery();
-                    }
-
-                    // 3. Update or Insert Quiz
-                    if (!string.IsNullOrEmpty(txtQuizQuestion.Text) && !string.IsNullOrEmpty(txtOptA.Text))
-                    {
-                        // Check if a quiz already exists for this lesson
-                        int existingQuizId = 0;
-                        using (SqlCommand checkQuiz = new SqlCommand("SELECT QuizID FROM Quizzes WHERE LessonID = @LessonID", conn, transaction))
-                        {
-                            checkQuiz.Parameters.AddWithValue("@LessonID", lessonId);
-                            object result = checkQuiz.ExecuteScalar();
-                            if (result != null) existingQuizId = Convert.ToInt32(result);
-                        }
-
-                        if (existingQuizId == 0)
-                        {
-                            // Did not exist before, Insert it
-                            using (SqlCommand cmd = new SqlCommand("INSERT INTO Quizzes (LessonID, Title) VALUES (@LessonID, @QuizTitle); SELECT SCOPE_IDENTITY();", conn, transaction))
-                            {
-                                cmd.Parameters.AddWithValue("@LessonID", lessonId);
-                                cmd.Parameters.AddWithValue("@QuizTitle", "Knowledge Check: " + txtLessonTitle.Text.Trim());
-                                existingQuizId = Convert.ToInt32(cmd.ExecuteScalar());
-                            }
-                            string insertQ = "INSERT INTO QuizQuestions (QuizID, QuestionText, OptionA, OptionB, OptionC, OptionD, CorrectAnswer) VALUES (@QuizID, @Q, @A, @B, @C, @D, @Ans)";
-                            using (SqlCommand cmd = new SqlCommand(insertQ, conn, transaction))
-                            {
-                                cmd.Parameters.AddWithValue("@QuizID", existingQuizId);
-                                cmd.Parameters.AddWithValue("@Q", txtQuizQuestion.Text.Trim());
-                                cmd.Parameters.AddWithValue("@A", txtOptA.Text.Trim());
-                                cmd.Parameters.AddWithValue("@B", txtOptB.Text.Trim());
-                                cmd.Parameters.AddWithValue("@C", txtOptC.Text.Trim());
-                                cmd.Parameters.AddWithValue("@D", txtOptD.Text.Trim());
-                                cmd.Parameters.AddWithValue("@Ans", ddlCorrectAnswer.SelectedValue);
-                                cmd.ExecuteNonQuery();
-                            }
-                        }
-                        else
-                        {
-                            // Existed, Update it
-                            string updateQ = "UPDATE QuizQuestions SET QuestionText=@Q, OptionA=@A, OptionB=@B, OptionC=@C, OptionD=@D, CorrectAnswer=@Ans WHERE QuizID=@QuizID";
-                            using (SqlCommand cmd = new SqlCommand(updateQ, conn, transaction))
-                            {
-                                cmd.Parameters.AddWithValue("@QuizID", existingQuizId);
-                                cmd.Parameters.AddWithValue("@Q", txtQuizQuestion.Text.Trim());
-                                cmd.Parameters.AddWithValue("@A", txtOptA.Text.Trim());
-                                cmd.Parameters.AddWithValue("@B", txtOptB.Text.Trim());
-                                cmd.Parameters.AddWithValue("@C", txtOptC.Text.Trim());
-                                cmd.Parameters.AddWithValue("@D", txtOptD.Text.Trim());
-                                cmd.Parameters.AddWithValue("@Ans", ddlCorrectAnswer.SelectedValue);
-                                cmd.ExecuteNonQuery();
-                            }
-                        }
                     }
 
                     transaction.Commit();

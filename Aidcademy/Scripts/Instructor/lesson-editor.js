@@ -85,10 +85,6 @@ function initLessonSystem(contentBodyId, isNewCourseId, customCategoryId, existi
     }
 }
 
-// ==========================================
-// SHARED UTILITY FUNCTIONS
-// ==========================================
-
 function toggleCustomCategory(dropdown) {
     var customInput = document.getElementById(glbCustomCategoryId);
     if (dropdown.value === "Other") {
@@ -122,10 +118,10 @@ function toggleNewCourse() {
 }
 
 function insertFlipCard() {
+    var frontText = document.getElementById('fcFront').value;
+    var backText = document.getElementById('fcBack').value.replace(/\n/g, '<br>');
     var fileInput = document.getElementById('fcImageFile');
     var imgUrl = document.getElementById('fcImageUrl').value.trim();
-    var frontText = document.getElementById('fcFront').value.trim();
-    var backText = document.getElementById('fcBack').value.trim();
 
     if (frontText === "" || backText === "") {
         alert("Please fill in both the Front Text and Back Text.");

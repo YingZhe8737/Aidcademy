@@ -80,7 +80,7 @@
         
         <div class="card welcome-card shadow-sm p-4 mb-5">
             <h3 class="fw-bold">Welcome to Instructor Dashboard 👋</h3>
-            <p class="text-muted mb-4">Manage your first aid learning materials and student interactions.</p>
+            <p class="text-muted mb-4">Manage your first aid learning materials and member interactions.</p>
             <div class="row g-4 mb-5">
                 <div class="col-md-6 col-lg-3">
                     <div class="card stat-card shadow-sm">
@@ -123,7 +123,7 @@
                         <div class="stat-icon-box">
                             <i class="fa-solid fa-comments"></i> </div>
                         <div class="stat-text">
-                            <span class="stat-label">Student Queries</span>
+                            <span class="stat-label">Unanswered Queries</span>
                             <span class="stat-value"><asp:Label ID="lblQueries" runat="server" Text="0"></asp:Label></span>
                         </div>
                     </div>
@@ -132,7 +132,20 @@
             </div>
         </div>
 
-<h5 class="section-header"><i class="fa-solid fa-folder-tree me-2 text-danger"></i>Course Curriculum</h5>
+        <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4 mt-5">
+            <h5 class="fw-bold text-danger m-0"><i class="fa-solid fa-folder-tree me-2"></i>Course Curriculum</h5>
+            
+            <div class="dropdown">
+                <button class="btn btn-danger fw-bold dropdown-toggle shadow-sm" type="button" data-bs-toggle="dropdown">
+                    <i class="fa-solid fa-plus me-1"></i> Create
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow">
+                    <li><a class="dropdown-item fw-bold text-dark py-2" href="InstructorUploadLesson.aspx"><i class="fa-solid fa-file-lines text-danger me-2"></i> New Lesson / Course</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item fw-bold text-dark py-2" href="InstructorUploadQuiz.aspx"><i class="fa-solid fa-clipboard-question text-warning me-2"></i> Manage Quizzes</a></li>
+                </ul>
+            </div>
+        </div>
 
         <asp:Repeater ID="rptCourses" runat="server" OnItemDataBound="rptCourses_ItemDataBound">
             <ItemTemplate>

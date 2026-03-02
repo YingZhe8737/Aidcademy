@@ -172,6 +172,7 @@
     <Content Include="Site.Mobile.Master" />
     <Content Include="Styles\CustomAdmin.css" />
     <Content Include="SystemReport.aspx" />
+    <Content Include="Uploads\ProfilePhotos\Instructor_1_639080064044065843.png" />
     <Content Include="UserManagement.aspx" />
     <Content Include="ViewLesson.aspx" />
     <Content Include="Web.config" />

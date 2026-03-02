@@ -168,7 +168,7 @@
             <div class="form-group">
                 <label>Instructor Bio / Credentials</label>
                 <asp:TextBox ID="txtBio" runat="server" TextMode="MultiLine" Rows="4" placeholder="Briefly describe your medical background and teaching experience..." />
-                <small class="text-muted" style="font-size: 11px;">This will be visible to students taking your courses.</small>
+                <small class="text-muted" style="font-size: 11px;">This will be visible to members taking your courses.</small>
             </div>
 
             <div class="mt-4">

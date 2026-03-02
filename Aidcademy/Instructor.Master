@@ -26,10 +26,14 @@
                                 <i class="fa-solid fa-chart-line me-1"></i>Dashboard
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class='nav-link <%= Request.Url.AbsolutePath.Contains("InstructorUploadLesson") || Request.Url.AbsolutePath.Contains("InstructorEditContent") ? "fw-bold text-white" : "" %>' href="InstructorUploadLesson.aspx">
-                                <i class="fa-solid fa-cloud-arrow-up me-1"></i>Upload Content
+                        <li class="nav-item dropdown">
+                            <a class='nav-link dropdown-toggle <%= Request.Url.AbsolutePath.Contains("InstructorUpload") || Request.Url.AbsolutePath.Contains("InstructorEditContent") ? "fw-bold text-white" : "" %>' href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fa-solid fa-cloud-arrow-up me-1"></i>Upload
                             </a>
+                            <ul class="dropdown-menu border-0 shadow mt-2" style="border-radius: 8px;">
+                                <li><a class="dropdown-item fw-bold text-dark py-2" href="InstructorUploadLesson.aspx"><i class="fa-solid fa-file-lines text-danger me-2"></i>Upload Lesson</a></li>
+                                <li><a class="dropdown-item fw-bold text-dark py-2" href="InstructorUploadQuiz.aspx"><i class="fa-solid fa-clipboard-question text-warning me-2"></i>Upload Quiz</a></li>
+                            </ul>
                         </li>
                         <li class="nav-item">
                             <a class='nav-link <%= Request.Url.AbsolutePath.Contains("RespondQuestions") ? "fw-bold text-white" : "" %>' href="RespondQuestions.aspx">
