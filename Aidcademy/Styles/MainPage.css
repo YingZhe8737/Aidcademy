@@ -40,6 +40,7 @@ form {
 .brand {
     font-size: 24px;
     font-weight: bold;
+    color : white;
 }
 
 .nav {
@@ -55,9 +56,9 @@ form {
     cursor: pointer;
 }
 
-    .nav-btn:hover {
+.nav-btn:hover {
         color: #00bfff;
-    }
+}
 
 .login-btn {
     border: 1px solid white;
@@ -143,34 +144,37 @@ form {
 .hero-text {
     position: absolute;
     top: 40%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    left: 8%;
+    transform: translateY(-50%);
     color: white;
-    text-align: center;
-    background-color: rgba(0, 0, 0, 0.5);
-    padding: 20px 40px;
-    border-radius: 10px;
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 50px 40px;
+    border-radius: 12px;
+    max-width: 500px;
 }
 
 .hero-button {
     position: absolute;
-    bottom: 30px;
-    right: 30px;
+    bottom: 35%;
+    left: 25%;
+    transform: translateX(-50%);
 }
 
 .learn-btn {
-    background-color: red;
+    background-color: #e53935;
     color: white;
     border: none;
-    padding: 12px 25px;
-    font-size: 16px;
-    border-radius: 8px;
+    padding: 14px 35px;
+    font-size: 18px;
+    border-radius: 30px;
     cursor: pointer;
+    transition: 0.3s ease;
 }
 
-    .learn-btn:hover {
-        background-color: darkred;
-    }
+.learn-btn:hover {
+    background-color: #b71c1c;
+    transform: scale(1.05);
+}
 
 .footer-section {
     background-color: #1f2d3d;
