@@ -33,13 +33,13 @@ namespace Aidcademy
         protected global::System.Web.UI.WebControls.Button btnAbout;
 
         /// <summary>
-        /// btnResearch control.
+        /// btnCourse control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnResearch;
+        protected global::System.Web.UI.WebControls.Button btnCourse;
 
         /// <summary>
         /// btnLogin control.
@@ -49,5 +49,23 @@ namespace Aidcademy
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Button btnLogin;
+
+        /// <summary>
+        /// btnTryFree control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnTryFree;
+
+        /// <summary>
+        /// btnFeedback control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button btnFeedback;
     }
 }
