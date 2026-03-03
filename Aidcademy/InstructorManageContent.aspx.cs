@@ -34,21 +34,29 @@ namespace Aidcademy
             using (SqlConnection conn = new SqlConnection(connString))
             {
                 conn.Open();
+
+                // Total Lessons
                 using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM Lessons l INNER JOIN Courses c ON l.CourseID = c.CourseID WHERE c.UserID = @ID", conn))
                 {
                     cmd.Parameters.AddWithValue("@ID", currentInstructorId);
                     lblTotal.Text = cmd.ExecuteScalar().ToString();
                 }
-                using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM Courses WHERE UserID = @ID AND ApprovalStatus = 'Pending Admin'", conn))
+
+                // Pending Lessons (Updated to check the 'l.ApprovalStatus' on the Lessons table!)
+                using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM Lessons l INNER JOIN Courses c ON l.CourseID = c.CourseID WHERE c.UserID = @ID AND l.ApprovalStatus = 'Pending Admin'", conn))
                 {
                     cmd.Parameters.AddWithValue("@ID", currentInstructorId);
                     lblPending.Text = cmd.ExecuteScalar().ToString();
                 }
-                using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM Courses WHERE UserID = @ID AND ApprovalStatus = 'Published'", conn))
+
+                // Published Lessons (Updated to check the 'l.ApprovalStatus' on the Lessons table!)
+                using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM Lessons l INNER JOIN Courses c ON l.CourseID = c.CourseID WHERE c.UserID = @ID AND l.ApprovalStatus = 'Published'", conn))
                 {
                     cmd.Parameters.AddWithValue("@ID", currentInstructorId);
                     lblPublished.Text = cmd.ExecuteScalar().ToString();
                 }
+
+                // Open Q&A
                 try
                 {
                     using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM CourseQuestions cq INNER JOIN Courses c ON cq.CourseID = c.CourseID WHERE c.UserID = @ID AND cq.Status = 'Open'", conn))
@@ -89,11 +97,11 @@ namespace Aidcademy
 
                 using (SqlConnection conn = new SqlConnection(connString))
                 {
-                    // GUARANTEED FIX: Explicitly grabbing 'ApprovalStatus' from the Courses table
+                    // FIX: We changed c.ApprovalStatus to l.ApprovalStatus!
                     string query = @"SELECT l.LessonID, 
                                             l.Title AS LessonTitle, 
                                             l.SequenceOrder, 
-                                            ISNULL(c.ApprovalStatus, 'Draft') AS ApprovalStatus 
+                                            ISNULL(l.ApprovalStatus, 'Draft') AS ApprovalStatus 
                                      FROM Lessons l 
                                      INNER JOIN Courses c ON l.CourseID = c.CourseID 
                                      WHERE l.CourseID = @CourseID

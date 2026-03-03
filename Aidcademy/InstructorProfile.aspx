@@ -1,6 +1,7 @@
 ﻿<%@ Page Title="Instructor Profile" Language="C#" MasterPageFile="~/Instructor.Master" AutoEventWireup="true" CodeBehind="InstructorProfile.aspx.cs" Inherits="Aidcademy.InstructorProfile" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="server">
+    <link href="Styles/aidcademy-theme.css" rel="stylesheet" type="text/css" />
     <style>
         .profile-container {
             max-width: 900px;

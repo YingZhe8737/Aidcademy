@@ -13,15 +13,87 @@ namespace Aidcademy
         {
             if (!IsPostBack)
             {
-                int currentInstructorId = Convert.ToInt32(Session["UserID"]);
+                int currentInstructorId;
+
+                if (Session["UserID"] != null)
+                {
+                    currentInstructorId = Convert.ToInt32(Session["UserID"]);
+                }
+                else
+                {
+                    currentInstructorId = 1;
+                }
                 BindCoursesDropdown(currentInstructorId);
+                BindGlobalCategories();
+
+                // CATCH THE REDIRECT AND LOAD THE LESSON
                 if (Request.QueryString["LessonID"] != null)
                 {
-                    LoadLessonData(Convert.ToInt32(Request.QueryString["LessonID"]));
+                    int lessonId = Convert.ToInt32(Request.QueryString["LessonID"]);
+                    LoadLessonData(lessonId);
                 }
-                BindGlobalCategories();
             }
         }
+
+        private void LoadLessonData(int lessonId)
+        {
+            using (SqlConnection conn = new SqlConnection(connString))
+            {
+                string query = "SELECT CourseID, Title, ContentBody, SequenceOrder FROM Lessons WHERE LessonID = @LessonID";
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@LessonID", lessonId);
+                    conn.Open();
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            ddlCourses.SelectedValue = reader["CourseID"].ToString();
+                            txtLessonTitle.Text = reader["Title"].ToString();
+                            txtSequenceOrder.Text = reader["SequenceOrder"].ToString();
+                            hfContentBody.Value = reader["ContentBody"].ToString();
+                            // lesson-editor.js will automatically read hfContentBody and unpack it into Quill!
+                        }
+                    }
+                }
+            }
+        }
+
+        // Handle the Save/Publish buttons on the Edit Page
+        protected void btnSaveDraft_Click(object sender, EventArgs e) { UpdateLesson("Draft"); }
+        protected void btnPublishAdmin_Click(object sender, EventArgs e) { UpdateLesson("Pending Admin"); }
+
+        private void UpdateLesson(string status)
+        {
+            if (Request.QueryString["LessonID"] == null) return;
+            int lessonId = Convert.ToInt32(Request.QueryString["LessonID"]);
+
+            using (SqlConnection conn = new SqlConnection(connString))
+            {
+                // Update the Lesson with the new ApprovalStatus
+                string updateQuery = @"UPDATE Lessons 
+                                       SET CourseID = @CourseID, Title = @Title, ContentBody = @ContentBody, 
+                                           SequenceOrder = @SequenceOrder, ApprovalStatus = @ApprovalStatus 
+                                       WHERE LessonID = @LessonID";
+                using (SqlCommand cmd = new SqlCommand(updateQuery, conn))
+                {
+                    cmd.Parameters.AddWithValue("@CourseID", ddlCourses.SelectedValue);
+                    cmd.Parameters.AddWithValue("@Title", txtLessonTitle.Text.Trim());
+                    cmd.Parameters.AddWithValue("@ContentBody", hfContentBody.Value.Trim());
+                    cmd.Parameters.AddWithValue("@SequenceOrder", txtSequenceOrder.Text.Trim());
+                    cmd.Parameters.AddWithValue("@ApprovalStatus", status);
+                    cmd.Parameters.AddWithValue("@LessonID", lessonId);
+
+                    conn.Open();
+                    cmd.ExecuteNonQuery();
+                }
+            }
+
+            lblMessage.Text = $"Success! Lesson updated and marked as '{status}'.";
+            lblMessage.CssClass = "d-block mb-3 fw-bold text-success";
+        }
+
+
 
         private void BindCoursesDropdown(int instructorId)
         {
@@ -38,117 +110,6 @@ namespace Aidcademy
                 }
             }
         }
-
-        private void LoadLessonData(int lessonId)
-        {
-            int currentInstructorId = Convert.ToInt32(Session["UserID"]);
-
-            using (SqlConnection conn = new SqlConnection(connString))
-            {
-                // SECURE QUERY: Joins the Course table to prove Ownership!
-                string query = @"SELECT l.CourseID, l.Title, l.ContentBody, l.SequenceOrder 
-                         FROM Lessons l
-                         INNER JOIN Courses c ON l.CourseID = c.CourseID
-                         WHERE l.LessonID = @LessonID AND c.UserID = @InstructorID";
-
-                using (SqlCommand cmd = new SqlCommand(query, conn))
-                {
-                    cmd.Parameters.AddWithValue("@LessonID", lessonId);
-                    cmd.Parameters.AddWithValue("@InstructorID", currentInstructorId);
-                    conn.Open();
-
-                    using (SqlDataReader reader = cmd.ExecuteReader())
-                    {
-                        if (reader.Read())
-                        {
-                            ddlCourses.SelectedValue = reader["CourseID"].ToString();
-                            txtLessonTitle.Text = reader["Title"].ToString();
-                            txtSequenceOrder.Text = reader["SequenceOrder"].ToString();
-                            hfContentBody.Value = reader["ContentBody"].ToString();
-                        }
-                        else
-                        {
-                            // IDOR BLOCKED! The lesson either doesn't exist, or they don't own it.
-                            Response.Redirect("InstructorManageContent.aspx");
-                        }
-                    }
-                }
-            }
-        }
-
-        protected void btnSaveDraft_Click(object sender, EventArgs e)
-        {
-            ProcessUpdate("Draft");
-        }
-
-        protected void btnPublishAdmin_Click(object sender, EventArgs e)
-        {
-            ProcessUpdate("Pending Admin");
-        }
-
-        private void ProcessUpdate(string status)
-        {
-            int lessonId = Convert.ToInt32(Request.QueryString["LessonID"]);
-            bool isNewCourse = hfIsNewCourse.Value == "1";
-            int finalCourseId = 0;
-
-            using (SqlConnection conn = new SqlConnection(connString))
-            {
-                conn.Open();
-                SqlTransaction transaction = conn.BeginTransaction();
-
-                try
-                {
-                    // 1. Handle Course Logic
-                    if (isNewCourse)
-                    {
-                        string finalCategory = ddlNewCourseCategory.SelectedValue == "Other" ? txtCustomCategory.Text.Trim() : ddlNewCourseCategory.SelectedValue;
-                        string courseQuery = "INSERT INTO Courses (UserID, Title, Category, ApprovalStatus) VALUES (@UserID, @Title, @Category, @Status); SELECT SCOPE_IDENTITY();";
-                        using (SqlCommand cmd = new SqlCommand(courseQuery, conn, transaction))
-                        {
-                            cmd.Parameters.AddWithValue("@UserID", Convert.ToInt32(Session["UserID"]));
-                            cmd.Parameters.AddWithValue("@Title", txtNewCourseTitle.Text.Trim());
-                            cmd.Parameters.AddWithValue("@Category", finalCategory);
-                            cmd.Parameters.AddWithValue("@Status", status);
-                            finalCourseId = Convert.ToInt32(cmd.ExecuteScalar());
-                        }
-                    }
-                    else
-                    {
-                        finalCourseId = Convert.ToInt32(ddlCourses.SelectedValue);
-                        using (SqlCommand cmdStatus = new SqlCommand("UPDATE Courses SET ApprovalStatus = @Status WHERE CourseID = @CourseID", conn, transaction))
-                        {
-                            cmdStatus.Parameters.AddWithValue("@Status", status);
-                            cmdStatus.Parameters.AddWithValue("@CourseID", finalCourseId);
-                            cmdStatus.ExecuteNonQuery();
-                        }
-                    }
-
-                    // 2. Update Lesson
-                    string lessonQuery = "UPDATE Lessons SET CourseID = @CourseID, Title = @Title, ContentBody = @ContentBody, SequenceOrder = @SequenceOrder WHERE LessonID = @LessonID";
-                    using (SqlCommand cmd = new SqlCommand(lessonQuery, conn, transaction))
-                    {
-                        cmd.Parameters.AddWithValue("@CourseID", finalCourseId);
-                        cmd.Parameters.AddWithValue("@Title", txtLessonTitle.Text.Trim());
-                        cmd.Parameters.AddWithValue("@ContentBody", hfContentBody.Value.Trim());
-                        cmd.Parameters.AddWithValue("@SequenceOrder", Convert.ToInt32(txtSequenceOrder.Text));
-                        cmd.Parameters.AddWithValue("@LessonID", lessonId);
-                        cmd.ExecuteNonQuery();
-                    }
-
-                    transaction.Commit();
-                    lblMessage.Text = $"Success! Lesson updated and marked as '{status}'.";
-                    lblMessage.CssClass = "d-block mb-3 fw-bold text-success";
-                }
-                catch (Exception ex)
-                {
-                    transaction.Rollback();
-                    lblMessage.Text = "Error: " + ex.Message;
-                    lblMessage.CssClass = "d-block mb-3 fw-bold text-danger";
-                }
-            }
-        }
-        // --- NEW COURSE EDIT/DELETE LOGIC ---
 
         protected void btnEditCoursePrompt_Click(object sender, EventArgs e)
         {
@@ -210,7 +171,7 @@ namespace Aidcademy
                 SqlTransaction tx = conn.BeginTransaction();
                 try
                 {
-                    // 1. Delete Quiz Questions attached to the lessons in this course
+                    // 1. Delete Quiz Questions attached to the lessons
                     string q1 = "DELETE FROM QuizQuestions WHERE QuizID IN (SELECT QuizID FROM Quizzes WHERE LessonID IN (SELECT LessonID FROM Lessons WHERE CourseID = @CourseID))";
                     using (SqlCommand cmd = new SqlCommand(q1, conn, tx)) { cmd.Parameters.AddWithValue("@CourseID", courseId); cmd.ExecuteNonQuery(); }
 
@@ -222,7 +183,7 @@ namespace Aidcademy
                     string q3 = "DELETE FROM Lessons WHERE CourseID = @CourseID";
                     using (SqlCommand cmd = new SqlCommand(q3, conn, tx)) { cmd.Parameters.AddWithValue("@CourseID", courseId); cmd.ExecuteNonQuery(); }
 
-                    // 4. Finally, delete the Course itself
+                    // 4. Finally, delete the Course
                     string q4 = "DELETE FROM Courses WHERE CourseID = @CourseID";
                     using (SqlCommand cmd = new SqlCommand(q4, conn, tx)) { cmd.Parameters.AddWithValue("@CourseID", courseId); cmd.ExecuteNonQuery(); }
 
@@ -230,8 +191,10 @@ namespace Aidcademy
                     lblMessage.Text = "Course and all related lessons deleted successfully.";
                     lblMessage.CssClass = "d-block mb-3 fw-bold text-success";
 
-                    BindCoursesDropdown(1);
-                    pnlEditCourse.Visible = false;
+                    // Refresh dropdown and clear UI
+                    BindCoursesDropdown(Convert.ToInt32(Session["UserID"]));
+                    txtLessonTitle.Text = "";
+                    hfContentBody.Value = "";
                 }
                 catch (Exception ex)
                 {

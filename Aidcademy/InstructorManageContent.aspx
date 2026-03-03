@@ -1,78 +1,14 @@
 ﻿<%@ Page Title="Instructor Dashboard" Language="C#" MasterPageFile="~/Instructor.Master" AutoEventWireup="true" CodeBehind="InstructorManageContent.aspx.cs" Inherits="Aidcademy.InstructorManageContent" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="server">
+    <link href="Styles/aidcademy-theme.css" rel="stylesheet" type="text/css" />
+    <link href="Styles/Instructor.css" rel="stylesheet" type="text/css" />
     <style>
-        .welcome-card { border-radius: 12px; border: 1px solid #e0e0e0; }
-        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.05) !important; }
-        .section-header { font-weight: bold; margin-bottom: 20px; color: #333; text-transform: uppercase; font-size: 14px; letter-spacing: 1px; }
-        
-        .lesson-card { 
-            border-radius: 10px; 
-            border: 1px solid #e0e0e0; 
-            background: #fff;
-            transition: all 0.2s ease-in-out;
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(201, 36, 43, 0.3) !important;
         }
-        .lesson-card:hover {
-            box-shadow: 0 8px 15px rgba(0,0,0,0.05) !important;
-            transform: translateY(-3px);
-        }
-        /* Dynamic Left Borders based on status */
-        .status-Draft { border-left: 5px solid #6c757d; }
-        .status-Pending { border-left: 5px solid #ffc107; }
-        .status-Published { border-left: 5px solid #198754; }
-
-        .stat-card { 
-            border-radius: 12px; 
-            border: none !important; 
-            background: linear-gradient(135deg, #d32f2f 0%, #c9242b 100%) !important; 
-            color: white !important;
-            padding: 25px 20px; 
-            transition: transform 0.2s; 
-            display: flex;
-            flex-direction: column; 
-            align-items: center;    
-            justify-content: center;
-            text-align: center;     
-            gap: 12px;              
-            box-shadow: 0 4px 10px rgba(201, 36, 43, 0.2) !important;
-        }
-        .stat-card:hover { 
-            transform: translateY(-4px); 
-            box-shadow: 0 12px 24px rgba(201, 36, 43, 0.3) !important; 
-        }
-        
-        .stat-icon-box { 
-            width: 55px; 
-            height: 55px; 
-            border-radius: 12px; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            font-size: 1.6rem; 
-            background-color: rgba(255, 255, 255, 0.15); 
-            color: white;
-        }
-        
-        .stat-text { 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-        }
-        .stat-label { 
-            color: rgba(255, 255, 255, 0.85); 
-            font-size: 0.8rem; 
-            font-weight: 700; 
-            text-transform: uppercase; 
-            letter-spacing: 0.5px; 
-            margin-bottom: 5px; 
-        }
-        .stat-value { 
-            color: #ffffff; 
-            font-size: 2rem; 
-            font-weight: 900; 
-            line-height: 1; 
-        }
-        </style>
+    </style>
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
@@ -184,7 +120,8 @@
                                                 
                                                 <asp:LinkButton ID="btnDel" runat="server" CssClass="btn btn-sm btn-outline-danger" 
                                                     CommandArgument='<%# Eval("LessonID") %>' OnClick="btnDeleteLesson_Click"
-                                                    OnClientClick="return confirm('Are you sure you want to delete this lesson?');" ToolTip="Delete Lesson">
+                                                    data-lesson-title='<%# Eval("LessonTitle") %>'
+                                                    OnClientClick="return confirmLessonDelete(this);" ToolTip="Delete Lesson">
                                                     <i class="fa-solid fa-trash"></i>
                                                 </asp:LinkButton>
                                             </div>
@@ -200,4 +137,19 @@
         </asp:Repeater>
         
     </div>
+
+    <script>
+        function confirmLessonDelete(btn) {
+            var lessonName = btn.getAttribute('data-lesson-title');
+            var input = prompt("To delete this lesson, type its name exactly: " + lessonName.trim());
+            if (input === null) return false;
+
+            if (input !== lessonName.trim()) {
+                alert("Delete Cancelled: The lesson name you entered did not match.");
+                return false;
+            }
+            return true;
+            return input === lessonName.trim();
+        }
+    </script>
 </asp:Content>

@@ -88,7 +88,6 @@ namespace Aidcademy
         {
             bool isNewCourse = hfIsNewCourse.Value == "1";
 
-            // Basic Validation
             if ((!isNewCourse && string.IsNullOrEmpty(ddlCourses.SelectedValue)) ||
                 (isNewCourse && (string.IsNullOrEmpty(txtNewCourseTitle.Text) || string.IsNullOrEmpty(ddlNewCourseCategory.SelectedValue))) ||
                 string.IsNullOrEmpty(txtLessonTitle.Text) ||
@@ -100,8 +99,10 @@ namespace Aidcademy
                 return;
             }
 
-            int currentInstructorId = 1; // Testing ID
+            int currentInstructorId = Session["UserID"] != null ? Convert.ToInt32(Session["UserID"]) : 1;
             int finalCourseId = 0;
+            int finalLessonId = 0;
+            bool isSuccess = false; // NEW: A flag to track if the transaction worked
 
             using (SqlConnection conn = new SqlConnection(connString))
             {
@@ -110,18 +111,11 @@ namespace Aidcademy
 
                 try
                 {
-                    // 1. Handle New Course Creation
                     if (isNewCourse)
                     {
-                        // Logic for Custom Category
-                        string finalCategory = ddlNewCourseCategory.SelectedValue;
-                        if (finalCategory == "Other")
-                        {
-                            finalCategory = txtCustomCategory.Text.Trim();
-                        }
-
-                        string courseQuery = @"INSERT INTO Courses (UserID, Title, Description, Category, ApprovalStatus) 
-                                               VALUES (@UserID, @Title, 'Instructor generated course', @Category, @CourseStatus);
+                        string finalCategory = ddlNewCourseCategory.SelectedValue == "Other" ? txtCustomCategory.Text.Trim() : ddlNewCourseCategory.SelectedValue;
+                        string courseQuery = @"INSERT INTO Courses (UserID, Title, Description, Category) 
+                                               VALUES (@UserID, @Title, 'Instructor generated course', @Category);
                                                SELECT SCOPE_IDENTITY();";
 
                         using (SqlCommand cmd = new SqlCommand(courseQuery, conn, transaction))
@@ -129,8 +123,6 @@ namespace Aidcademy
                             cmd.Parameters.AddWithValue("@UserID", currentInstructorId);
                             cmd.Parameters.AddWithValue("@Title", txtNewCourseTitle.Text.Trim());
                             cmd.Parameters.AddWithValue("@Category", finalCategory);
-                            cmd.Parameters.AddWithValue("@CourseStatus", status);
-
                             finalCourseId = Convert.ToInt32(cmd.ExecuteScalar());
                         }
                     }
@@ -139,41 +131,23 @@ namespace Aidcademy
                         finalCourseId = Convert.ToInt32(ddlCourses.SelectedValue);
                     }
 
-                    // 2. Save the Lesson
-                    string lessonQuery = @"INSERT INTO Lessons (CourseID, Title, ContentBody, MediaURL, SequenceOrder) 
-                                           VALUES (@CourseID, @Title, @ContentBody, '', @SequenceOrder);
+                    string lessonQuery = @"INSERT INTO Lessons (CourseID, Title, ContentBody, SequenceOrder, ApprovalStatus) 
+                                           VALUES (@CourseID, @Title, @ContentBody, @SequenceOrder, @ApprovalStatus);
                                            SELECT SCOPE_IDENTITY();";
 
-                    int finalLessonId = 0;
                     using (SqlCommand cmd = new SqlCommand(lessonQuery, conn, transaction))
                     {
                         cmd.Parameters.AddWithValue("@CourseID", finalCourseId);
                         cmd.Parameters.AddWithValue("@Title", txtLessonTitle.Text.Trim());
                         cmd.Parameters.AddWithValue("@ContentBody", hfContentBody.Value.Trim());
                         cmd.Parameters.AddWithValue("@SequenceOrder", Convert.ToInt32(txtSequenceOrder.Text));
+                        cmd.Parameters.AddWithValue("@ApprovalStatus", status);
 
                         finalLessonId = Convert.ToInt32(cmd.ExecuteScalar());
                     }
 
                     transaction.Commit();
-
-                    lblMessage.Text = isNewCourse
-                        ? $"Success! New course created and lesson saved as '{status}'."
-                        : $"Success! Lesson attached to existing course and saved as '{status}'.";
-                    lblMessage.CssClass = "d-block mb-3 fw-bold text-success";
-
-                    // Reset User Interface
-                    txtLessonTitle.Text = "";
-                    txtSequenceOrder.Text = "";
-                    txtNewCourseTitle.Text = "";
-                    txtCustomCategory.Text = "";
-                    ddlNewCourseCategory.SelectedIndex = 0;
-
-                    if (isNewCourse)
-                    {
-                        BindCoursesDropdown(currentInstructorId);
-                        hfIsNewCourse.Value = "0";
-                    }
+                    isSuccess = true; // The transaction finished perfectly!
                 }
                 catch (Exception ex)
                 {
@@ -181,6 +155,12 @@ namespace Aidcademy
                     lblMessage.Text = "Database Error: " + ex.Message;
                     lblMessage.CssClass = "d-block mb-3 fw-bold text-danger";
                 }
+            }
+
+            // REDIRECT SAFELY OUTSIDE THE TRY-CATCH BLOCK
+            if (isSuccess)
+            {
+                Response.Redirect("InstructorEditContent.aspx?LessonID=" + finalLessonId);
             }
         }
 
