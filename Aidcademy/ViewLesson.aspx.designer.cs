@@ -60,48 +60,39 @@ namespace Aidcademy
         protected global::System.Web.UI.WebControls.Panel pnlQuiz;
 
         /// <summary>
-        /// lblQuestionText control.
+        /// rptQuiz control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblQuestionText;
+        protected global::System.Web.UI.WebControls.Repeater rptQuiz;
 
         /// <summary>
-        /// rblOptions control.
+        /// hfQuizID control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.RadioButtonList rblOptions;
+        protected global::System.Web.UI.WebControls.HiddenField hfQuizID;
 
         /// <summary>
-        /// btnSubmitAnswer control.
+        /// btnSubmitQuiz control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnSubmitAnswer;
+        protected global::System.Web.UI.WebControls.Button btnSubmitQuiz;
 
         /// <summary>
-        /// lblQuizResult control.
+        /// lblQuizScore control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblQuizResult;
-
-        /// <summary>
-        /// hfCorrectAnswer control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.HiddenField hfCorrectAnswer;
+        protected global::System.Web.UI.WebControls.Label lblQuizScore;
     }
 }

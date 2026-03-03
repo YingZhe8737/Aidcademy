@@ -1,6 +1,7 @@
 ﻿<%@ Page Title="Student Q&A" Language="C#" MasterPageFile="~/Instructor.Master" AutoEventWireup="true" CodeBehind="RespondQuestions.aspx.cs" Inherits="Aidcademy.RespondQuestions" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="server">
+    <link href="Styles/aidcademy-theme.css" rel="stylesheet" type="text/css" />
     <style>
         .qa-container { max-width: 900px; margin: 40px auto; }
         .page-header { border-bottom: 2px solid #e0e0e0; padding-bottom: 15px; margin-bottom: 30px; }
@@ -77,8 +78,17 @@
                             Q: <%# Eval("QuestionText") %>
                         </h5>
                         
-                        <asp:Panel ID="pnlReplyForm" runat="server" Visible='<%# Eval("Status").ToString() == "Open" %>'>
-                            </asp:Panel>
+                       <asp:Panel ID="pnlReplyForm" runat="server" Visible='<%# Eval("Status").ToString().Trim().ToUpper() == "OPEN" %>'>
+                            <div class="bg-light p-3 rounded border mt-4">
+                                <label class="form-label fw-bold text-danger"><i class="fa-solid fa-reply me-1"></i>Draft Your Reply</label>
+                                <asp:TextBox ID="txtReply" runat="server" TextMode="MultiLine" Rows="3" CssClass="form-control mb-3 shadow-none" placeholder="Type your expert explanation here..."></asp:TextBox>
+                                
+                                <div class="text-end">
+                                    <asp:Button ID="btnSubmitReply" runat="server" Text="Publish Reply" CssClass="btn btn-danger fw-bold px-4" 
+                                        CommandName="SubmitReply" CommandArgument='<%# Eval("QuestionID") %>' />
+                                </div>
+                            </div>
+                        </asp:Panel>
 
                         <asp:Panel ID="pnlAnswerHistory" runat="server" Visible='<%# Eval("Status").ToString() == "Answered" %>'>
                             <div class="bg-success bg-opacity-10 border border-success border-opacity-25 p-3 rounded mt-3">

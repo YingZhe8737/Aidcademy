@@ -1,17 +1,8 @@
 ﻿<%@ Page Title="Edit Lesson" Language="C#" MasterPageFile="~/Instructor.Master" AutoEventWireup="true" CodeBehind="InstructorEditContent.aspx.cs" Inherits="Aidcademy.InstructorEditContent" ValidateRequest="false" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="server">
-    <style>
-        .creator-card { border-radius: 12px; border: 1px solid #e0e0e0; }
-        .publish-bar { background-color: #fff; border-top: 1px solid #e0e0e0; position: sticky; bottom: 0; z-index: 1000; padding: 15px 0; }
-        #editor-container { height: 500px; font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 16px; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px; }
-        .ql-toolbar { border-top-left-radius: 8px; border-top-right-radius: 8px; background-color: #f8f9fa; }
-        .ql-flipcard::after { content: "\f022"; font-family: "FontAwesome"; font-size: 16px; }
-        .ql-editor .flip-card { background: #f8f9fa; border: 2px dashed #c9242b; padding: 15px; margin: 15px 0; border-radius: 8px; }
-        .ql-editor .flip-card-front::before { content: "FLIP CARD FRONT:"; font-size: 12px; color: #c9242b; font-weight: bold; display: block; margin-bottom: 5px; }
-        .ql-editor .flip-card-back { margin-top: 15px; padding-top: 15px; border-top: 1px solid #ccc; }
-        .ql-editor .flip-card-back::before { content: "FLIP CARD BACK:"; font-size: 12px; color: #c9242b; font-weight: bold; display: block; margin-bottom: 5px; }
-    </style>
+    <link href="Styles/aidcademy-theme.css" rel="stylesheet" type="text/css" />
+    <link href="Styles/Instructor.css" rel="stylesheet" type="text/css" />
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
@@ -21,7 +12,7 @@
                 
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h4 class="fw-bold m-0"><i class="fa-solid fa-pen-to-square me-2 text-danger"></i>Editing Lesson</h4>
-                    <a href="InstructorManageContent.aspx" class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-arrow-left me-1"></i> Back</a>
+                    <a href="InstructorManageContent.aspx" class="btn btn-sm btn-outline-secondary"><i class="fa-solid fa-arrow-left me-1"></i> Back to Dashboard</a>
                 </div>
 
                 <asp:Label ID="lblMessage" runat="server" CssClass="d-block mb-3"></asp:Label>
@@ -43,7 +34,7 @@
                                     <asp:LinkButton ID="btnEditCoursePrompt" runat="server" CssClass="btn btn-secondary" OnClick="btnEditCoursePrompt_Click" CausesValidation="false" ToolTip="Edit Course Details">
                                         <i class="fa-solid fa-pen"></i>
                                     </asp:LinkButton>
-                                    <asp:LinkButton ID="btnDeleteCourse" runat="server" CssClass="btn btn-danger" OnClientClick="return confirm('WARNING: Deleting this course will also delete ALL lessons inside it! Are you sure?');" OnClick="btnDeleteCourse_Click" CausesValidation="false" ToolTip="Delete Course">
+                                    <asp:LinkButton ID="btnDeleteCourse" runat="server" CssClass="btn btn-danger" OnClientClick="return confirmCourseDelete();" OnClick="btnDeleteCourse_Click" CausesValidation="false" ToolTip="Delete Course">
                                         <i class="fa-solid fa-trash"></i>
                                     </asp:LinkButton>
                                 </div>
@@ -95,46 +86,12 @@
     <div class="publish-bar shadow-lg">
         <div class="container">
             <div class="row justify-content-center">
-                <div class="col-lg-9 d-flex justify-content-end align-items-center">
-                    <asp:Button ID="btnSaveDraft" runat="server" Text="Save as Draft" CssClass="btn btn-outline-secondary fw-bold px-4 me-2" OnClientClick="return validateLessonForm(this);" OnClick="btnSaveDraft_Click" />
-                    <asp:Button ID="btnPublishAdmin" runat="server" Text="Publish to Admin" CssClass="btn btn-danger fw-bold px-4" OnClientClick="return validateLessonForm(this);" OnClick="btnPublishAdmin_Click" />
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="flipCardModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header bg-brand-red text-white">
-                    <h5 class="modal-title"><i class="fa-solid fa-cube me-2"></i>Insert Flip Card</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3 p-3 bg-light border rounded">
-                        <label class="form-label text-muted small fw-bold text-uppercase"><i class="fa-solid fa-image me-1"></i> Front Image (Optional)</label>
-                        <div class="input-group mb-2">
-                            <span class="input-group-text bg-white"><i class="fa-solid fa-upload"></i></span>
-                            <input type="file" id="fcImageFile" class="form-control" accept=".jpg,.jpeg,.png,.gif" />
-                        </div>
-                        <div class="text-center small text-muted fw-bold my-1">OR</div>
-                        <div class="input-group">
-                            <span class="input-group-text bg-white"><i class="fa-solid fa-link"></i></span>
-                            <input type="text" id="fcImageUrl" class="form-control" placeholder="Paste an image URL..." />
-                        </div>
+                <div class="col-lg-9 d-flex justify-content-between align-items-center">
+                    <span class="text-muted small"><i class="fa-solid fa-clock-rotate-left me-1"></i> Don't lose your progress</span>
+                    <div>
+                        <asp:Button ID="btnSaveDraft" runat="server" Text="Save as Draft" CssClass="btn btn-outline-secondary fw-bold px-4 me-2" OnClientClick="markAsSaving(); return validateLessonForm(this);" OnClick="btnSaveDraft_Click" />
+                        <asp:Button ID="btnPublishAdmin" runat="server" Text="Publish to Admin" CssClass="btn btn-danger fw-bold px-4" OnClientClick="markAsSaving(); return validateLessonForm(this);" OnClick="btnPublishAdmin_Click" />    
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label text-muted small fw-bold text-uppercase">Front Text (Title)</label>
-                        <input type="text" id="fcFront" class="form-control" placeholder="e.g., R.I.C.E. Method" />
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label text-muted small fw-bold text-uppercase">Back Text (Explanation)</label>
-                        <textarea id="fcBack" class="form-control" rows="3" placeholder="e.g., Rest, Ice, Compress, Elevate"></textarea>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-danger" onclick="insertFlipCard()">Insert into Lesson</button>
                 </div>
             </div>
         </div>
@@ -158,4 +115,76 @@
             initLessonSystem(contentBodyId, isNewCourseId, customCategoryId, existingHtml);
         };
     </script>
+
+    <script>
+        function confirmCourseDelete() {
+            var ddl = document.getElementById('<%= ddlCourses.ClientID %>');
+            var courseName = ddl.options[ddl.selectedIndex].text;
+
+            if (courseName === '-- Choose a Course --' || courseName === '') return false;
+
+            var input = prompt("WARNING: Deleting this course will also delete ALL lessons inside it!\n\nTo confirm, type the course name exactly: '" + courseName.trim() + "'");
+
+            if (input === null) return false;
+
+            if (input !== courseName.trim()) {
+                alert("Delete Cancelled: The course name you entered did not match.");
+                return false;
+            }
+            return true;
+        }
+    </script>
+
+    <script>
+        let hasUnsavedChanges = false;
+        let isSaving = false;
+
+        // 1. Detect any typing in the editor or the textboxes
+        window.addEventListener('load', function () {
+            // Watch Quill Editor for changes
+            if (window.quill) {
+                window.quill.on('text-change', function () {
+                    hasUnsavedChanges = true;
+                });
+            }
+
+            // Watch Title and Sequence boxes for changes
+            const titleBox = document.getElementById('<%= txtLessonTitle.ClientID %>');
+            const seqBox = document.getElementById('<%= txtSequenceOrder.ClientID %>');
+
+            if (titleBox) titleBox.addEventListener('input', () => hasUnsavedChanges = true);
+            if (seqBox) seqBox.addEventListener('input', () => hasUnsavedChanges = true);
+        });
+
+        // 2. The Browser's Native Warning (For Refreshing or Closing the Tab)
+        window.addEventListener('beforeunload', function (e) {
+            // Note: Browsers do not allow custom text here for security reasons. 
+            // It will show the browser's default "Changes you made may not be saved" popup.
+            if (hasUnsavedChanges && !isSaving) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+
+        // 3. Custom Warning for your "Back to Dashboard" button
+        document.addEventListener("DOMContentLoaded", function () {
+            const backBtn = document.querySelector('a[href="InstructorManageContent.aspx"]');
+            if (backBtn) {
+                backBtn.addEventListener('click', function (e) {
+                    if (hasUnsavedChanges && !isSaving) {
+                        const confirmLeave = confirm("You have unsaved changes!\n\nClick OK to discard them and leave.\nClick Cancel to stay and Save as Draft.");
+                        if (!confirmLeave) {
+                            e.preventDefault(); // Stop them from leaving
+                        }
+                    }
+                });
+            }
+        });
+
+        // 4. Disable the warning when they actually click your Save/Publish buttons!
+        function markAsSaving() {
+            isSaving = true;
+        }
+    </script>
+
 </asp:Content>

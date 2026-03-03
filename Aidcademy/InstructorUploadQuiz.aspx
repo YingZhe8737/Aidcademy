@@ -1,14 +1,8 @@
 ﻿<%@ Page Title="Manage Quiz" Language="C#" MasterPageFile="~/Instructor.Master" AutoEventWireup="true" CodeBehind="InstructorUploadQuiz.aspx.cs" Inherits="Aidcademy.InstructorUploadQuiz" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="server">
-    <style>
-        .quiz-container { max-width: 900px; margin: 40px auto; }
-        .builder-card { background: #fff; border-radius: 12px; border: 1px solid #e0e0e0; padding: 30px; margin-bottom: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
-        .step-badge { background: #c9242b; color: white; width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: bold; margin-right: 10px; }
-        
-        .question-item { background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; margin-bottom: 15px; position: relative; }
-        .correct-answer-highlight { background-color: #d1e7dd; border-color: #badbcc; font-weight: bold; color: #0f5132; }
-    </style>
+    <link href="Styles/aidcademy-theme.css" rel="stylesheet" type="text/css" />
+    <link href="Styles/Instructor.css" rel="stylesheet" type="text/css" />
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
