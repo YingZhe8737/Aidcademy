@@ -60,8 +60,8 @@ body {
 
 .hero-text {
     position: absolute;
-    top: 40%;
-    left: 60%;
+    top: 20%;
+    left: 65%;
     transform: translateY(-50%);
     color: white;
     background-color: rgba(0, 0, 0, 0.6);
