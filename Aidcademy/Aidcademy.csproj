@@ -154,6 +154,7 @@
     <Content Include="Scripts\WebForms\WebForms.js" />
     <Content Include="Scripts\WebForms\WebParts.js" />
     <Content Include="Scripts\WebForms\WebUIValidation.js" />
+    <Content Include="Styles\AboutUs.css" />
     <Content Include="Styles\aidcademy-theme.css" />
     <Content Include="Contact.aspx" />
     <Content Include="Content\Site.css" />

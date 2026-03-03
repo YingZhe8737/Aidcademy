@@ -15,7 +15,7 @@
             <div class="brand">🏥 AIDCADEMY</div>
             <div class="nav">
             <asp:Button ID="btnAbout" runat="server" Text="About" 
-                CssClass="nav-btn" PostBackUrl="About.aspx" />
+                CssClass="nav-btn" OnClick="btnAboutUs" />
             <asp:Button ID="btnCourse" runat="server" Text="Course" 
                 CssClass="nav-btn" PostBackUrl="Course.aspx" />
             <asp:Button ID="btnLogin" runat="server" Text="Login"      

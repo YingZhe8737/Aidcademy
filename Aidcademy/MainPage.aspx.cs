@@ -17,5 +17,9 @@ namespace Aidcademy
         {
             Response.Redirect("Feedback.aspx");
         }
+        protected void btnAboutUs(object sender, EventArgs e)
+        {
+            Response.Redirect("About.aspx");
+        }
     }
 }
