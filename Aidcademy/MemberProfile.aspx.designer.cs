@@ -130,5 +130,20 @@ namespace Aidcademy
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Button btnUpdateProfile;
+
+        /// <summary>
+        /// txtCurrentPassword control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.TextBox txtCurrentPassword;
+
+        /// <summary>
+        /// txtNewPassword control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.TextBox txtNewPassword;
+
+        /// <summary>
+        /// txtConfirmNewPassword control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.TextBox txtConfirmNewPassword;
     }
 }

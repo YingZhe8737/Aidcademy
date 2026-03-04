@@ -19,7 +19,6 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #FFFBF1;
             min-height: 100vh;
-            padding: 20px;
         }
 
         .navbar {
@@ -33,7 +32,7 @@
         }
 
         .navbar-brand {
-            font-size: 22px;
+            font-size: 24px;
             font-weight: bold;
         }
 
@@ -227,9 +226,9 @@
                 <asp:HyperLink runat="server" NavigateUrl="~/MemberDashboard.aspx">Dashboard</asp:HyperLink>
                 <asp:HyperLink runat="server" NavigateUrl="~/LearningCourse.aspx">Courses</asp:HyperLink>
                 <asp:HyperLink runat="server" NavigateUrl="~/LearningProgress.aspx">My Progress</asp:HyperLink>
+                <asp:HyperLink runat="server" NavigateUrl="~/SubmitQuestion.aspx">Ask Question</asp:HyperLink>
                 <asp:HyperLink runat="server" NavigateUrl="~/MemberProfile.aspx">Profile</asp:HyperLink>
-                <asp:LinkButton ID="btnLogout" runat="server" OnClick="btnLogout_Click" CssClass="navbar-btn">Logout
-                </asp:LinkButton>
+                <asp:LinkButton ID="btnLogout" runat="server" OnClick="btnLogout_Click" CssClass="navbar-btn">Logout</asp:LinkButton>
             </div>
         </div>
 
@@ -296,6 +295,25 @@
                 <div class="form-group">
                     <label>Phone Number</label>
                     <asp:TextBox ID="txtPhone" runat="server" placeholder="+60 12-345 6789" />
+                </div>
+
+                <!-- Change Password -->
+                <div class="section-title" style="margin-top: 40px;">Change Password</div>
+
+                <div class="form-group">
+                    <label>Current Password</label>
+                    <asp:TextBox ID="txtCurrentPassword" runat="server" TextMode="Password" placeholder="Enter current password" />
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>New Password</label>
+                        <asp:TextBox ID="txtNewPassword" runat="server" TextMode="Password" placeholder="New password" />
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm New Password</label>
+                        <asp:TextBox ID="txtConfirmNewPassword" runat="server" TextMode="Password" placeholder="Confirm new password" />
+                    </div>
                 </div>
 
                 <!-- Action Buttons -->

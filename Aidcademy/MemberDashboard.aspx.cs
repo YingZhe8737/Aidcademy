@@ -13,13 +13,14 @@ namespace Aidcademy
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            if (!SessionHelper.IsUserLoggedIn() || !SessionHelper.IsMember())
+            {
+                Response.Redirect("~/Login_signup.aspx");
+                return;
+            }
+
             if (!IsPostBack)
             {
-                if (Session["UserID"] == null)
-                {
-                    Response.Redirect("~/Login_signup.aspx");
-                    return;
-                }
                 LoadDashboardData();
             }
         }
@@ -78,7 +79,15 @@ namespace Aidcademy
 
                     // Load in-progress courses
                     string queryCourses = @"
-                        SELECT c.CourseID, c.Title AS CourseName, e.ProgressPercentage
+                        SELECT c.CourseID, c.Title AS CourseName, e.ProgressPercentage,
+                            (SELECT TOP 1 l.LessonID
+                             FROM Lessons l
+                             WHERE l.CourseID = c.CourseID
+                               AND l.LessonID NOT IN (
+                                   SELECT lp.LessonID FROM LessonProgress lp
+                                   WHERE lp.UserID = @UserID AND lp.Status = 'Completed'
+                               )
+                             ORDER BY l.SequenceOrder, l.LessonID) AS NextLessonID
                         FROM Enrollments e
                         INNER JOIN Courses c ON e.CourseID = c.CourseID
                         WHERE e.UserID = @UserID AND e.IsCompleted = 0
@@ -122,6 +131,13 @@ namespace Aidcademy
             {
                 System.Diagnostics.Debug.WriteLine("Dashboard error: " + ex.Message);
             }
+        }
+
+        protected string GetContinueUrl(object lessonId)
+        {
+            if (lessonId != null && lessonId != DBNull.Value)
+                return ResolveUrl("~/ViewLesson.aspx?LessonID=" + lessonId.ToString());
+            return ResolveUrl("~/LearningProgress.aspx");
         }
 
         protected void btnLogout_Click(object sender, EventArgs e)
