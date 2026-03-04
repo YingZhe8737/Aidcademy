@@ -401,18 +401,18 @@ namespace Aidcademy.Utilities
                 <html>
                 <body style='font-family:Segoe UI,Arial,sans-serif; color:#333;'>
                     <div style='max-width:480px;margin:0 auto;padding:30px;border:1px solid #e0e0e0;border-radius:12px;'>
-                        <h2 style='color:#667eea;'>🚑 Aidcademy</h2>
+                        <h2 style='color:#dc2626;'>&#10084;&#65039; AIDCADEMY</h2>
                         <p>Hi there,</p>
                         <p>Use the verification code below to {purposeLabel}:</p>
                         <div style='text-align:center;margin:30px 0;'>
                             <span style='font-size:40px;font-weight:bold;letter-spacing:12px;
-                                         background:#f0f0ff;padding:16px 28px;border-radius:10px;
-                                         color:#764ba2;'>{otp}</span>
+                                         background:#fff0f0;padding:16px 28px;border-radius:10px;
+                                         color:#dc2626;border:2px solid #fca5a5;'>{otp}</span>
                         </div>
                         <p style='color:#888;font-size:13px;'>This code expires in <strong>{expiryMinutes} minutes</strong>.
                         If you did not request this, you can safely ignore this email.</p>
                         <hr style='border:none;border-top:1px solid #eee;margin:20px 0;'/>
-                        <p style='font-size:12px;color:#aaa;'>Aidcademy &mdash; First Aid Learning Platform</p>
+                        <p style='font-size:12px;color:#aaa;'>AIDCADEMY &mdash; First Aid Learning Platform</p>
                     </div>
                 </body>
                 </html>";
@@ -439,15 +439,11 @@ namespace Aidcademy.Utilities
         }
     }
 
-    // =====================================================================
-    // Session + FormsAuthentication management
-    // =====================================================================
+
+    // Session FormsAuthentication
     public static class SessionHelper
     {
-        /// <summary>
         /// Call this after OTP is verified to fully log the user in.
-        /// Sets both the Session variables AND the FormsAuthentication cookie.
-        /// </summary>
         public static void SetLoginSession(int userID, string role, string fullName, string email)
         {
             var context = HttpContext.Current;
@@ -477,9 +473,8 @@ namespace Aidcademy.Utilities
             context.Response.Cookies.Add(cookie);
         }
 
-        /// <summary>
+
         /// Log the user out: clear the Forms Auth cookie and abandon the session.
-        /// </summary>
         public static void SignOut()
         {
             FormsAuthentication.SignOut();
@@ -539,9 +534,7 @@ namespace Aidcademy.Utilities
         }
     }
 
-    // =====================================================================
     // Basic input validation
-    // =====================================================================
     public static class ValidationHelper
     {
         // Check if the email address format is valid
@@ -558,7 +551,6 @@ namespace Aidcademy.Utilities
             }
         }
 
-        // Check if it's a valid Malaysian phone number
         public static bool IsValidPhoneNumber(string phoneNumber)
         {
             phoneNumber = phoneNumber.Replace(" ", "").Replace("-", "");

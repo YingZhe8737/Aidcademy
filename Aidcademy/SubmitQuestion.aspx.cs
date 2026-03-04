@@ -13,7 +13,7 @@ namespace Aidcademy
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (!SessionHelper.IsUserLoggedIn())
+            if (!SessionHelper.IsUserLoggedIn() || !SessionHelper.IsMember())
             {
                 Response.Redirect("~/Login_signup.aspx");
                 return;
@@ -127,6 +127,12 @@ namespace Aidcademy
             lblMessage.Text = message;
             pnlMessage.Visible = true;
             pnlMessage.CssClass = isSuccess ? "message success" : "message error";
+        }
+
+        protected void btnLogout_Click(object sender, EventArgs e)
+        {
+            SessionHelper.SignOut();
+            Response.Redirect("~/Login_signup.aspx");
         }
     }
 }

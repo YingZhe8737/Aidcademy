@@ -9,9 +9,9 @@ namespace Aidcademy
 {
     public partial class About : Page
     {
-        protected void Page_Load(object sender, EventArgs e)
+        protected void btnAboutUs(object sender, EventArgs e)
         {
-
+            Response.Redirect("About.aspx");
         }
     }
 }

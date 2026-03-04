@@ -1,0 +1,128 @@
+﻿* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background-color: #f4f9ff;
+}
+
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background-color: rgba(0,0,0,0.7);
+}
+
+.brand {
+    font-size: 24px;
+    font-weight: bold;
+    color: white;
+    text-decoration: none; /* remove underline */
+}
+
+.nav {
+    display: flex;
+    gap: 20px;
+}
+
+.nav-btn {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+    .nav-btn:hover {
+        color: #00bfff;
+    }
+
+.login-btn {
+    border: 1px solid white;
+    padding: 8px 15px;
+    border-radius: 5px;
+}
+
+
+.hero {
+    position: relative;
+    height: 100vh;
+    background-image: url('../image/aboutus.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.hero-text {
+    position: absolute;
+    top: 20%;
+    left: 65%;
+    transform: translateY(-50%);
+    color: white;
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 50px 40px;
+    border-radius: 12px;
+    max-width: 500px;
+}
+
+.section {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    padding: 60px 20px;
+    flex-wrap: wrap;
+}
+
+.card {
+    background: white;
+    padding: 30px;
+    width: 300px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+    .card h2 {
+        color: #0077cc;
+    }
+
+.features {
+    background-color: #e6f4ff;
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.feature-box {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    flex-wrap: wrap;
+    margin-top: 30px;
+    font-size: 18px;
+}
+
+.contact {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.btn-feedback {
+    background-color: #e53935;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 25px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+.btn-feedback:hover {
+    background-color: #005fa3;
+}
+

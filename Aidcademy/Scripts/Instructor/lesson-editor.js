@@ -1,4 +1,4 @@
-﻿// Global variables to hold the specific ASP.NET control IDs for whatever page is currently open
+﻿// Global variables
 var glbContentBodyId = '';
 var glbIsNewCourseId = '';
 var glbCustomCategoryId = '';
@@ -8,46 +8,71 @@ function initLessonSystem(contentBodyId, isNewCourseId, customCategoryId, existi
     glbIsNewCourseId = isNewCourseId;
     glbCustomCategoryId = customCategoryId;
 
-    // 1. REGISTER CUSTOM QUILL BLOT FOR FLIP CARDS
     var BlockEmbed = Quill.import('blots/block/embed');
+
+    // 1. REGISTER NATIVE FLIP CARD BLOT
     class FlipCardBlot extends BlockEmbed {
         static create(value) {
             let node = super.create();
-            node.setAttribute('class', 'aidcademy-flipcard-data');
+            node.setAttribute('class', 'aidcademy-custom-flipcard');
             node.setAttribute('data-img', value.imgUrl || '');
             node.setAttribute('data-front', value.frontText || '');
             node.setAttribute('data-back', value.backText || '');
             node.setAttribute('contenteditable', 'false');
 
-            let imgHtml = value.imgUrl ? `<img src="${value.imgUrl}" style="max-height: 50px; margin-right: 15px; border-radius: 4px; border: 1px solid #ccc;" />` : '';
+            let imgHtml = value.imgUrl ? `<img src="${value.imgUrl}" style="max-height: 150px; border-radius: 4px; border: 1px solid #ccc; margin-bottom:10px;" />` : '';
+
             node.innerHTML = `
-                <div style="background: #fff3f3; border: 2px dashed #c9242b; padding: 15px; margin: 15px 0; border-radius: 8px; font-family: sans-serif;">
-                    <span style="background: #c9242b; color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-bottom: 10px; display: inline-block;"><i class="fa-solid fa-cube me-1"></i> INTERACTIVE FLIP CARD</span>
-                    <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                <div style="background: #f8f9fa; border: 2px dashed #c9242b; padding: 15px; margin: 15px 0; border-radius: 8px; font-family: sans-serif;">
+                    <div style="margin-bottom: 10px;">
                         ${imgHtml}
-                        <h5 style="margin: 0; color: #333; font-weight: bold;">${value.frontText}</h5>
+                        <div style="font-size: 12px; color: #c9242b; font-weight: bold; margin-bottom: 5px;">FLIP CARD FRONT:</div>
+                        <h4 style="margin: 0; color: #333; font-weight: bold;">${value.frontText}</h4>
                     </div>
-                    <div style="background: white; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
-                        <small style="color: #c9242b; font-weight: bold; display: block; margin-bottom: 5px;">BACK TEXT:</small>
-                        <span style="color: #333;">${value.backText}</span>
+                    <div style="padding-top: 15px; border-top: 1px solid #ccc;">
+                        <div style="font-size: 12px; color: #c9242b; font-weight: bold; margin-bottom: 5px;">FLIP CARD BACK:</div>
+                        <span style="color: #555;">${value.backText}</span>
                     </div>
-                </div>
-            `;
+                </div>`;
             return node;
         }
         static value(node) {
-            return {
-                imgUrl: node.getAttribute('data-img'),
-                frontText: node.getAttribute('data-front'),
-                backText: node.getAttribute('data-back')
-            };
+            return { imgUrl: node.getAttribute('data-img'), frontText: node.getAttribute('data-front'), backText: node.getAttribute('data-back') };
         }
     }
     FlipCardBlot.blotName = 'flipcard';
     FlipCardBlot.tagName = 'div';
+    FlipCardBlot.className = 'aidcademy-custom-flipcard';
     Quill.register(FlipCardBlot);
 
-    // 2. INITIALIZE QUILL
+    // 2. REGISTER NATIVE ACCORDION BLOT
+    class AccordionBlot extends BlockEmbed {
+        static create(value) {
+            let node = super.create();
+            node.setAttribute('class', 'aidcademy-custom-accordion');
+            node.setAttribute('data-title', value.title || '');
+            node.setAttribute('data-content', value.content || '');
+            node.setAttribute('contenteditable', 'false');
+
+            node.innerHTML = `
+                <div style="background: #ffffff; border: 1px solid #dee2e6; border-left: 4px solid #343a40; border-radius: 6px; margin: 15px 0; padding: 15px; font-family: sans-serif; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                    <div style="font-weight: bold; color: #c9242b; font-size: 1.1rem; border-bottom: 1px dashed #dee2e6; padding-bottom: 10px; margin-bottom: 10px;">
+                        &#9654; ${value.title}
+                    </div>
+                    <div style="color: #495057; line-height: 1.6;">${value.content}</div>
+                </div>`;
+            return node;
+        }
+        static value(node) {
+            return { title: node.getAttribute('data-title'), content: node.getAttribute('data-content') };
+        }
+    }
+    AccordionBlot.blotName = 'accordion';
+    AccordionBlot.tagName = 'div';
+    AccordionBlot.className = 'aidcademy-custom-accordion';
+    Quill.register(AccordionBlot);
+
+    // 3. INITIALIZE QUILL
     window.quill = new Quill('#editor-container', {
         theme: 'snow',
         placeholder: 'Write your instructions or insert interactive elements...',
@@ -56,37 +81,57 @@ function initLessonSystem(contentBodyId, isNewCourseId, customCategoryId, existi
                 container: [
                     [{ 'header': [1, 2, 3, false] }],
                     ['bold', 'italic', 'underline'],
+                    [{ 'align': [] }],
                     [{ 'list': 'ordered' }, { 'list': 'bullet' }],
                     ['image', 'video'],
-                    ['flipcard']
+                    ['flipcard', 'accordion']
                 ],
                 handlers: {
                     'flipcard': function () {
-                        var modal = new bootstrap.Modal(document.getElementById('flipCardModal'));
-                        modal.show();
+                        var m = document.getElementById('flipCardModal');
+                        (bootstrap.Modal.getInstance(m) || new bootstrap.Modal(m)).show();
+                    },
+                    'accordion': function () {
+                        var m = document.getElementById('accordionModal');
+                        (bootstrap.Modal.getInstance(m) || new bootstrap.Modal(m)).show();
                     }
                 }
             }
         }
     });
 
-    // Add Tooltips
     document.querySelector('.ql-flipcard').title = "Insert Interactive Flip Card";
-    document.querySelector('.ql-bold').title = 'Bold';
-    document.querySelector('.ql-italic').title = 'Italic';
-    document.querySelector('.ql-underline').title = 'Underline';
-    document.querySelector('.ql-image').title = 'Upload Image';
-    document.querySelector('.ql-video').title = 'Embed YouTube Video';
+    document.querySelector('.ql-accordion').title = 'Insert Interactive Accordion';
 
-    // 3. LOAD EXISTING DATA (For the Edit Page)
+    // 4. LOCAL STORAGE BACKUP RECOVERY (Only triggers on empty Upload page)
+    var isUploadPage = window.location.href.toLowerCase().includes("upload");
+    if (isUploadPage && (!existingHtml || existingHtml.trim() === "")) {
+        var localBackup = localStorage.getItem('aidcademy_upload_backup');
+        if (localBackup) {
+            existingHtml = localBackup;
+            document.getElementById(glbContentBodyId).value = localBackup; // Sync to ASP.NET hidden field
+        }
+    }
+
+    // 5. LOAD DATA INTO EDITOR
     if (existingHtml && existingHtml.trim() !== "") {
         window.quill.root.innerHTML = existingHtml;
     }
+
+    // 6. CONTINUOUS SYNC (Protects against Dropdown PostBacks!)
+    window.quill.on('text-change', function () {
+        var currentHtml = window.quill.root.innerHTML;
+        document.getElementById(glbContentBodyId).value = currentHtml; // Protects against ASP.NET PostBacks
+
+        if (isUploadPage) {
+            localStorage.setItem('aidcademy_upload_backup', currentHtml); // Protects against closed tabs
+        }
+    });
 }
 
-// ==========================================
-// SHARED UTILITY FUNCTIONS
-// ==========================================
+// ---------------------------------------------------------
+// UI TOGGLES & VALIDATION
+// ---------------------------------------------------------
 
 function toggleCustomCategory(dropdown) {
     var customInput = document.getElementById(glbCustomCategoryId);
@@ -106,73 +151,27 @@ function toggleNewCourse() {
     var hfIsNew = document.getElementById(glbIsNewCourseId);
 
     if (hfIsNew.value === "0") {
-        existingDiv.style.display = 'none';
-        newDiv.style.display = 'block';
+        existingDiv.style.display = 'none'; newDiv.style.display = 'block';
         btnToggle.innerHTML = '<i class="fa-solid fa-list"></i> Select Existing';
-        btnToggle.classList.replace('text-danger', 'text-secondary');
-        hfIsNew.value = "1";
+        btnToggle.classList.replace('text-danger', 'text-secondary'); hfIsNew.value = "1";
     } else {
-        existingDiv.style.display = 'block';
-        newDiv.style.display = 'none';
+        existingDiv.style.display = 'block'; newDiv.style.display = 'none';
         btnToggle.innerHTML = '<i class="fa-solid fa-plus"></i> New Course';
-        btnToggle.classList.replace('text-secondary', 'text-danger');
-        hfIsNew.value = "0";
+        btnToggle.classList.replace('text-secondary', 'text-danger'); hfIsNew.value = "0";
     }
 }
 
-function insertFlipCard() {
-    var fileInput = document.getElementById('fcImageFile');
-    var imgUrl = document.getElementById('fcImageUrl').value.trim();
-    var frontText = document.getElementById('fcFront').value.trim();
-    var backText = document.getElementById('fcBack').value.trim();
-
-    if (frontText === "" || backText === "") {
-        alert("Please fill in both the Front Text and Back Text.");
-        return;
-    }
-
-    var insertIntoEditor = function (finalImgUrl) {
-        var range = window.quill.getSelection(true);
-        window.quill.insertEmbed(range.index, 'flipcard', {
-            imgUrl: finalImgUrl,
-            frontText: frontText,
-            backText: backText
-        });
-        window.quill.setSelection(range.index + 1, Quill.sources.SILENT);
-        bootstrap.Modal.getInstance(document.getElementById('flipCardModal')).hide();
-        document.getElementById('fcImageFile').value = '';
-        document.getElementById('fcImageUrl').value = '';
-        document.getElementById('fcFront').value = '';
-        document.getElementById('fcBack').value = '';
-    };
-
-    if (fileInput.files && fileInput.files[0]) {
-        var reader = new FileReader();
-        reader.onload = function (e) { insertIntoEditor(e.target.result); };
-        reader.readAsDataURL(fileInput.files[0]);
-    } else {
-        insertIntoEditor(imgUrl);
-    }
-}
-
-// Add this to lesson-editor.js
 function validateLessonForm(btnElement) {
     let isValid = true;
-
-    // 1. Remove old red outlines
     document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
-
-    // 2. Define the inputs to check based on whether it's a new course or existing
     let isNewCourse = document.getElementById(glbIsNewCourseId).value === "1";
 
-    // Title & Sequence are always required
     let title = document.querySelector('input[id*="txtLessonTitle"]');
     let sequence = document.querySelector('input[id*="txtSequenceOrder"]');
 
     if (!title.value.trim()) { title.classList.add('is-invalid'); isValid = false; }
     if (!sequence.value.trim()) { sequence.classList.add('is-invalid'); isValid = false; }
 
-    // Course Validation
     if (isNewCourse) {
         let newTitle = document.querySelector('input[id*="txtNewCourseTitle"]');
         let newCat = document.querySelector('select[id*="ddlNewCourseCategory"]');
@@ -183,24 +182,58 @@ function validateLessonForm(btnElement) {
         if (existingCourse && existingCourse.value === "") { existingCourse.classList.add('is-invalid'); isValid = false; }
     }
 
-    // Editor Validation (Quill)
     let editorContent = window.quill.getText().trim();
-    if (editorContent.length === 0 && !window.quill.root.innerHTML.includes('<img')) {
+    if (editorContent.length === 0 && !window.quill.root.innerHTML.includes('aidcademy-custom')) {
         document.getElementById('editor-container').classList.add('border-danger', 'border-2');
         isValid = false;
     } else {
         document.getElementById('editor-container').classList.remove('border-danger', 'border-2');
-        saveQuillHtml(); // Save HTML to hidden field if valid
+        document.getElementById(glbContentBodyId).value = window.quill.root.innerHTML;
     }
 
     if (!isValid) {
         alert("Please fill in all required fields highlighted in red.");
-        return false; // Stops the button from submitting to the C# backend
+        return false;
     }
 
-    return true; // Allows the C# code to run
+    // CRITICAL: Clear the browser backup now that we successfully submitted it!
+    localStorage.removeItem('aidcademy_upload_backup');
+
+    return true;
 }
 
-function saveQuillHtml() {
-    document.getElementById(glbContentBodyId).value = document.querySelector('.ql-editor').innerHTML;
+// ---------------------------------------------------------
+// INSERT EMBEDS NATIVELY
+// ---------------------------------------------------------
+
+function insertFlipCard() {
+    var elImg = document.getElementById('fcImageUrl'), elFront = document.getElementById('fcFront'), elBack = document.getElementById('fcBack');
+    var imgUrl = elImg ? elImg.value.trim() : '', frontText = elFront ? elFront.value.trim() : '', backText = elBack ? elBack.value.trim().replace(/\n/g, '<br>') : '';
+
+    if (frontText === '' || backText === '') { alert("Please enter both front and back text."); return; }
+
+    var range = window.quill.getSelection(true);
+    var insertIndex = range ? range.index : window.quill.getLength();
+
+    window.quill.insertEmbed(insertIndex, 'flipcard', { imgUrl: imgUrl, frontText: frontText, backText: backText }, Quill.sources.USER);
+    window.quill.setSelection(insertIndex + 1, Quill.sources.SILENT);
+
+    if (elImg) elImg.value = ''; if (elFront) elFront.value = ''; if (elBack) elBack.value = '';
+    var closeBtn = document.getElementById('closeFlipModalBtn'); if (closeBtn) closeBtn.click();
+}
+
+function insertAccordion() {
+    var elTitle = document.getElementById('accTitle'), elContent = document.getElementById('accContent');
+    var title = elTitle ? elTitle.value.trim() : '', content = elContent ? elContent.value.trim().replace(/\n/g, '<br>') : '';
+
+    if (title === '' || content === '') { alert("Please enter a title and content."); return; }
+
+    var range = window.quill.getSelection(true);
+    var insertIndex = range ? range.index : window.quill.getLength();
+
+    window.quill.insertEmbed(insertIndex, 'accordion', { title: title, content: content }, Quill.sources.USER);
+    window.quill.setSelection(insertIndex + 1, Quill.sources.SILENT);
+
+    if (elTitle) elTitle.value = ''; if (elContent) elContent.value = '';
+    var closeBtn = document.getElementById('closeAccModalBtn'); if (closeBtn) closeBtn.click();
 }

@@ -159,60 +159,6 @@ namespace Aidcademy
         protected global::System.Web.UI.WebControls.HiddenField hfContentBody;
 
         /// <summary>
-        /// txtQuizQuestion control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtQuizQuestion;
-
-        /// <summary>
-        /// txtOptA control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtOptA;
-
-        /// <summary>
-        /// txtOptB control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtOptB;
-
-        /// <summary>
-        /// txtOptC control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtOptC;
-
-        /// <summary>
-        /// txtOptD control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox txtOptD;
-
-        /// <summary>
-        /// ddlCorrectAnswer control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.DropDownList ddlCorrectAnswer;
-
-        /// <summary>
         /// btnSaveDraft control.
         /// </summary>
         /// <remarks>
@@ -222,12 +168,12 @@ namespace Aidcademy
         protected global::System.Web.UI.WebControls.Button btnSaveDraft;
 
         /// <summary>
-        /// btnSubmitLesson control.
+        /// btnPublishAdmin control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Button btnSubmitLesson;
+        protected global::System.Web.UI.WebControls.Button btnPublishAdmin;
     }
 }
