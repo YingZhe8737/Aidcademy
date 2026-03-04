@@ -30,7 +30,7 @@
         }
 
         .navbar-brand {
-            font-size: 22px;
+            font-size: 24px;
             font-weight: bold;
         }
 
@@ -230,9 +230,9 @@
                 <asp:HyperLink runat="server" NavigateUrl="~/MemberDashboard.aspx">Dashboard</asp:HyperLink>
                 <asp:HyperLink runat="server" NavigateUrl="~/LearningCourse.aspx">Courses</asp:HyperLink>
                 <asp:HyperLink runat="server" NavigateUrl="~/LearningProgress.aspx">My Progress</asp:HyperLink>
+                <asp:HyperLink runat="server" NavigateUrl="~/SubmitQuestion.aspx">Ask Question</asp:HyperLink>
                 <asp:HyperLink runat="server" NavigateUrl="~/MemberProfile.aspx">Profile</asp:HyperLink>
-                <asp:LinkButton ID="btnLogout" runat="server" OnClick="btnLogout_Click" CssClass="navbar-btn">Logout
-                    </asp:LinkButton>
+                <asp:LinkButton ID="btnLogout" runat="server" OnClick="btnLogout_Click" CssClass="navbar-btn">Logout</asp:LinkButton>
             </div>
         </div>
 

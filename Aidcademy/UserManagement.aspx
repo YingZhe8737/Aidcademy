@@ -17,12 +17,14 @@
           <h2> <i class="fa-solid fa-truck-medical me-2"></i> AIDCADEMY </h2>  
         </div>
 
-        <div>
-            <asp:Button runat="server" CssClass="nav-btn" Text="Home" OnClick="Home_Click" />
-            <asp:Button runat="server" CssClass="nav-btn" Text="System Report" OnClick="SystemReport_Click" />
-            <asp:Button runat="server" CssClass="nav-btn" Text="User Management" OnClick="UserManagement_Click" />
-            <asp:Button runat="server" CssClass="nav-btn" Text="Content Management" OnClick="ContentManagement_Click" />
-            <asp:Button runat="server" CssClass="nav-btn" Text="Logout" OnClick="Logout_Click" />
+        <div = "navbar-nav flex-row">
+            <ul class="navbar-nav">
+                <li class="nav-item"><a class="nav-link fw-bold" href="AdminDashboard.aspx">Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" href="SystemReport.aspx">System Report</a></li>
+                <li class="nav-item"><a class="nav-link" href="UserManagement.aspx">User Management</a></li>
+                <li class="nav-item"><a class="nav-link" href="ContentManagement.aspx">Content Management</a></li>
+                <li class="nav-item"><a class="nav-link" href="Login_signup.aspx">Logout</a></li>
+            </ul>
         </div>
 
     </div>

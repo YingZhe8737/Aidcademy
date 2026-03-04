@@ -11,68 +11,70 @@
 
 
 <body>
-    <form id="form1" runat="server">
-        <!-- Navigation bar at the very top -->
+<form id="form1" runat="server">
+
+    <!-- NAVBAR -->
     <div class="admin-nav">
 
         <div class="nav-welcome">
           <h2> <i class="fa-solid fa-truck-medical me-2"></i> AIDCADEMY </h2>  
         </div>
 
-        <div>
-            <asp:Button runat="server" CssClass="nav-btn" Text="Home" OnClick="Home_Click" />
-            <asp:Button runat="server" CssClass="nav-btn" Text="System Report" OnClick="SystemReport_Click" />
-            <asp:Button runat="server" CssClass="nav-btn" Text="User Management" OnClick="UserManagement_Click" />
-            <asp:Button runat="server" CssClass="nav-btn" Text="Content Management" OnClick="ContentManagement_Click" />
-            <asp:Button runat="server" CssClass="nav-btn" Text="Logout" OnClick="Logout_Click" />
+        <div = "navbar-nav flex-row">
+            <ul class="navbar-nav">
+                <li class="nav-item"><a class="nav-link fw-bold" href="AdminDashboard.aspx">Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link" href="SystemReport.aspx">System Report</a></li>
+                <li class="nav-item"><a class="nav-link" href="UserManagement.aspx">User Management</a></li>
+                <li class="nav-item"><a class="nav-link" href="ContentManagement.aspx">Content Management</a></li>
+                <li class="nav-item"><a class="nav-link" href="Login_signup.aspx">Logout</a></li>
+            </ul>
         </div>
 
     </div>
 
 
+    <!-- MAIN DASHBOARD -->
+    <div class="dashboard-container">
 
-
-
-    <div class="admin-general-contents">
-
-        <!-- box left -->
-        <div class="general-box">
-            <div class="color-h2-white"> <h2>System Report</h2> </div>
-            <p>Summary of system performance.</p>
+        <!-- SYSTEM REPORT -->
+        <div class="card">
+            <h3><i class="fa-solid fa-chart-line"></i> System Overview</h3>
+            <p>Monitor platform performance, usage, and system health.</p>
         </div>
 
-        <!-- box middle -->
-
-        <div class="general-box">
-            <div class="color-h2-white"><h2>Content-Summary</h2></div>
-            <p>Summary of Accessed Content.</p>
+        <!-- CONTENT -->
+        <div class="card">
+            <h3><i class="fa-solid fa-book"></i> Content Summary</h3>
+            <p>Track learning material, access frequency and engagement.</p>
         </div>
 
-         <!-- box right -->
+        <!-- USER -->
+        <div class="card">
+            <h3><i class="fa-solid fa-users"></i> User Management</h3>
 
-      <div class="general-box">
-          <div class="color-h2-white"> <h2>User-Management</h2> </div>
-                  <!-- Member Overview -->
-          <div class="user-box">
-              <div class="user-section">
-                  <h4>Member Overview</h4>
-                  <asp:Label ID="lblActiveMembers" runat="server" CssClass="stat"></asp:Label>
-                  <asp:Label ID="lblSuspendedMembers" runat="server" CssClass="stat"></asp:Label>
-                  <asp:Label ID="lblDeactivatedMembers" runat="server" CssClass="stat"></asp:Label>
-              </div>
+            <div class="stats">
+                <div>
+                    <h4>Members</h4>
+                    <asp:Label ID="lblActiveMembers" runat="server" CssClass="stat"></asp:Label>
+                    <asp:Label ID="lblSuspendedMembers" runat="server" CssClass="stat"></asp:Label>
+                    <asp:Label ID="lblDeactivatedMembers" runat="server" CssClass="stat"></asp:Label>
+                </div>
 
-              <div class="user-section">
-                  <h4>Instructor Overview</h4>
-                  <asp:Label ID="lblActiveInstructors" runat="server" CssClass="stat"></asp:Label>
-                  <asp:Label ID="lblSuspendedInstructors" runat="server" CssClass="stat"></asp:Label>
-                  <asp:Label ID="lblDeactivatedInstructors" runat="server" CssClass="stat"></asp:Label>
-              </div>
-              <asp:Button runat="server" CssClass="nav-btn" Text="View Details" OnClick="User_Management2" />
+                <div>
+                    <h4>Instructors</h4>
+                    <asp:Label ID="lblActiveInstructors" runat="server" CssClass="stat"></asp:Label>
+                    <asp:Label ID="lblSuspendedInstructors" runat="server" CssClass="stat"></asp:Label>
+                    <asp:Label ID="lblDeactivatedInstructors" runat="server" CssClass="stat"></asp:Label>
+                </div>
             </div>
+
+            <asp:Button runat="server" CssClass="primary-btn" 
+                Text="View Details" 
+                OnClick="User_Management2" />
+        </div>
+
     </div>
 
-
-
-    </form>
+</form>
 </body>
 </html>

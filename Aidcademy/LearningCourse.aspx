@@ -22,18 +22,25 @@
         .navbar {
             background: linear-gradient(to right, #dc2626, #b91c1c);
             padding: 15px 30px;
-            color: white;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            color: white;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
-            .navbar h1 {
-                font-size: 24px;
-            }
+        .navbar-brand {
+            font-size: 24px;
+            font-weight: bold;
+        }
 
-            .navbar a {
+        .navbar-menu {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+            .navbar-menu a {
                 color: white;
                 text-decoration: none;
                 padding: 8px 15px;
@@ -41,9 +48,21 @@
                 transition: background 0.3s;
             }
 
-                .navbar a:hover {
+                .navbar-menu a:hover,
+                .navbar-menu .navbar-btn:hover {
                     background: rgba(255, 255, 255, 0.2);
                 }
+
+        .navbar-btn {
+            color: white;
+            background: none;
+            border: none;
+            font-size: 1rem;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
 
         .container {
             max-width: 1200px;
@@ -191,9 +210,9 @@
                 <asp:HyperLink runat="server" NavigateUrl="~/MemberDashboard.aspx">Dashboard</asp:HyperLink>
                 <asp:HyperLink runat="server" NavigateUrl="~/LearningCourse.aspx">Courses</asp:HyperLink>
                 <asp:HyperLink runat="server" NavigateUrl="~/LearningProgress.aspx">My Progress</asp:HyperLink>
+                <asp:HyperLink runat="server" NavigateUrl="~/SubmitQuestion.aspx">Ask Question</asp:HyperLink>
                 <asp:HyperLink runat="server" NavigateUrl="~/MemberProfile.aspx">Profile</asp:HyperLink>
-                <asp:LinkButton ID="btnLogout" runat="server" OnClick="btnLogout_Click" CssClass="navbar-btn">Logout
-                    </asp:LinkButton>
+                <asp:LinkButton ID="btnLogout" runat="server" OnClick="btnLogout_Click" CssClass="navbar-btn">Logout</asp:LinkButton>
             </div>
         </div>
 

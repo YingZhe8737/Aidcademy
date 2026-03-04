@@ -12,7 +12,7 @@ namespace Aidcademy
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (!SessionHelper.IsUserLoggedIn())
+            if (!SessionHelper.IsUserLoggedIn() || !SessionHelper.IsMember())
             {
                 Response.Redirect("~/Login_signup.aspx");
                 return;

@@ -13,7 +13,7 @@ namespace Aidcademy
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (!SessionHelper.IsUserLoggedIn())
+            if (!SessionHelper.IsUserLoggedIn() || !SessionHelper.IsMember())
             {
                 Response.Redirect("~/Login_signup.aspx");
                 return;
@@ -39,7 +39,6 @@ namespace Aidcademy
                     FROM Courses c
                     LEFT JOIN Enrollments e
                         ON c.CourseID = e.CourseID AND e.UserID = @UserID
-                    WHERE c.ApprovalStatus = 'Approved'
                     ORDER BY c.Title";
 
                 SqlParameter[] p = { new SqlParameter("@UserID", userID) };

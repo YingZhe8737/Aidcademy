@@ -51,9 +51,21 @@
                 transition: background 0.3s;
             }
 
-                .navbar-menu a:hover {
+                .navbar-menu a:hover,
+                .navbar-menu .navbar-btn:hover {
                     background: rgba(255, 255, 255, 0.2);
                 }
+
+        .navbar-btn {
+            color: white;
+            background: none;
+            border: none;
+            font-size: 1rem;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
 
         .container {
             max-width: 1200px;
@@ -278,15 +290,12 @@
                         AIDCADEMY</a>
             </div>
             <div class="navbar-menu">
-                <asp:HyperLink ID="lnkDashboard" runat="server" NavigateUrl="~/MemberDashboard.aspx">Dashboard
-                </asp:HyperLink>
-                <asp:HyperLink ID="lnkCourses" runat="server" NavigateUrl="~/LearningCourse.aspx">Courses
-                </asp:HyperLink>
-                <asp:HyperLink ID="lnkProgress" runat="server" NavigateUrl="~/LearningProgress.aspx">My Progress
-                </asp:HyperLink>
-                <asp:HyperLink ID="lnkProfile" runat="server" NavigateUrl="~/MemberProfile.aspx">Profile
-                </asp:HyperLink>
-                <asp:LinkButton ID="btnLogout" runat="server" OnClick="btnLogout_Click">Logout</asp:LinkButton>
+                <asp:HyperLink ID="lnkDashboard" runat="server" NavigateUrl="~/MemberDashboard.aspx">Dashboard</asp:HyperLink>
+                <asp:HyperLink ID="lnkCourses" runat="server" NavigateUrl="~/LearningCourse.aspx">Courses</asp:HyperLink>
+                <asp:HyperLink ID="lnkProgress" runat="server" NavigateUrl="~/LearningProgress.aspx">My Progress</asp:HyperLink>
+                <asp:HyperLink ID="lnkAskQuestion" runat="server" NavigateUrl="~/SubmitQuestion.aspx">Ask Question</asp:HyperLink>
+                <asp:HyperLink ID="lnkProfile" runat="server" NavigateUrl="~/MemberProfile.aspx">Profile</asp:HyperLink>
+                <asp:LinkButton ID="btnLogout" runat="server" OnClick="btnLogout_Click" CssClass="navbar-btn">Logout</asp:LinkButton>
             </div>
         </div>
 
@@ -369,7 +378,7 @@
                                             <%# Eval("ProgressPercentage", "{0:F0}" ) %>% Complete
                                         </span>
                                         <asp:HyperLink runat="server"
-                                            NavigateUrl='<%# "~/LearningContent.aspx?courseId=" + Eval("CourseID") %>'
+                                            NavigateUrl='<%# GetContinueUrl(Eval("NextLessonID")) %>'
                                             CssClass="btn btn-primary">
                                                 Continue →
                                         </asp:HyperLink>
