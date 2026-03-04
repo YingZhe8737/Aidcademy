@@ -18,31 +18,6 @@ namespace Aidcademy
             LoadUserSummary();
         }
 
-        protected void Home_Click(object sender, EventArgs e)
-        {
-            Response.Redirect("AdminDashboard.aspx");
-        }
-
-        protected void SystemReport_Click(object sender, EventArgs e)
-        {
-            Response.Redirect("SystemReport.aspx");
-        }
-
-        protected void UserManagement_Click(object sender, EventArgs e)
-        {
-            Response.Redirect("UserManagement.aspx");
-        }
-
-        protected void ContentManagement_Click(object sender, EventArgs e)
-        {
-            Response.Redirect("ContentManagement.aspx");
-        }
-
-        protected void Logout_Click(object sender, EventArgs e)
-        {
-
-        }
-
 
         private void LoadUserSummary()
         {
