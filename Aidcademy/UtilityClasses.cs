@@ -401,7 +401,7 @@ namespace Aidcademy.Utilities
                 <html>
                 <body style='font-family:Segoe UI,Arial,sans-serif; color:#333;'>
                     <div style='max-width:480px;margin:0 auto;padding:30px;border:1px solid #e0e0e0;border-radius:12px;'>
-                        <h2 style='color:#dc2626;'>🏥 AIDCADEMY</h2>
+                        <h2 style='color:#dc2626;'>&#10084;&#65039; AIDCADEMY</h2>
                         <p>Hi there,</p>
                         <p>Use the verification code below to {purposeLabel}:</p>
                         <div style='text-align:center;margin:30px 0;'>

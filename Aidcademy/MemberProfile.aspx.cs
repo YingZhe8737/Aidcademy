@@ -162,16 +162,64 @@ namespace Aidcademy
 
                         int rows = cmd.ExecuteNonQuery();
                         if (rows > 0)
-                        {
                             Session["UserName"] = fullName;
-                            ShowMessage("Your profile has been updated successfully!", true);
-                        }
-                        else
-                        {
-                            ShowMessage("No changes were saved.", false);
-                        }
                     }
                 }
+
+                // --- Password change (only if any password field is filled) ---
+                string current = txtCurrentPassword.Text.Trim();
+                string newPwd  = txtNewPassword.Text.Trim();
+                string confirm = txtConfirmNewPassword.Text.Trim();
+
+                if (!string.IsNullOrEmpty(current) || !string.IsNullOrEmpty(newPwd) || !string.IsNullOrEmpty(confirm))
+                {
+                    if (string.IsNullOrEmpty(current) || string.IsNullOrEmpty(newPwd) || string.IsNullOrEmpty(confirm))
+                    {
+                        ShowMessage("Profile saved. Please fill in all three password fields to change your password.", false);
+                        return;
+                    }
+
+                    if (newPwd != confirm)
+                    {
+                        ShowMessage("Profile saved, but new passwords do not match.", false);
+                        return;
+                    }
+
+                    string errMsg;
+                    if (!SecurityHelper.IsPasswordValid(newPwd, out errMsg))
+                    {
+                        ShowMessage("Profile saved, but password not changed: " + errMsg, false);
+                        return;
+                    }
+
+                    string currentHash = SecurityHelper.HashPassword(current);
+                    string checkQuery  = "SELECT PasswordHash FROM Users WHERE UserID = @UserID";
+                    SqlParameter[] checkParams = { new SqlParameter("@UserID", userID) };
+                    string storedHash = DatabaseHelper.ExecuteScalar(checkQuery, checkParams)?.ToString();
+
+                    if (storedHash == null || storedHash != currentHash)
+                    {
+                        ShowMessage("Profile saved, but current password is incorrect.", false);
+                        return;
+                    }
+
+                    string newHash     = SecurityHelper.HashPassword(newPwd);
+                    string updatePwdQ  = "UPDATE Users SET PasswordHash = @PasswordHash WHERE UserID = @UserID";
+                    SqlParameter[] pwdParams =
+                    {
+                        new SqlParameter("@PasswordHash", newHash),
+                        new SqlParameter("@UserID", userID)
+                    };
+                    DatabaseHelper.ExecuteNonQuery(updatePwdQ, pwdParams);
+
+                    txtCurrentPassword.Text    = "";
+                    txtNewPassword.Text        = "";
+                    txtConfirmNewPassword.Text = "";
+                    ShowMessage("Profile and password updated successfully!", true);
+                    return;
+                }
+
+                ShowMessage("Your profile has been updated successfully!", true);
             }
             catch (Exception ex)
             {

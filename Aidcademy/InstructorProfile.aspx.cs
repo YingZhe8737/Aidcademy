@@ -2,6 +2,7 @@
 using System.Data.SqlClient;
 using System.Configuration;
 using System.IO;
+using Aidcademy.Utilities;
 
 namespace Aidcademy
 {
@@ -16,6 +17,12 @@ namespace Aidcademy
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            if (!SessionHelper.IsUserLoggedIn() || !SessionHelper.IsInstructor())
+            {
+                Response.Redirect("~/Login_signup.aspx");
+                return;
+            }
+
             if (!IsPostBack)
             {
                 LoadProfile();

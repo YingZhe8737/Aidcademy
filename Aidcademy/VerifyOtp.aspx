@@ -26,7 +26,6 @@
             padding: 20px;
         }
 
-        /* Logo header — same as login page */
         .logo-header {
             display: flex;
             align-items: center;
@@ -186,7 +185,6 @@
 <body>
     <form id="form1" runat="server">
 
-        <!-- Logo — identical to Login page -->
         <div class="logo-header">
             <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="#dc2626"
                 stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
