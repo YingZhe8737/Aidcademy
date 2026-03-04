@@ -9,6 +9,50 @@
     <link href="Styles/aidcademy-theme.css" rel="stylesheet" type="text/css" />
     <link href="Instructor.css" rel="stylesheet" type="text/css" />
     <style>
+        /* Apply your new theme color */
+        body {
+            background-color: #FFFBF1 !important;
+        }
+
+        /* ------------------------------------------- */
+        /* SIDEBAR & NAVBAR CSS                        */
+        /* ------------------------------------------- */
+        .top-navbar {
+            background-color: #c9242b;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-wrapper {
+            background-color: #ffffff;
+            min-height: calc(100vh - 60px); /* Fill the screen under navbar */
+            border-right: 2px solid #f0e6d2;
+        }
+
+        .sidebar-link {
+            color: #495057;
+            text-decoration: none;
+            padding: 10px 15px;
+            display: block;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            font-weight: 500;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .sidebar-link:hover {
+            background-color: #f8f9fa;
+            color: #c9242b;
+            transform: translateX(3px);
+        }
+
+        /* Highlight the lesson they are currently looking at */
+        .sidebar-link.active-lesson {
+            background-color: #f8d7da;
+            color: #c9242b;
+            font-weight: bold;
+            border-left: 4px solid #c9242b;
+        }
+
         /* ------------------------------------------- */
         /* 1. THE 3D FLIP CARD CSS FOR MEMBERS         */
         /* ------------------------------------------- */
@@ -17,7 +61,7 @@
             width: 100%;
             max-width: 400px;
             height: 250px;
-            perspective: 1000px; /* Gives the 3D depth */
+            perspective: 1000px; 
             margin: 25px auto;
         }
 
@@ -32,10 +76,7 @@
             border-radius: 12px;
         }
 
-        /* Trigger the flip on hover */
-        .actual-3d-flip-card:hover .flip-card-inner {
-            transform: rotateY(180deg);
-        }
+        .actual-3d-flip-card:hover .flip-card-inner { transform: rotateY(180deg); }
 
         .flip-card-front, .flip-card-back {
             position: absolute;
@@ -101,7 +142,7 @@
             transform: rotate(90deg);
         }
 
-        /* ------------------------------------------- */
+/* ------------------------------------------- */
         /* 3. GENERAL LESSON TYPOGRAPHY                */
         /* ------------------------------------------- */
         .lesson-content {
@@ -117,53 +158,109 @@
             border-radius: 8px;
             margin: 15px 0;
         }
+
+        /* NEW: Force all Quill videos into a perfect 16:9 ratio */
+        .lesson-content iframe.ql-video {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            height: auto;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
     </style>
 </head>
 
-<body class="bg-light">
+<body>
     <form id="form1" runat="server">
-        <div class="container mt-5 mb-5">
-            <div class="row justify-content-center">
-                <div class="col-lg-8">
+        
+        <nav class="navbar navbar-expand-lg navbar-dark top-navbar sticky-top">
+            <div class="container-fluid px-4">
+                <a class="navbar-brand fw-bold fs-4" href="#">
+                    <i class="fa-solid fa-house-medical me-2 text-white"></i>Aidcademy
+                </a>
+                <div class="d-flex align-items-center">
+                    <span class="text-light fw-bold me-3"><i class="fa-solid fa-book-open-reader me-2"></i>Lesson Viewer</span>
+                </div>
+            </div>
+        </nav>
 
-                    <div class="mb-4 border-bottom pb-3">
-                        <h1 class="fw-bold text-danger">
-                            <asp:Label ID="lblTitle" runat="server"></asp:Label>
-                        </h1>
-                        <span class="badge bg-secondary">Step <asp:Label ID="lblSequence" runat="server"></asp:Label></span>
-                    </div>
-
-                    <div class="lesson-content bg-white p-5 rounded shadow-sm">
-                        <asp:Literal ID="litLessonContent" runat="server"></asp:Literal>
-                    </div>
-
-                    <asp:Panel ID="pnlQuiz" runat="server" Visible="false"
-                        CssClass="mt-5 p-4 bg-white rounded shadow-sm border-top border-warning border-4">
-                        <h4 class="fw-bold mb-4"><i class="fa-solid fa-clipboard-question text-warning me-2"></i>Knowledge Check</h4>
-
-                            <asp:Repeater ID="rptQuiz" runat="server" OnItemDataBound="rptQuiz_ItemDataBound">
-                                <ItemTemplate>
-                                    <div class="mb-4 pb-3 border-bottom">
-                                        <p class="fs-5 fw-bold text-dark mb-3">
-                                            <%# Container.ItemIndex + 1 %>. <%# Eval("QuestionText") %>
-                                        </p>
-                                    
-                                        <asp:RadioButtonList ID="rblOptions" runat="server" CssClass="form-check fs-5" CellSpacing="10"></asp:RadioButtonList>
-                                    
-                                        <asp:HiddenField ID="hfCorrectAnswer" runat="server" Value='<%# Eval("CorrectAnswer") %>' />
-                                    
-                                        <asp:Label ID="lblFeedback" runat="server" CssClass="d-block mt-2"></asp:Label>
-                                    </div>
-                                </ItemTemplate>
-                            </asp:Repeater>
-
-                        <asp:HiddenField ID="hfQuizID" runat="server" />
-
-                        <asp:Button ID="btnSubmitQuiz" runat="server" Text="Submit Quiz" CssClass="btn btn-warning fw-bold px-4 fs-5 mt-2" OnClick="btnSubmitQuiz_Click" />
+        <div class="container-fluid">
+            <div class="row">
+                
+                <div class="col-md-4 col-lg-3 p-0 sidebar-wrapper shadow-sm d-none d-md-block">
+                    <div class="p-4">
+                        <h5 class="fw-bold mb-4 text-dark"><i class="fa-solid fa-list text-danger me-2"></i>Course Curriculum</h5>
                         
-                        <asp:Label ID="lblQuizScore" runat="server" CssClass="d-block mt-3"></asp:Label>
-                    </asp:Panel>
+                        <asp:Repeater ID="rptSidebarCourses" runat="server" OnItemDataBound="rptSidebarCourses_ItemDataBound">
+                            <ItemTemplate>
+                                <div class="mb-4">
+                                    <h6 class="fw-bold text-secondary text-uppercase border-bottom pb-2 mb-3" style="letter-spacing: 1px; font-size: 0.85rem;">
+                                        <%# Eval("CourseTitle") %>
+                                    </h6>
+                                    
+                                    <asp:Repeater ID="rptSidebarLessons" runat="server">
+                                        <ItemTemplate>
+                                            <a href='ViewLesson.aspx?LessonID=<%# Eval("LessonID") %>' 
+                                               class='sidebar-link <%# Eval("LessonID").ToString() == Request.QueryString["LessonID"] ? "active-lesson" : "" %>'>
+                                                <i class="fa-regular fa-circle-play me-2 text-muted"></i>
+                                                Step <%# Eval("SequenceOrder") %>: <%# Eval("LessonTitle") %>
+                                            </a>
+                                        </ItemTemplate>
+                                    </asp:Repeater>
+                                </div>
+                            </ItemTemplate>
+                        </asp:Repeater>
+                    </div>
+                </div>
 
+                <div class="col-md-8 col-lg-9 p-4 p-lg-5">
+                    
+                    <a href="javascript:history.back()" class="btn btn-outline-secondary rounded-pill shadow-sm fw-bold mb-4 px-4">
+                        <i class="fa-solid fa-arrow-left me-2"></i> Back
+                    </a>
+
+                    <div class="row justify-content-center">
+                        <div class="col-xl-10">
+
+                            <div class="mb-4 border-bottom border-danger border-2 pb-3">
+                                <h1 class="fw-bold text-dark mb-2">
+                                    <asp:Label ID="lblTitle" runat="server"></asp:Label>
+                                </h1>
+                                <span class="badge bg-danger fs-6 px-3 py-2 rounded-pill shadow-sm">
+                                    Step <asp:Label ID="lblSequence" runat="server"></asp:Label>
+                                </span>
+                            </div>
+
+                            <div class="lesson-content bg-white p-4 p-md-5 rounded-4 shadow-sm border border-light">
+                                <asp:Literal ID="litLessonContent" runat="server"></asp:Literal>
+                            </div>
+
+                            <asp:Panel ID="pnlQuiz" runat="server" Visible="false"
+                                CssClass="mt-5 p-4 p-md-5 bg-white rounded-4 shadow-sm border-top border-warning border-4">
+                                <h4 class="fw-bold mb-4 text-dark"><i class="fa-solid fa-clipboard-question text-warning me-2 fs-3"></i>Knowledge Check</h4>
+
+                                <asp:Repeater ID="rptQuiz" runat="server" OnItemDataBound="rptQuiz_ItemDataBound">
+                                    <ItemTemplate>
+                                        <div class="mb-4 pb-4 border-bottom border-light">
+                                            <p class="fs-5 fw-bold text-dark mb-3">
+                                                <%# Container.ItemIndex + 1 %>. <%# Eval("QuestionText") %>
+                                            </p>
+                                            <asp:RadioButtonList ID="rblOptions" runat="server" CssClass="form-check fs-5" CellSpacing="10"></asp:RadioButtonList>
+                                            <asp:HiddenField ID="hfCorrectAnswer" runat="server" Value='<%# Eval("CorrectAnswer") %>' />
+                                            <asp:Label ID="lblFeedback" runat="server" CssClass="d-block mt-2"></asp:Label>
+                                        </div>
+                                    </ItemTemplate>
+                                </asp:Repeater>
+
+                                <asp:HiddenField ID="hfQuizID" runat="server" />
+                                <asp:Button ID="btnSubmitQuiz" runat="server" Text="Submit Answers" CssClass="btn btn-warning fw-bold px-5 py-2 fs-5 mt-3 shadow-sm rounded-pill" OnClick="btnSubmitQuiz_Click" />
+                                <asp:Label ID="lblQuizScore" runat="server" CssClass="d-block mt-3"></asp:Label>
+                            </asp:Panel>
+
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -172,20 +269,16 @@
     <script>
         // =========================================================================
         // THE UNPACKING SCRIPT
-        // Transforms the static Editor blocks into highly interactive Student blocks
         // =========================================================================
         window.onload = function () {
 
             // 1. UNPACK FLIP CARDS
             document.querySelectorAll('.aidcademy-custom-flipcard').forEach(function (card) {
-                // Grab the hidden data saved by Quill
                 let front = card.getAttribute('data-front');
                 let back = card.getAttribute('data-back');
                 let img = card.getAttribute('data-img');
-
                 let imgHtml = img ? `<img src="${img}" alt="Card Image" />` : '';
 
-                // Overwrite the block with actual 3D animation HTML
                 card.innerHTML = `
                 <div class="flip-card-inner">
                     <div class="flip-card-front shadow-sm">
@@ -198,7 +291,6 @@
                     </div>
                 </div>`;
 
-                // Strip the old editor class and apply the 3D member class
                 card.className = 'actual-3d-flip-card';
                 card.removeAttribute('style');
                 card.removeAttribute('contenteditable');
@@ -206,11 +298,9 @@
 
             // 2. UNPACK ACCORDIONS
             document.querySelectorAll('.aidcademy-custom-accordion').forEach(function (acc) {
-                // Grab the hidden data saved by Quill
                 let title = acc.getAttribute('data-title');
                 let content = acc.getAttribute('data-content');
 
-                // Overwrite the block with native HTML5 interactive Accordion
                 acc.innerHTML = `
                 <details class="member-accordion my-4">
                     <summary class="fw-bold fs-5 text-dark">
@@ -221,12 +311,10 @@
                     </div>
                 </details>`;
 
-                // Strip editor styles
                 acc.className = '';
                 acc.removeAttribute('style');
                 acc.removeAttribute('contenteditable');
             });
-
         };
     </script>
 </body>

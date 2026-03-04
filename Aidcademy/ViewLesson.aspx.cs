@@ -1,6 +1,7 @@
 ﻿using System;
-using System.Data.SqlClient;
 using System.Configuration;
+using System.Data;
+using System.Data.SqlClient;
 using System.Web.UI.WebControls;
 
 namespace Aidcademy
@@ -15,6 +16,7 @@ namespace Aidcademy
             {
                 if (Request.QueryString["LessonID"] != null)
                 {
+                    BindSidebar();
                     LoadLesson(Convert.ToInt32(Request.QueryString["LessonID"]));
                 }
             }
@@ -177,6 +179,69 @@ namespace Aidcademy
             else
             {
                 lblQuizScore.CssClass = "d-block mt-4 p-3 bg-danger text-white rounded fw-bold fs-5 text-center shadow-sm";
+            }
+        }
+
+        private void BindSidebar()
+        {
+            string connString = ConfigurationManager.ConnectionStrings["AidcademyDB"].ConnectionString;
+            using (SqlConnection conn = new SqlConnection(connString))
+            {
+                // Fetch only courses that have published lessons to keep the sidebar clean
+                string query = @"SELECT DISTINCT c.CourseID, c.Title AS CourseTitle 
+                                 FROM Courses c
+                                 INNER JOIN Lessons l ON c.CourseID = l.CourseID
+                                 WHERE l.ApprovalStatus = 'Published'
+                                 ORDER BY c.Title";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    using (SqlDataAdapter sda = new SqlDataAdapter(cmd))
+                    {
+                        DataTable dt = new DataTable();
+                        sda.Fill(dt);
+
+                        rptSidebarCourses.DataSource = dt;
+                        rptSidebarCourses.DataBind();
+                    }
+                }
+            }
+        }
+
+        protected void rptSidebarCourses_ItemDataBound(object sender, RepeaterItemEventArgs e)
+        {
+            // Check if the item being bound is an actual data row
+            if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
+            {
+                // 1. Get the CourseID of the current row being generated
+                DataRowView drv = (DataRowView)e.Item.DataItem;
+                int courseId = Convert.ToInt32(drv["CourseID"]);
+
+                // 2. Find the inner Repeater on the HTML page
+                Repeater rptSidebarLessons = (Repeater)e.Item.FindControl("rptSidebarLessons");
+
+                // 3. Fetch and bind the lessons for THIS specific course
+                string connString = ConfigurationManager.ConnectionStrings["AidcademyDB"].ConnectionString;
+                using (SqlConnection conn = new SqlConnection(connString))
+                {
+                    string query = @"SELECT LessonID, Title AS LessonTitle, SequenceOrder 
+                                     FROM Lessons 
+                                     WHERE CourseID = @CourseID AND ApprovalStatus = 'Published' 
+                                     ORDER BY SequenceOrder";
+
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@CourseID", courseId);
+                        using (SqlDataAdapter sda = new SqlDataAdapter(cmd))
+                        {
+                            DataTable dt = new DataTable();
+                            sda.Fill(dt);
+
+                            rptSidebarLessons.DataSource = dt;
+                            rptSidebarLessons.DataBind();
+                        }
+                    }
+                }
             }
         }
     }
