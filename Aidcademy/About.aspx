@@ -9,7 +9,10 @@
 <body>
     <form id="form1" runat="server">
     <div class="header">
-        <a href = "MainPage.aspx" class = "brand" > 🏥 AIDCADEMY </a> 
+        <a href="MainPage.aspx" class="brand">
+            <img src="image/Logo.jpeg" alt="Aidcademy Logo">    
+            <span class="brand-text">Aidcademy</span>
+        </a>
         <div class="nav">
             <asp:Button ID="btnAbout" runat="server" Text="About" 
                 CssClass="nav-btn" OnClick="btnAboutUs" />
