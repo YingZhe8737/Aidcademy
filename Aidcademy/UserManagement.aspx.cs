@@ -59,7 +59,7 @@ namespace Aidcademy
             if (e.CommandName == "ChangeStatus")
             {
                 int userId = Convert.ToInt32(e.CommandArgument);
-                if (userId != 1)
+                if ( userId != 1)
                 {
                     adminCS.ChangeUserStatus(userId);
                 }
