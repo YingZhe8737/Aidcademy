@@ -35,7 +35,19 @@ namespace Aidcademy
                     SELECT
                         c.CourseID, c.Title AS CourseName, c.Description AS CourseDescription,
                         c.Category,
-                        CASE WHEN e.EnrollmentID IS NOT NULL THEN 1 ELSE 0 END AS IsEnrolled
+                        ISNULL(e.ProgressPercentage, 0) AS ProgressPercentage,
+                        CASE WHEN e.EnrollmentID IS NOT NULL THEN 1 ELSE 0 END AS IsEnrolled,
+                        (
+                            SELECT TOP 1 l.LessonID
+                            FROM Lessons l
+                            WHERE l.CourseID = c.CourseID
+                              AND l.ApprovalStatus = 'Published'
+                              AND l.LessonID NOT IN (
+                                  SELECT lp.LessonID FROM LessonProgress lp
+                                  WHERE lp.UserID = @UserID AND lp.Status = 'Completed'
+                              )
+                            ORDER BY l.SequenceOrder, l.LessonID
+                        ) AS NextLessonID
                     FROM Courses c
                     LEFT JOIN Enrollments e
                         ON c.CourseID = e.CourseID AND e.UserID = @UserID
@@ -89,6 +101,13 @@ namespace Aidcademy
             {
                 ShowMessage("Could not enrol. (" + ex.Message + ")", false);
             }
+        }
+
+        protected string GetContinueUrl(object lessonId)
+        {
+            if (lessonId != null && lessonId != System.DBNull.Value)
+                return ResolveUrl("~/ViewLesson.aspx?LessonID=" + lessonId.ToString());
+            return ResolveUrl("~/LearningProgress.aspx");
         }
 
         private void ShowMessage(string message, bool isSuccess)

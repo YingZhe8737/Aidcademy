@@ -141,21 +141,39 @@ namespace Aidcademy
         protected global::System.Web.UI.WebControls.Repeater rptEnrolledCourses;
 
         /// <summary>
-        /// pnlNoActivity control.
+        /// gvLeaderboard control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Panel pnlNoActivity;
+        protected global::System.Web.UI.WebControls.GridView gvLeaderboard;
 
         /// <summary>
-        /// rptRecentActivity control.
+        /// lblBadge control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.Repeater rptRecentActivity;
+        protected global::System.Web.UI.WebControls.Label lblBadge;
+
+        /// <summary>
+        /// pnlCompletedSection control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlCompletedSection;
+
+        /// <summary>
+        /// rptCompletedCourses control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptCompletedCourses;
     }
 }

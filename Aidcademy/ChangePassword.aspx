@@ -88,7 +88,7 @@
         .btn {
             width: 100%;
             padding: 14px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
             color: white;
             border: none;
             border-radius: 8px;
@@ -100,7 +100,7 @@
 
             .btn:hover {
                 transform: translateY(-2px);
-                box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+                box-shadow: 0 5px 20px rgba(220, 38, 38, 0.4);
             }
 
         .message {
@@ -136,7 +136,8 @@
     <form id="form1" runat="server">
         <div class="container">
             <div class="logo">
-                <h1>🏥 AIDCADEMY</h1>
+                <img src="Image/logo2.jpeg" alt="Aidcademy Logo" style="height: 60px; border-radius: 8px; margin-bottom: 10px;" />
+                <h1 style="color: #c9242b;">AIDCADEMY</h1>
             </div>
 
             <h2>Change Password</h2>
@@ -157,10 +158,14 @@
             <div class="form-group">
                 <label>New Password *</label>
                 <asp:TextBox ID="txtNewPassword" runat="server" TextMode="Password"
-                    placeholder="Enter new password"></asp:TextBox>
+                    placeholder="Enter new password" oninput="checkStrength()"></asp:TextBox>
+                <div style="height: 4px; background: #e0e0e0; margin-top: 8px; border-radius: 2px;">
+                    <div id="strengthBar" style="height: 100%; width: 0%; border-radius: 2px; transition: 0.3s;"></div>
+                </div>
+                <div id="strengthText" style="font-size: 12px; margin-top: 4px; font-weight: bold; text-align: right;"></div>
                 <asp:RequiredFieldValidator runat="server" ControlToValidate="txtNewPassword"
                     ErrorMessage="Required" CssClass="error" Display="Dynamic" ValidationGroup="ChangePassword" />
-                <small style="color: #666; font-size: 12px;">At least 8 characters with uppercase, lowercase, and
+                <small style="color: #666; font-size: 12px; display: block; margin-top: 4px;">At least 8 characters with uppercase, lowercase, and
                         numbers</small>
             </div>
 
@@ -183,6 +188,49 @@
             </div>
         </div>
     </form>
+    <script>
+        function checkStrength() {
+            var pwd = document.getElementById('<%= txtNewPassword.ClientID %>').value;
+            var strengthText = document.getElementById('strengthText');
+            var strengthBar = document.getElementById('strengthBar');
+            
+            var strength = 0;
+            if (pwd.length >= 8) strength += 1;
+            if (pwd.match(/[a-z]+/)) strength += 1;
+            if (pwd.match(/[A-Z]+/)) strength += 1;
+            if (pwd.match(/[0-9]+/)) strength += 1;
+            if (pwd.match(/[@$!%*?&]+/)) strength += 1;
+
+            switch(strength) {
+                case 0:
+                case 1:
+                case 2:
+                    strengthBar.style.width = '33%';
+                    strengthBar.style.backgroundColor = '#e74c3c';
+                    strengthText.innerText = 'Weak';
+                    strengthText.style.color = '#e74c3c';
+                    break;
+                case 3:
+                case 4:
+                    strengthBar.style.width = '66%';
+                    strengthBar.style.backgroundColor = '#f1c40f';
+                    strengthText.innerText = 'Fair';
+                    strengthText.style.color = '#f1c40f';
+                    break;
+                case 5:
+                    strengthBar.style.width = '100%';
+                    strengthBar.style.backgroundColor = '#28a745';
+                    strengthText.innerText = 'Strong';
+                    strengthText.style.color = '#28a745';
+                    break;
+            }
+            
+            if (pwd.length === 0) {
+                strengthBar.style.width = '0%';
+                strengthText.innerText = '';
+            }
+        }
+    </script>
 </body>
 
 </html>

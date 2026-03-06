@@ -63,6 +63,10 @@ namespace Aidcademy
                                                 ? reader["PhoneNumber"].ToString()
                                                 : "";
 
+                                txtBio.Text = reader["Bio"] != DBNull.Value
+                                                ? reader["Bio"].ToString()
+                                                : "";
+
                                 string photo = reader["ProfilePhoto"] != DBNull.Value
                                                ? reader["ProfilePhoto"].ToString()
                                                : "";
@@ -141,6 +145,7 @@ namespace Aidcademy
                         updateProfile = @"UPDATE UserProfiles SET
                                             FullName     = @FullName,
                                             PhoneNumber  = @PhoneNumber,
+                                            Bio          = @Bio,
                                             ProfilePhoto = @ProfilePhoto
                                           WHERE UserID = @UserID";
                     }
@@ -148,7 +153,8 @@ namespace Aidcademy
                     {
                         updateProfile = @"UPDATE UserProfiles SET
                                             FullName    = @FullName,
-                                            PhoneNumber = @PhoneNumber
+                                            PhoneNumber = @PhoneNumber,
+                                            Bio         = @Bio
                                           WHERE UserID = @UserID";
                     }
 
@@ -156,6 +162,7 @@ namespace Aidcademy
                     {
                         cmd.Parameters.AddWithValue("@FullName", fullName);
                         cmd.Parameters.AddWithValue("@PhoneNumber", txtPhone.Text.Trim());
+                        cmd.Parameters.AddWithValue("@Bio", txtBio.Text.Trim());
                         cmd.Parameters.AddWithValue("@UserID", userID);
                         if (photoFileName != null)
                             cmd.Parameters.AddWithValue("@ProfilePhoto", photoFileName);
@@ -192,18 +199,30 @@ namespace Aidcademy
                         return;
                     }
 
-                    string currentHash = SecurityHelper.HashPassword(current);
                     string checkQuery  = "SELECT PasswordHash FROM Users WHERE UserID = @UserID";
                     SqlParameter[] checkParams = { new SqlParameter("@UserID", userID) };
                     string storedHash = DatabaseHelper.ExecuteScalar(checkQuery, checkParams)?.ToString();
 
-                    if (storedHash == null || storedHash != currentHash)
+                    bool isPasswordCorrect = false;
+                    if (!string.IsNullOrEmpty(storedHash))
+                    {
+                        try
+                        {
+                            isPasswordCorrect = BCrypt.Net.BCrypt.Verify(current, storedHash);
+                        }
+                        catch (BCrypt.Net.SaltParseException)
+                        {
+                            isPasswordCorrect = (storedHash == SecurityHelper.HashPassword(current));
+                        }
+                    }
+
+                    if (!isPasswordCorrect)
                     {
                         ShowMessage("Profile saved, but current password is incorrect.", false);
                         return;
                     }
 
-                    string newHash     = SecurityHelper.HashPassword(newPwd);
+                    string newHash     = BCrypt.Net.BCrypt.HashPassword(newPwd);
                     string updatePwdQ  = "UPDATE Users SET PasswordHash = @PasswordHash WHERE UserID = @UserID";
                     SqlParameter[] pwdParams =
                     {

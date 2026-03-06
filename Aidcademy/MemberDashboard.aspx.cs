@@ -29,8 +29,10 @@ namespace Aidcademy
         {
             int userID = Convert.ToInt32(Session["UserID"]);
 
-            // Display name
-            lblMemberName.Text = Session["UserName"]?.ToString() ?? "Member";
+            // Display name — UserName is set by SessionHelper.SetLoginSession
+            lblMemberName.Text = SessionHelper.GetUsername().Length > 0
+                ? SessionHelper.GetUsername()
+                : Session["Name"]?.ToString() ?? "Member";
 
             try
             {
@@ -52,8 +54,16 @@ namespace Aidcademy
                         {
                             if (reader.Read())
                             {
+                                int totalPts = Convert.ToInt32(reader["TotalPoints"]);
                                 lblDailyStreak.Text = reader["DailyStreak"].ToString();
-                                lblTotalPoints.Text = reader["TotalPoints"].ToString();
+                                lblTotalPoints.Text = totalPts.ToString();
+
+                                if (totalPts >= 1000)
+                                    lblBadge.Text = "<span class='badge bg-warning text-dark shadow-sm ms-2'>🥇 Gold</span>";
+                                else if (totalPts >= 500)
+                                    lblBadge.Text = "<span class='badge bg-secondary shadow-sm ms-2'>🥈 Silver</span>";
+                                else if (totalPts >= 100)
+                                    lblBadge.Text = "<span class='badge ms-2 shadow-sm' style='background-color:#cd7f32;'>🥉 Bronze</span>";
                             }
                             else
                             {
@@ -104,32 +114,65 @@ namespace Aidcademy
                         pnlNoCourses.Visible = dt.Rows.Count == 0;
                     }
 
-                    string queryActivity = @"
-                        SELECT TOP 5
-                            l.Title      AS LessonTitle,
-                            c.Title      AS CourseName,
-                            lp.LastAccessedDate
-                        FROM LessonProgress lp
-                        INNER JOIN Lessons l  ON lp.LessonID = l.LessonID
-                        INNER JOIN Courses c  ON l.CourseID  = c.CourseID
-                        WHERE lp.UserID = @UserID
-                        ORDER BY lp.LastAccessedDate DESC";
+                    // Load recently completed courses
+                    string queryRecentCompleted = @"
+                        SELECT TOP 3 c.CourseID, c.Title, e.EnrolmentDate
+                        FROM Enrollments e
+                        INNER JOIN Courses c ON e.CourseID = c.CourseID
+                        WHERE e.UserID = @UserID AND e.IsCompleted = 1
+                        ORDER BY e.EnrolmentDate DESC";
 
-                    using (SqlCommand cmd = new SqlCommand(queryActivity, conn))
+                    using (SqlCommand cmd = new SqlCommand(queryRecentCompleted, conn))
                     {
                         cmd.Parameters.AddWithValue("@UserID", userID);
                         SqlDataAdapter da = new SqlDataAdapter(cmd);
                         DataTable dt = new DataTable();
                         da.Fill(dt);
-                        rptRecentActivity.DataSource = dt;
-                        rptRecentActivity.DataBind();
-                        pnlNoActivity.Visible = dt.Rows.Count == 0;
+                        rptCompletedCourses.DataSource = dt;
+                        rptCompletedCourses.DataBind();
+                        if (dt.Rows.Count > 0)
+                            pnlCompletedSection.Visible = true;
+                    }
+
+                    // Load Leaderboard Data — derived from QuizResults so it works even if the Leaderboard table is empty
+                    string queryLeaderboard = @"
+                        SELECT TOP 10
+                            p.UserID,
+                            p.FullName,
+                            MAX(qr.DateTaken) AS LastSolved,
+                            ISNULL(SUM(CASE WHEN qr.DateTaken >= DATEADD(day, -7, GETDATE()) THEN qr.Score ELSE 0 END), 0) AS WeeklyPoints,
+                            ISNULL(SUM(qr.Score), 0) AS TotalPoints
+                        FROM UserProfiles p
+                        LEFT JOIN QuizResults qr ON p.UserID = qr.UserID
+                        GROUP BY p.UserID, p.FullName
+                        HAVING ISNULL(SUM(qr.Score), 0) > 0
+                        ORDER BY ISNULL(SUM(qr.Score), 0) DESC";
+
+                    using (SqlCommand cmd = new SqlCommand(queryLeaderboard, conn))
+                    {
+                        SqlDataAdapter da = new SqlDataAdapter(cmd);
+                        DataTable dt = new DataTable();
+                        da.Fill(dt);
+                        gvLeaderboard.DataSource = dt;
+                        gvLeaderboard.DataBind();
                     }
                 }
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine("Dashboard error: " + ex.Message);
+            }
+        }
+
+        protected void gvLeaderboard_RowDataBound(object sender, System.Web.UI.WebControls.GridViewRowEventArgs e)
+        {
+            if (e.Row.RowType == System.Web.UI.WebControls.DataControlRowType.DataRow)
+            {
+                int rowUserId = Convert.ToInt32(DataBinder.Eval(e.Row.DataItem, "UserID"));
+                if (Session["UserID"] != null && rowUserId == Convert.ToInt32(Session["UserID"]))
+                {
+                    e.Row.CssClass = "table-warning fw-bold";
+                }
             }
         }
 

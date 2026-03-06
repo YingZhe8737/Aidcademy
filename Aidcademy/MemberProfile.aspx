@@ -7,6 +7,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>My Profile - Aidcademy</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="~/Styles/aidcademy-theme.css" />
     <style>
         * {
@@ -219,19 +221,20 @@
         <!-- Navigation Bar -->
         <div class="navbar">
             <div class="navbar-brand">
-                <a href="MainPage.aspx" style="color: white; text-decoration: none;">🏥
-                        AIDCADEMY</a>
+                <a href="MainPage.aspx" style="color: white; text-decoration: none; display: flex; align-items: center;">
+                    <img src="Image/logo2.jpeg" alt="Aidcademy Logo" style="height: 40px; margin-right: 10px; border-radius: 5px;" />
+                    AIDCADEMY
+                </a>
             </div>
             <div class="navbar-menu">
-                <asp:HyperLink runat="server" NavigateUrl="~/MemberDashboard.aspx">Dashboard</asp:HyperLink>
-                <asp:HyperLink runat="server" NavigateUrl="~/LearningCourse.aspx">Courses</asp:HyperLink>
-                <asp:HyperLink runat="server" NavigateUrl="~/LearningProgress.aspx">My Progress</asp:HyperLink>
-                <asp:HyperLink runat="server" NavigateUrl="~/SubmitQuestion.aspx">Ask Question</asp:HyperLink>
-                <asp:HyperLink runat="server" NavigateUrl="~/MemberProfile.aspx">Profile</asp:HyperLink>
-                <asp:LinkButton ID="btnLogout" runat="server" OnClick="btnLogout_Click" CssClass="navbar-btn">Logout</asp:LinkButton>
+                <asp:HyperLink ID="lnkDashboard" runat="server" NavigateUrl="~/MemberDashboard.aspx"><i class="fas fa-chart-line"></i> Dashboard</asp:HyperLink>
+                <asp:HyperLink ID="lnkCourses" runat="server" NavigateUrl="~/LearningCourse.aspx"><i class="fas fa-book"></i> Courses</asp:HyperLink>
+                <asp:HyperLink ID="lnkProgress" runat="server" NavigateUrl="~/LearningProgress.aspx"><i class="fas fa-chart-pie"></i> My Progress</asp:HyperLink>
+                <asp:HyperLink ID="lnkAskQuestion" runat="server" NavigateUrl="~/SubmitQuestion.aspx"><i class="fas fa-comments"></i> Ask Question</asp:HyperLink>
+                <asp:HyperLink ID="lnkProfile" runat="server" NavigateUrl="~/MemberProfile.aspx" CssClass="fw-bold text-white font-weight-bold"><i class="fas fa-user"></i> Profile</asp:HyperLink>
+                <asp:LinkButton ID="btnLogout" runat="server" OnClick="btnLogout_Click" CssClass="navbar-btn"><i class="fas fa-sign-out-alt"></i> Logout</asp:LinkButton>
             </div>
         </div>
-
         <div class="container">
             <!-- Profile Header -->
             <div class="profile-header">
@@ -295,6 +298,11 @@
                 <div class="form-group">
                     <label>Phone Number</label>
                     <asp:TextBox ID="txtPhone" runat="server" placeholder="+60 12-345 6789" />
+                </div>
+
+                <div class="form-group">
+                    <label>About Me (Bio)</label>
+                    <asp:TextBox ID="txtBio" runat="server" TextMode="MultiLine" Rows="4" placeholder="Tell us a little about yourself..." CssClass="form-control" />
                 </div>
 
                 <!-- Change Password -->

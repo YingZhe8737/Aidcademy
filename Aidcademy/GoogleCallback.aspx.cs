@@ -8,6 +8,7 @@ using System.Text;
 using System.Web;
 using System.Web.UI;
 using Newtonsoft.Json.Linq;
+using Aidcademy.Utilities;
 
 namespace Aidcademy
 {
@@ -105,16 +106,15 @@ namespace Aidcademy
                 string fullName;
                 FindOrCreateGoogleUser(googleId, googleEmail, googleName, out userId, out role, out fullName);
 
-                string otp = Aidcademy.Utilities.OtpHelper.SaveOtp(userId, "Login");
-                string errMsg;
-                Aidcademy.Utilities.EmailHelper.SendOtpEmail(googleEmail, otp, "Login", out errMsg);
+                // Use the shared session helper so all session keys match the rest of the app
+                SessionHelper.SetLoginSession(userId, role, fullName, googleEmail);
 
-                Session["PendingUserID"] = userId;
-                Session["PendingEmail"]  = googleEmail;
-                Session["PendingName"]   = fullName;
-                Session["PendingRole"]   = role;
-
-                Response.Redirect("~/VerifyOtp.aspx?purpose=Login");
+                if (role == "Admin")
+                    Response.Redirect("~/AdminDashboard.aspx");
+                else if (role == "Instructor")
+                    Response.Redirect("~/InstructorManageContent.aspx");
+                else
+                    Response.Redirect("~/MemberDashboard.aspx");
             }
             catch (System.Threading.ThreadAbortException)
             {

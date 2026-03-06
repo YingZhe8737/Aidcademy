@@ -259,6 +259,19 @@
                                 <asp:Label ID="lblQuizScore" runat="server" CssClass="d-block mt-3"></asp:Label>
                             </asp:Panel>
 
+                            <!-- Lesson Navigation -->
+                            <div class="d-flex justify-content-between align-items-center mt-5 p-3 bg-light rounded-pill shadow-sm border">
+                                <asp:LinkButton ID="btnPrevLesson" runat="server" CssClass="btn btn-outline-secondary rounded-pill fw-bold" OnClick="btnPrevLesson_Click" Visible="false">
+                                    <i class="fa-solid fa-arrow-left me-2"></i> Previous Lesson
+                                </asp:LinkButton>
+
+                                <asp:Button ID="btnMarkComplete" runat="server" Text="✓ Mark as Complete" CssClass="btn btn-success rounded-pill fw-bold px-4 shadow-sm" OnClick="btnMarkComplete_Click" />
+
+                                <asp:LinkButton ID="btnNextLesson" runat="server" CssClass="btn btn-outline-primary rounded-pill fw-bold" OnClick="btnNextLesson_Click" Visible="false">
+                                    Next Lesson <i class="fa-solid fa-arrow-right ms-2"></i>
+                                </asp:LinkButton>
+                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -278,10 +291,12 @@
                 let back = card.getAttribute('data-back');
                 let img = card.getAttribute('data-img');
                 let imgHtml = img ? `<img src="${img}" alt="Card Image" />` : '';
+                let hintHtml = `<span class="badge bg-secondary position-absolute top-0 end-0 m-2" data-bs-toggle="tooltip" title="Hover to reveal the answer!"><i class="fa-solid fa-lightbulb"></i> Hint</span>`;
 
                 card.innerHTML = `
                 <div class="flip-card-inner">
-                    <div class="flip-card-front shadow-sm">
+                    <div class="flip-card-front shadow-sm position-relative">
+                        ${hintHtml}
                         ${imgHtml}
                         <h3 class="fw-bold m-0">${front}</h3>
                         <small class="text-danger mt-3 fw-bold text-uppercase" style="letter-spacing: 1px;"><i class="fa-solid fa-hand-pointer me-1"></i> Hover to reveal</small>
@@ -316,6 +331,31 @@
                 acc.removeAttribute('contenteditable');
             });
         };
+    </script>
+    
+    <!-- Day Streak Modal -->
+    <div class="modal fade" id="streakModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center" style="border-radius: 15px; border: none; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+          <div class="modal-header bg-warning text-white" style="border-bottom: none; justify-content: center; padding: 2rem 1rem 1rem;">
+            <i class="fa-solid fa-fire fa-4x mb-2" style="color: #ff5722;"></i>
+          </div>
+          <div class="modal-body p-4">
+            <h3 class="fw-bold mb-3">Day Streak!</h3>
+            <p class="text-muted fs-5 mb-0" id="streakModalMessage">You just extended your daily streak. Keep playing!</p>
+          </div>
+          <div class="modal-footer" style="border-top: none; justify-content: center; padding-bottom: 2rem;">
+            <button type="button" class="btn btn-warning text-white fw-bold px-4 py-2" data-bs-dismiss="modal" style="border-radius: 30px;">Awesome!</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function showStreakModal() {
+            var myModal = new bootstrap.Modal(document.getElementById('streakModal'));
+            myModal.show();
+        }
     </script>
 </body>
 </html>
