@@ -78,12 +78,11 @@ namespace Aidcademy
                         }
                     }
                 }
-                
+
                 LoadLessonNavigation(lessonId, conn);
             }
         }
 
-        // ── Build radio options for each quiz question ────────────────────────
         protected void rptQuiz_ItemDataBound(object sender, RepeaterItemEventArgs e)
         {
             if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
@@ -98,7 +97,6 @@ namespace Aidcademy
             }
         }
 
-        // ── Quiz submission ───────────────────────────────────────────────────
         protected void btnSubmitQuiz_Click(object sender, EventArgs e)
         {
             int score = 0;
@@ -125,7 +123,6 @@ namespace Aidcademy
 
             int userId = Session["UserID"] != null ? Convert.ToInt32(Session["UserID"]) : 1;
             int quizId = Convert.ToInt32(hfQuizID.Value);
-
             int newStreak = 1;
             int pointsToAdd = 0;
 
@@ -133,7 +130,6 @@ namespace Aidcademy
             {
                 conn.Open();
 
-                // A. Capture previous last activity BEFORE this submission
                 DateTime lastActivity = DateTime.MinValue;
                 string lastActivityQuery = "SELECT ISNULL(MAX(DateTaken), '2000-01-01') FROM QuizResults WHERE UserID = @UserID";
                 using (SqlCommand cmd = new SqlCommand(lastActivityQuery, conn))
@@ -141,32 +137,30 @@ namespace Aidcademy
                     cmd.Parameters.AddWithValue("@UserID", userId);
                     object res = cmd.ExecuteScalar();
                     if (res != null && res != DBNull.Value)
+                    {
                         lastActivity = Convert.ToDateTime(res);
+                    }
                 }
 
-                // B. Check if they have taken this quiz before
-                string checkQuery = "SELECT Score FROM QuizResults WHERE UserID = @UserID AND QuizID = @QuizID";
                 int? existingScore = null;
-                using (SqlCommand cmd = new SqlCommand(
-                    "SELECT Score FROM QuizResults WHERE UserID = @UserID AND QuizID = @QuizID", conn))
+                string checkQuery = "SELECT Score FROM QuizResults WHERE UserID = @UserID AND QuizID = @QuizID";
+                using (SqlCommand cmd = new SqlCommand(checkQuery, conn))
                 {
                     cmd.Parameters.AddWithValue("@UserID", userId);
                     cmd.Parameters.AddWithValue("@QuizID", quizId);
                     object result = cmd.ExecuteScalar();
-                    if (result != null) existingScore = Convert.ToInt32(result);
-                }
-                    if (result != null)
+                    if (result != null && result != DBNull.Value)
+                    {
                         existingScore = Convert.ToInt32(result);
+                    }
                 }
 
-                int earnedXP = 0;
+                int earnedXP;
                 bool isFirstAttempt = !existingScore.HasValue;
 
                 if (isFirstAttempt)
                 {
                     earnedXP = score * 100;
-                    using (SqlCommand cmd = new SqlCommand(
-                        "INSERT INTO QuizResults (UserID, QuizID, Score) VALUES (@UserID, @QuizID, @Score)", conn))
                     pointsToAdd = earnedXP;
 
                     string insertQuery = "INSERT INTO QuizResults (UserID, QuizID, Score) VALUES (@UserID, @QuizID, @Score)";
@@ -177,18 +171,18 @@ namespace Aidcademy
                         cmd.Parameters.AddWithValue("@Score", earnedXP);
                         cmd.ExecuteNonQuery();
                     }
+
                     lblQuizScore.Text = $"You scored {score} out of {totalQuestions}! (+{earnedXP} XP First Try Bonus!)";
                 }
                 else
                 {
                     earnedXP = score * 50;
-                    // Only credit the improvement so TotalPoints doesn't inflate on retries
                     pointsToAdd = Math.Max(0, earnedXP - existingScore.Value);
 
                     if (earnedXP > existingScore.Value)
                     {
-                        using (SqlCommand cmd = new SqlCommand(
-                            "UPDATE QuizResults SET Score = @Score, DateTaken = GETDATE() WHERE UserID = @UserID AND QuizID = @QuizID", conn))
+                        string updateQuery = "UPDATE QuizResults SET Score = @Score, DateTaken = GETDATE() WHERE UserID = @UserID AND QuizID = @QuizID";
+                        using (SqlCommand cmd = new SqlCommand(updateQuery, conn))
                         {
                             cmd.Parameters.AddWithValue("@UserID", userId);
                             cmd.Parameters.AddWithValue("@QuizID", quizId);
@@ -196,54 +190,11 @@ namespace Aidcademy
                             cmd.ExecuteNonQuery();
                         }
                     }
+
                     int highestSaved = Math.Max(earnedXP, existingScore.Value);
                     lblQuizScore.Text = $"You scored {score} out of {totalQuestions}. (Retry earned {earnedXP} XP. Highest saved: {highestSaved} XP)";
                 }
-            }
 
-            lblQuizScore.CssClass = score == totalQuestions
-                ? "d-block mt-4 p-3 bg-success text-white rounded fw-bold fs-5 text-center shadow-sm"
-                : "d-block mt-4 p-3 bg-danger text-white rounded fw-bold fs-5 text-center shadow-sm";
-
-            if (score == totalQuestions) btnSubmitQuiz.Enabled = false;
-        }
-
-        // ════════════════════════════════════════════════════════════════════
-        // ADMIN: APPROVE
-        // ════════════════════════════════════════════════════════════════════
-        protected void btnApprove_Click(object sender, EventArgs e)
-        {
-            if (!SessionHelper.IsAdmin()) return; // extra server-side guard
-
-            int lessonId = Convert.ToInt32(Request.QueryString["LessonID"]);
-            UpdateStatus(lessonId, "Published");
-
-            lblActionResult.Text = "✅ Lesson has been approved and published.";
-            lblActionResult.CssClass = "d-block mt-3 fw-bold text-center text-success";
-
-            // Disable both buttons after action
-            btnApprove.Enabled = false;
-        }
-
-        // ════════════════════════════════════════════════════════════════════
-        // ADMIN: REJECT  (comment comes from hfRejectComment hidden field)
-        // ════════════════════════════════════════════════════════════════════
-        protected void btnReject_Click(object sender, EventArgs e)
-        {
-            if (!SessionHelper.IsAdmin()) return; // extra server-side guard
-
-            int lessonId = Convert.ToInt32(Request.QueryString["LessonID"]);
-            string comment = hfRejectComment.Value;
-
-            UpdateStatus(lessonId, "Rejected", comment);
-
-            lblActionResult.Text = "❌ Lesson has been rejected. The instructor has been notified.";
-            lblActionResult.CssClass = "d-block mt-3 fw-bold text-center text-danger";
-
-            btnApprove.Enabled = false;
-        }
-
-                // C. Calculate new streak
                 int currentStreak = 0;
                 string getStreakQuery = "SELECT ISNULL(DailyStreak, 0) FROM Leaderboard WHERE UserID = @UserID";
                 using (SqlCommand cmd = new SqlCommand(getStreakQuery, conn))
@@ -251,27 +202,25 @@ namespace Aidcademy
                     cmd.Parameters.AddWithValue("@UserID", userId);
                     object res = cmd.ExecuteScalar();
                     if (res != null && res != DBNull.Value)
+                    {
                         currentStreak = Convert.ToInt32(res);
+                    }
                 }
 
                 DateTime today = DateTime.Today;
                 if (lastActivity.Date == today)
                 {
-                    // Already played today — keep streak as-is
                     newStreak = currentStreak == 0 ? 1 : currentStreak;
                 }
                 else if (lastActivity.Date == today.AddDays(-1))
                 {
-                    // Played yesterday — extend streak
                     newStreak = currentStreak + 1;
                 }
                 else
                 {
-                    // Missed a day or brand new — reset to 1
                     newStreak = 1;
                 }
 
-                // D. Upsert Leaderboard (TotalPoints + DailyStreak)
                 string upsertQuery = @"
                     IF EXISTS (SELECT 1 FROM Leaderboard WHERE UserID = @UserID)
                         UPDATE Leaderboard
@@ -291,14 +240,57 @@ namespace Aidcademy
                 }
             }
 
-        // ── Shared status updater ─────────────────────────────────────────────
+            lblQuizScore.CssClass = score == totalQuestions
+                ? "d-block mt-4 p-3 bg-success text-white rounded fw-bold fs-5 text-center shadow-sm"
+                : "d-block mt-4 p-3 bg-danger text-white rounded fw-bold fs-5 text-center shadow-sm";
+
+            if (score == totalQuestions)
+            {
+                btnSubmitQuiz.Enabled = false;
+            }
+
+            string streakScript = $"document.getElementById('streakModalMessage').innerText = 'You are on a {newStreak}-day streak! Keep it up!'; showStreakModal();";
+            Page.ClientScript.RegisterStartupScript(this.GetType(), "StreakPopup", streakScript, true);
+        }
+
+        protected void btnApprove_Click(object sender, EventArgs e)
+        {
+            if (!SessionHelper.IsAdmin())
+            {
+                return;
+            }
+
+            int lessonId = Convert.ToInt32(Request.QueryString["LessonID"]);
+            UpdateStatus(lessonId, "Published");
+
+            lblActionResult.Text = "✅ Lesson has been approved and published.";
+            lblActionResult.CssClass = "d-block mt-3 fw-bold text-center text-success";
+            btnApprove.Enabled = false;
+        }
+
+        protected void btnReject_Click(object sender, EventArgs e)
+        {
+            if (!SessionHelper.IsAdmin())
+            {
+                return;
+            }
+
+            int lessonId = Convert.ToInt32(Request.QueryString["LessonID"]);
+            string comment = hfRejectComment.Value;
+
+            UpdateStatus(lessonId, "Rejected", comment);
+
+            lblActionResult.Text = "❌ Lesson has been rejected. The instructor has been notified.";
+            lblActionResult.CssClass = "d-block mt-3 fw-bold text-center text-danger";
+            btnApprove.Enabled = false;
+        }
+
         private void UpdateStatus(int lessonId, string newStatus, string comment = null)
         {
             using (SqlConnection conn = new SqlConnection(connString))
             {
                 conn.Open();
 
-                // Update the lesson approval status
                 using (SqlCommand cmd = new SqlCommand(
                     "UPDATE Lessons SET ApprovalStatus = @Status WHERE LessonID = @LessonID", conn))
                 {
@@ -306,7 +298,6 @@ namespace Aidcademy
                     cmd.Parameters.AddWithValue("@LessonID", lessonId);
                     cmd.ExecuteNonQuery();
                 }
-
 
                 if (!string.IsNullOrEmpty(comment))
                 {
@@ -318,23 +309,9 @@ namespace Aidcademy
                         cmd.ExecuteNonQuery();
                     }
                 }
-
-            if (score == totalQuestions)
-            {
-                lblQuizScore.CssClass = "d-block mt-4 p-3 bg-success text-white rounded fw-bold fs-5 text-center shadow-sm";
-                btnSubmitQuiz.Enabled = false;
             }
-            else
-            {
-                lblQuizScore.CssClass = "d-block mt-4 p-3 bg-danger text-white rounded fw-bold fs-5 text-center shadow-sm";
-            }
-
-            // Show streak modal with the live streak count
-            string streakScript = $"document.getElementById('streakModalMessage').innerText = 'You are on a {newStreak}-day streak! Keep it up!'; showStreakModal();";
-            Page.ClientScript.RegisterStartupScript(this.GetType(), "StreakPopup", streakScript, true);
         }
 
-        // ── Sidebar ───────────────────────────────────────────────────────────
         private void BindSidebar()
         {
             using (SqlConnection conn = new SqlConnection(connString))
@@ -360,7 +337,10 @@ namespace Aidcademy
         protected void rptSidebarCourses_ItemDataBound(object sender, RepeaterItemEventArgs e)
         {
             if (e.Item.ItemType != ListItemType.Item &&
-                e.Item.ItemType != ListItemType.AlternatingItem) return;
+                e.Item.ItemType != ListItemType.AlternatingItem)
+            {
+                return;
+            }
 
             DataRowView drv = (DataRowView)e.Item.DataItem;
             int courseId = Convert.ToInt32(drv["CourseID"]);
@@ -383,23 +363,6 @@ namespace Aidcademy
                         sda.Fill(dt);
                         rptSidebarLessons.DataSource = dt;
                         rptSidebarLessons.DataBind();
-                    }
-                }
-            }
-        }
-    }
-}
-                    using (SqlCommand cmd = new SqlCommand(query, conn))
-                    {
-                        cmd.Parameters.AddWithValue("@CourseID", courseId);
-                        using (SqlDataAdapter sda = new SqlDataAdapter(cmd))
-                        {
-                            DataTable dt = new DataTable();
-                            sda.Fill(dt);
-
-                            rptSidebarLessons.DataSource = dt;
-                            rptSidebarLessons.DataBind();
-                        }
                     }
                 }
             }
@@ -459,6 +422,7 @@ namespace Aidcademy
                         }
                     }
                 }
+
                 ViewState["CourseID"] = courseId.ToString();
             }
         }
@@ -466,31 +430,39 @@ namespace Aidcademy
         protected void btnPrevLesson_Click(object sender, EventArgs e)
         {
             if (ViewState["PrevLessonID"] != null)
+            {
                 Response.Redirect("~/ViewLesson.aspx?LessonID=" + ViewState["PrevLessonID"]);
+            }
         }
 
         protected void btnNextLesson_Click(object sender, EventArgs e)
         {
             if (ViewState["NextLessonID"] != null)
+            {
                 Response.Redirect("~/ViewLesson.aspx?LessonID=" + ViewState["NextLessonID"]);
+            }
         }
 
         protected void btnMarkComplete_Click(object sender, EventArgs e)
         {
             if (Session["UserID"] == null || Request.QueryString["LessonID"] == null)
+            {
                 return;
+            }
 
             int userId = Convert.ToInt32(Session["UserID"]);
             int lessonId = Convert.ToInt32(Request.QueryString["LessonID"]);
             int courseId = ViewState["CourseID"] != null ? Convert.ToInt32(ViewState["CourseID"]) : 0;
 
-            if (courseId == 0) return;
+            if (courseId == 0)
+            {
+                return;
+            }
 
             using (SqlConnection conn = new SqlConnection(connString))
             {
                 conn.Open();
 
-                // 1. Mark lesson as complete
                 string upsertQuery = @"
                     IF NOT EXISTS (SELECT 1 FROM LessonProgress WHERE UserID = @UserID AND LessonID = @LessonID)
                     BEGIN
@@ -506,7 +478,6 @@ namespace Aidcademy
                     cmd.ExecuteNonQuery();
                 }
 
-                // 2. Recalculate Course Progress Percentage
                 string pctQuery = @"
                     DECLARE @Total INT = (SELECT COUNT(LessonID) FROM Lessons WHERE CourseID = @CourseID AND ApprovalStatus = 'Published');
                     DECLARE @Completed INT = (SELECT COUNT(LessonID) FROM LessonProgress WHERE CourseID = @CourseID AND UserID = @UserID AND IsCompleted = 1);
@@ -516,8 +487,7 @@ namespace Aidcademy
                     UPDATE Enrollments 
                     SET ProgressPercentage = @Pct,
                         IsCompleted = CASE WHEN @Pct = 100 THEN 1 ELSE 0 END
-                    WHERE CourseID = @CourseID AND UserID = @UserID;
-                ";
+                    WHERE CourseID = @CourseID AND UserID = @UserID;";
 
                 using (SqlCommand cmd = new SqlCommand(pctQuery, conn))
                 {
