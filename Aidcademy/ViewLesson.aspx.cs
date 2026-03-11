@@ -3,7 +3,6 @@ using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.Web.UI.WebControls;
-using Aidcademy.Utilities;
 
 namespace Aidcademy
 {
@@ -13,18 +12,37 @@ namespace Aidcademy
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (!SessionHelper.IsUserLoggedIn() || !SessionHelper.IsMember())
+            // 1. Determine User Role
+            string role = Session["Role"] != null ? Session["Role"].ToString() : "Visitor";
+
+            // 2. Setup Top Navbar depending on Role (Toggles the ASP.NET Panels)
+            pnlNavVisitor.Visible = (role == "Visitor");
+            pnlNavMember.Visible = (role == "Member");
+            pnlNavInstructor.Visible = (role == "Instructor");
+            pnlNavAdmin.Visible = (role == "Admin");
+
+            // 3. Set dynamic back button URL
+            string backUrl = "MainPage.aspx";
+            if (role == "Member") backUrl = "MemberDashboard.aspx";
+            else if (role == "Instructor") backUrl = "InstructorManageContent.aspx";
+            else if (role == "Admin") backUrl = "AdminDashboard.aspx";
+
+            hlBackBtn.NavigateUrl = backUrl;
+
+            // 4. Disable Quiz Submissions for Visitors
+            if (role == "Visitor")
             {
-                Response.Redirect("~/Login_signup.aspx");
-                return;
+                btnSubmitQuiz.Enabled = false;
+                lblVisitorQuizWarning.Visible = true;
             }
 
             if (!IsPostBack)
             {
                 if (Request.QueryString["LessonID"] != null)
                 {
-                    BindSidebar();
-                    LoadLesson(Convert.ToInt32(Request.QueryString["LessonID"]));
+                    int currentLessonId = Convert.ToInt32(Request.QueryString["LessonID"]);
+                    BindSidebar(currentLessonId);
+                    LoadLesson(currentLessonId);
                 }
             }
         }
@@ -49,7 +67,7 @@ namespace Aidcademy
                     }
                 }
 
-                // 2. Load ALL Quiz Questions (Removed 'top 1')
+                // 2. Load ALL Quiz Questions
                 string quizQuery = @"SELECT qq.* FROM QuizQuestions qq INNER JOIN Quizzes q ON qq.QuizID = q.QuizID WHERE q.LessonID = @LessonID";
                 using (SqlCommand cmd = new SqlCommand(quizQuery, conn))
                 {
@@ -62,18 +80,29 @@ namespace Aidcademy
                         if (dt.Rows.Count > 0)
                         {
                             pnlQuiz.Visible = true;
-
                             hfQuizID.Value = dt.Rows[0]["QuizID"].ToString();
-
                             rptQuiz.DataSource = dt;
                             rptQuiz.DataBind();
+                        }
+                    }
+                }
+
+                // 3. Load Simulation Data (if it exists)
+                using (SqlCommand cmd = new SqlCommand("SELECT SimulationType, SimulationData FROM LessonSimulations WHERE LessonID = @LessonID", conn))
+                {
+                    cmd.Parameters.AddWithValue("@LessonID", lessonId);
+                    using (SqlDataReader rdr = cmd.ExecuteReader())
+                    {
+                        if (rdr.Read())
+                        {
+                            hfLoadedSimType.Value = rdr["SimulationType"].ToString();
+                            hfLoadedSimData.Value = rdr["SimulationData"].ToString();
                         }
                     }
                 }
             }
         }
 
-        // Automatically builds the Radio Buttons for each question in the Repeater
         protected void rptQuiz_ItemDataBound(object sender, RepeaterItemEventArgs e)
         {
             if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
@@ -93,7 +122,6 @@ namespace Aidcademy
             int score = 0;
             int totalQuestions = rptQuiz.Items.Count;
 
-            // 1. Grade the Quiz
             foreach (RepeaterItem item in rptQuiz.Items)
             {
                 RadioButtonList rbl = (RadioButtonList)item.FindControl("rblOptions");
@@ -113,15 +141,12 @@ namespace Aidcademy
                 }
             }
 
-            // 2. The Gamification XP Logic
             int userId = Session["UserID"] != null ? Convert.ToInt32(Session["UserID"]) : 1;
             int quizId = Convert.ToInt32(hfQuizID.Value);
 
             using (SqlConnection conn = new SqlConnection(connString))
             {
                 conn.Open();
-
-                // Check if they have taken this quiz before
                 string checkQuery = "SELECT Score FROM QuizResults WHERE UserID = @UserID AND QuizID = @QuizID";
                 int? existingScore = null;
 
@@ -130,10 +155,7 @@ namespace Aidcademy
                     cmd.Parameters.AddWithValue("@UserID", userId);
                     cmd.Parameters.AddWithValue("@QuizID", quizId);
                     object result = cmd.ExecuteScalar();
-                    if (result != null)
-                    {
-                        existingScore = Convert.ToInt32(result);
-                    }
+                    if (result != null) existingScore = Convert.ToInt32(result);
                 }
 
                 int earnedXP = 0;
@@ -141,9 +163,7 @@ namespace Aidcademy
 
                 if (isFirstAttempt)
                 {
-                    // FIRST TRY: 100 XP per correct answer
                     earnedXP = score * 100;
-
                     string insertQuery = "INSERT INTO QuizResults (UserID, QuizID, Score) VALUES (@UserID, @QuizID, @Score)";
                     using (SqlCommand cmd = new SqlCommand(insertQuery, conn))
                     {
@@ -152,15 +172,11 @@ namespace Aidcademy
                         cmd.Parameters.AddWithValue("@Score", earnedXP);
                         cmd.ExecuteNonQuery();
                     }
-
                     lblQuizScore.Text = $"You scored {score} out of {totalQuestions}! (+{earnedXP} XP First Try Bonus!)";
                 }
                 else
                 {
-                    // RETRY: 50 XP per correct answer
                     earnedXP = score * 50;
-
-                    // Only update the database if their retry XP is higher than their old XP 
                     if (earnedXP > existingScore.Value)
                     {
                         string updateQuery = "UPDATE QuizResults SET Score = @Score, DateTaken = GETDATE() WHERE UserID = @UserID AND QuizID = @QuizID";
@@ -181,7 +197,7 @@ namespace Aidcademy
             if (score == totalQuestions)
             {
                 lblQuizScore.CssClass = "d-block mt-4 p-3 bg-success text-white rounded fw-bold fs-5 text-center shadow-sm";
-                btnSubmitQuiz.Enabled = false; // Stop them from clicking submit again
+                btnSubmitQuiz.Enabled = false;
             }
             else
             {
@@ -189,20 +205,58 @@ namespace Aidcademy
             }
         }
 
-        private void BindSidebar()
+        private void BindSidebar(int currentLessonId)
         {
-            string connString = ConfigurationManager.ConnectionStrings["AidcademyDB"].ConnectionString;
+            string role = Session["Role"] != null ? Session["Role"].ToString() : "Visitor";
+            int userId = Session["UserID"] != null ? Convert.ToInt32(Session["UserID"]) : 0;
+            int currentCourseId = 0;
+
             using (SqlConnection conn = new SqlConnection(connString))
             {
-                // Fetch only courses that have published lessons to keep the sidebar clean
-                string query = @"SELECT DISTINCT c.CourseID, c.Title AS CourseTitle 
-                                 FROM Courses c
-                                 INNER JOIN Lessons l ON c.CourseID = l.CourseID
-                                 WHERE l.ApprovalStatus = 'Published'
-                                 ORDER BY c.Title";
+                // First, find out which Course this specific Lesson belongs to
+                using (SqlCommand cmd = new SqlCommand("SELECT CourseID FROM Lessons WHERE LessonID = @LessonID", conn))
+                {
+                    cmd.Parameters.AddWithValue("@LessonID", currentLessonId);
+                    conn.Open();
+                    object result = cmd.ExecuteScalar();
+                    if (result != null) currentCourseId = Convert.ToInt32(result);
+                    conn.Close();
+                }
+
+                string query = "";
+
+                if (role == "Visitor")
+                {
+                    // For Visitors: Only show the Course they clicked on
+                    query = @"SELECT CourseID, Title AS CourseTitle 
+                              FROM Courses 
+                              WHERE CourseID = @CurrentCourseID";
+                }
+                else if (role == "Member")
+                {
+                    // For Members: Show ALL published courses they are enrolled in
+                    query = @"SELECT DISTINCT c.CourseID, c.Title AS CourseTitle 
+                              FROM Courses c
+                              INNER JOIN Enrollments e ON c.CourseID = e.CourseID
+                              INNER JOIN Lessons l ON c.CourseID = l.CourseID
+                              WHERE l.ApprovalStatus = 'Published' AND e.UserID = @UserID
+                              ORDER BY c.Title";
+                }
+                else
+                {
+                    // For Admin & Instructors: Show ALL published courses platform-wide
+                    query = @"SELECT DISTINCT c.CourseID, c.Title AS CourseTitle 
+                              FROM Courses c
+                              INNER JOIN Lessons l ON c.CourseID = l.CourseID
+                              WHERE l.ApprovalStatus = 'Published'
+                              ORDER BY c.Title";
+                }
 
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
+                    if (role == "Member") cmd.Parameters.AddWithValue("@UserID", userId);
+                    if (role == "Visitor") cmd.Parameters.AddWithValue("@CurrentCourseID", currentCourseId);
+
                     using (SqlDataAdapter sda = new SqlDataAdapter(cmd))
                     {
                         DataTable dt = new DataTable();
@@ -217,28 +271,46 @@ namespace Aidcademy
 
         protected void rptSidebarCourses_ItemDataBound(object sender, RepeaterItemEventArgs e)
         {
-            // Check if the item being bound is an actual data row
             if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
             {
-                // 1. Get the CourseID of the current row being generated
                 DataRowView drv = (DataRowView)e.Item.DataItem;
                 int courseId = Convert.ToInt32(drv["CourseID"]);
-
-                // 2. Find the inner Repeater on the HTML page
                 Repeater rptSidebarLessons = (Repeater)e.Item.FindControl("rptSidebarLessons");
 
-                // 3. Fetch and bind the lessons for THIS specific course
-                string connString = ConfigurationManager.ConnectionStrings["AidcademyDB"].ConnectionString;
+                string role = Session["Role"] != null ? Session["Role"].ToString() : "Visitor";
+                int currentLessonId = Convert.ToInt32(Request.QueryString["LessonID"]);
+
                 using (SqlConnection conn = new SqlConnection(connString))
                 {
-                    string query = @"SELECT LessonID, Title AS LessonTitle, SequenceOrder 
-                                     FROM Lessons 
-                                     WHERE CourseID = @CourseID AND ApprovalStatus = 'Published' 
-                                     ORDER BY SequenceOrder";
+                    string query = "";
+
+                    if (role == "Visitor")
+                    {
+                        // Visitors: Only show the specific lesson they are on
+                        query = @"SELECT LessonID, Title AS LessonTitle, SequenceOrder 
+                                  FROM Lessons 
+                                  WHERE LessonID = @CurrentLessonID";
+                    }
+                    else
+                    {
+                        // Others: Show all published lessons for the course
+                        query = @"SELECT LessonID, Title AS LessonTitle, SequenceOrder 
+                                  FROM Lessons 
+                                  WHERE CourseID = @CourseID AND ApprovalStatus = 'Published' 
+                                  ORDER BY SequenceOrder";
+                    }
 
                     using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
-                        cmd.Parameters.AddWithValue("@CourseID", courseId);
+                        if (role == "Visitor")
+                        {
+                            cmd.Parameters.AddWithValue("@CurrentLessonID", currentLessonId);
+                        }
+                        else
+                        {
+                            cmd.Parameters.AddWithValue("@CourseID", courseId);
+                        }
+
                         using (SqlDataAdapter sda = new SqlDataAdapter(cmd))
                         {
                             DataTable dt = new DataTable();

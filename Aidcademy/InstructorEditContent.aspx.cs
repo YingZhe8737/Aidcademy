@@ -56,6 +56,25 @@ namespace Aidcademy
                         }
                     }
                 }
+                string simQuery = "SELECT SimulationType, SimulationData FROM LessonSimulations WHERE LessonID = @LessonID";
+                using (SqlCommand simCmd = new SqlCommand(simQuery, conn))
+                {
+                    simCmd.Parameters.AddWithValue("@LessonID", lessonId);
+                    using (SqlDataReader simReader = simCmd.ExecuteReader())
+                    {
+                        if (simReader.Read())
+                        {
+                            hfSimulationType.Value = simReader["SimulationType"].ToString();
+                            hfSimulationData.Value = simReader["SimulationData"].ToString();
+                        }
+                        else
+                        {
+                            // Clear them out if no game exists
+                            hfSimulationType.Value = "";
+                            hfSimulationData.Value = "";
+                        }
+                    }
+                }
             }
         }
 
@@ -86,6 +105,56 @@ namespace Aidcademy
 
                     conn.Open();
                     cmd.ExecuteNonQuery();
+                }
+
+                using (SqlConnection conn2 = new SqlConnection(connString))
+                {
+                    // Your existing code that updates the Lessons table...
+                    string updateQuery2 = @"UPDATE Lessons 
+                                       SET CourseID = @CourseID, Title = @Title, ContentBody = @ContentBody, 
+                                           SequenceOrder = @SequenceOrder, ApprovalStatus = @ApprovalStatus 
+                                       WHERE LessonID = @LessonID";
+                    using (SqlCommand cmd = new SqlCommand(updateQuery2, conn2))
+                    {
+                        cmd.Parameters.AddWithValue("@CourseID", ddlCourses.SelectedValue);
+                        cmd.Parameters.AddWithValue("@Title", txtLessonTitle.Text.Trim());
+                        cmd.Parameters.AddWithValue("@ContentBody", hfContentBody.Value.Trim());
+                        cmd.Parameters.AddWithValue("@SequenceOrder", txtSequenceOrder.Text.Trim());
+                        cmd.Parameters.AddWithValue("@ApprovalStatus", status);
+                        cmd.Parameters.AddWithValue("@LessonID", lessonId);
+
+                        conn2.Open();
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    // SIMULATION SAVE/UPDATE/DELETE LOGIC
+                    if (!string.IsNullOrEmpty(hfSimulationType.Value) && !string.IsNullOrEmpty(hfSimulationData.Value))
+                    {
+                        // If a game exists, UPDATE it. If it doesn't exist yet, INSERT it!
+                        string simQuery = @"
+                        IF EXISTS (SELECT 1 FROM LessonSimulations WHERE LessonID = @LID)
+                            UPDATE LessonSimulations SET SimulationType = @Type, SimulationData = @Data WHERE LessonID = @LID
+                        ELSE
+                            INSERT INTO LessonSimulations (LessonID, SimulationType, SimulationData) VALUES (@LID, @Type, @Data)";
+
+                        using (SqlCommand simCmd = new SqlCommand(simQuery, conn2))
+                        {
+                            simCmd.Parameters.AddWithValue("@LID", lessonId);
+                            simCmd.Parameters.AddWithValue("@Type", hfSimulationType.Value);
+                            simCmd.Parameters.AddWithValue("@Data", hfSimulationData.Value);
+                            simCmd.ExecuteNonQuery();
+                        }
+                    }
+                    else
+                    {
+                        // If the hidden fields are empty, the instructor removed the game. Delete it from the DB.
+                        string delQuery = "DELETE FROM LessonSimulations WHERE LessonID = @LID";
+                        using (SqlCommand delCmd = new SqlCommand(delQuery, conn2))
+                        {
+                            delCmd.Parameters.AddWithValue("@LID", lessonId);
+                            delCmd.ExecuteNonQuery();
+                        }
+                    }
                 }
             }
 
