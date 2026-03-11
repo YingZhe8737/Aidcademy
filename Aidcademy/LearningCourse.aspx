@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="LearningCourse.aspx.cs" Inherits="Aidcademy.LearningCourse" %>
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="LearningCourse.aspx.cs" Inherits="Aidcademy.LearningCourse" %>
 
 <!DOCTYPE html>
 <html>
@@ -225,7 +225,7 @@
                 <h1>Available Courses</h1>
                 <p>Enroll in courses to start your first aid learning journey</p>
                 <div class="mt-4" style="max-width: 500px; margin: 0 auto;">
-                    <input type="text" id="txtSearch" class="form-control rounded-pill text-center shadow-sm py-2" placeholder="🔍 Search courses by name..." oninput="filterCourses()" />
+                    <input type="text" id="txtSearch" class="form-control rounded-pill text-center shadow-sm py-2" placeholder="Search courses by name..." oninput="filterCourses()" />
                 </div>
             </div>
 
@@ -233,7 +233,7 @@
                 <asp:Repeater ID="rptCourses" runat="server">
                     <ItemTemplate>
                         <div class="course-card">
-                            <div class="course-image">🏥</div>
+                            <div class="course-image"><i class="fas fa-hospital" style="font-size:56px;"></i></div>
                             <div class="course-content">
                                 <h3 class="course-title">
                                     <%# Eval("CourseName") %>
@@ -253,7 +253,7 @@
                                         <%# Eval("Category") %>
                                     </span>
                                     <%# Convert.ToBoolean(Eval("IsEnrolled"))
-                                                ? "<span class='badge-enrolled'>✓ Enrolled</span>" : "" %>
+                                                ? "<span class='badge-enrolled'>&check; Enrolled</span>" : "" %>
                                 </div>
                                 
                                 <%# Convert.ToBoolean(Eval("IsEnrolled")) ? 
@@ -301,11 +301,11 @@
             if (fullSpan.classList.contains("d-none")) {
                 shortP.style.display = "none";
                 fullSpan.classList.remove("d-none");
-                btn.innerText = "Show less ▲";
+                btn.innerText = "Show less (^)";
             } else {
                 shortP.style.display = "inline";
                 fullSpan.classList.add("d-none");
-                btn.innerText = "Read more ▼";
+                btn.innerText = "Read more (v)";
             }
         }
     </script>

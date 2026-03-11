@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="MemberDashboard.aspx.cs" Inherits="Aidcademy.MemberDashboard" %>
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="MemberDashboard.aspx.cs" Inherits="Aidcademy.MemberDashboard" %>
 
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -308,7 +308,7 @@
                 <div class="welcome-header">
                     <div class="user-info">
                         <h1>Welcome back,
-                            <asp:Label ID="lblMemberName" runat="server"></asp:Label>! 👋</h1>
+                            <asp:Label ID="lblMemberName" runat="server"></asp:Label>!</h1>
                         <p>Continue your first aid learning journey</p>
                     </div>
                 </div>
@@ -384,7 +384,7 @@
                                         <asp:HyperLink runat="server"
                                             NavigateUrl='<%# GetContinueUrl(Eval("NextLessonID")) %>'
                                             CssClass="btn btn-primary">
-                                                Continue →
+                                                Continue &rarr;
                                         </asp:HyperLink>
                                     </div>
                                 </div>
@@ -402,13 +402,13 @@
                         <ItemTemplate>
                             <div class="course-card" style="border: 2px solid #4CAF50;">
                                 <div class="course-image" style="background: #e8f5e9; color: #4CAF50; position: relative;">
-                                    <span class="position-absolute top-0 end-0 m-2 badge bg-success fs-6 shadow">✓ Completed</span>
+                                    <span class="position-absolute top-0 end-0 m-2 badge bg-success fs-6 shadow">&check; Completed</span>
                                     <i class="fas fa-certificate"></i>
                                 </div>
                                 <div class="course-content">
                                     <h3 class="course-title"><%# Eval("CourseName") %></h3>
                                     <div class="course-footer">
-                                        <span style="color: #666; font-size: 0.9em;"><i class="fa-regular fa-calendar-check me-1"></i>Enrolled: <%# Convert.ToDateTime(Eval("EnrolmentDate")).ToString("MMM dd, yyyy") %></span>
+                                        <span style="color: #666; font-size: 0.9em;"><i class="fa-regular fa-calendar-check me-1"></i>Enrolled: <%# Convert.ToDateTime(Eval("EnrollmentDate")).ToString("MMM dd, yyyy") %></span>
                                         <asp:HyperLink runat="server" NavigateUrl="~/LearningProgress.aspx" CssClass="btn btn-outline-success border border-success text-success">Review <i class="fa-solid fa-arrow-right ms-1"></i></asp:HyperLink>
                                     </div>
                                 </div>
@@ -434,6 +434,12 @@
                             <asp:BoundField DataField="WeeklyPoints" HeaderText="Weekly Total Points" />
                             <asp:BoundField DataField="TotalPoints" HeaderText="Entire Total Points" />
                         </Columns>
+                        <EmptyDataTemplate>
+                            <div class="empty-state" style="padding: 30px; text-align: center; color: #888;">
+                                <i class="fas fa-trophy" style="font-size: 40px; color: #ddd; display: block; margin-bottom: 10px;"></i>
+                                No scores yet - complete a quiz to appear on the leaderboard!
+                            </div>
+                        </EmptyDataTemplate>
                     </asp:GridView>
                 </div>
             </div>

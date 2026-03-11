@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
@@ -468,6 +468,12 @@ namespace Aidcademy
                     BEGIN
                         INSERT INTO LessonProgress (UserID, LessonID, CourseID, IsCompleted, CompletionDate)
                         VALUES (@UserID, @LessonID, @CourseID, 1, GETDATE())
+                    END
+                    ELSE
+                    BEGIN
+                        UPDATE LessonProgress
+                        SET IsCompleted = 1, CompletionDate = GETDATE()
+                        WHERE UserID = @UserID AND LessonID = @LessonID
                     END";
 
                 using (SqlCommand cmd = new SqlCommand(upsertQuery, conn))

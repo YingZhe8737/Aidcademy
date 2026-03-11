@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.Web.UI;
@@ -44,7 +44,7 @@ namespace Aidcademy
                               AND l.ApprovalStatus = 'Published'
                               AND l.LessonID NOT IN (
                                   SELECT lp.LessonID FROM LessonProgress lp
-                                  WHERE lp.UserID = @UserID AND lp.Status = 'Completed'
+                                  WHERE lp.UserID = @UserID AND lp.IsCompleted = 1
                               )
                             ORDER BY l.SequenceOrder, l.LessonID
                         ) AS NextLessonID

@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="MemberProfile.aspx.cs" Inherits="Aidcademy.MemberProfile" %>
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="MemberProfile.aspx.cs" Inherits="Aidcademy.MemberProfile" %>
 
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -262,7 +262,7 @@
                     <div>
                         <asp:FileUpload ID="fuProfilePhoto" runat="server" accept=".jpg,.jpeg,.png,.gif" />
                         <br />
-                        <small style="color: #999; font-size: 12px;">JPG, PNG or GIF · Max 2 MB</small>
+                        <small style="color: #999; font-size: 12px;">JPG, PNG or GIF - Max 2 MB</small>
                     </div>
                 </div>
 

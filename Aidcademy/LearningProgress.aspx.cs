@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.Web.UI;
@@ -51,7 +51,7 @@ namespace Aidcademy
                          INNER JOIN Lessons l ON lp.LessonID = l.LessonID
                          WHERE l.CourseID = c.CourseID
                            AND lp.UserID  = e.UserID
-                           AND lp.Status  = 'Completed') AS CompletedLessons,
+                           AND lp.Status = 'Completed') AS CompletedLessons,
                         ISNULL(q.AvgScore, -1) AS AvgQuizScore
                     FROM Enrollments e
                     INNER JOIN Courses c ON e.CourseID = c.CourseID

@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="VerifyOtp.aspx.cs" Inherits="Aidcademy.VerifyOtp" %>
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="VerifyOtp.aspx.cs" Inherits="Aidcademy.VerifyOtp" %>
 
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -202,7 +202,7 @@
                     Enter it below. The code expires in <strong>10 minutes</strong>.
             </asp:Label>
 
-            <!-- Message panel — appears after subtitle, before OTP inputs -->
+            <!-- Message panel - appears after subtitle, before OTP inputs -->
             <asp:Panel ID="pnlMessage" runat="server" Visible="false">
                 <asp:Label ID="lblMessage" runat="server" CssClass="message"></asp:Label>
             </asp:Panel>
@@ -257,7 +257,7 @@
             });
         });
 
-        // Paste support — spread digits across boxes
+        // Paste support - spread digits across boxes
         digits[0].addEventListener('paste', function (e) {
             e.preventDefault();
             var pasted = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');

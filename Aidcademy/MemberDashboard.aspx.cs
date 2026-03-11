@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.Configuration;
@@ -116,11 +116,11 @@ namespace Aidcademy
 
                     // Load recently completed courses
                     string queryRecentCompleted = @"
-                        SELECT TOP 3 c.CourseID, c.Title, e.EnrolmentDate
+                        SELECT TOP 3 c.CourseID, c.Title AS CourseName, e.EnrollmentDate
                         FROM Enrollments e
                         INNER JOIN Courses c ON e.CourseID = c.CourseID
                         WHERE e.UserID = @UserID AND e.IsCompleted = 1
-                        ORDER BY e.EnrolmentDate DESC";
+                        ORDER BY e.EnrollmentDate DESC";
 
                     using (SqlCommand cmd = new SqlCommand(queryRecentCompleted, conn))
                     {
@@ -134,11 +134,24 @@ namespace Aidcademy
                             pnlCompletedSection.Visible = true;
                     }
 
-                    // Load Leaderboard Data — derived from QuizResults so it works even if the Leaderboard table is empty
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("Dashboard error: " + ex.Message);
+            }
+
+            // Leaderboard runs in its own block so errors above never block it
+            try
+            {
+                string connectionString = ConfigurationManager.ConnectionStrings["AidcademyDB"].ConnectionString;
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    conn.Open();
                     string queryLeaderboard = @"
                         SELECT TOP 10
                             p.UserID,
-                            p.FullName,
+                            ISNULL(NULLIF(p.FullName, ''), 'Anonymous') AS FullName,
                             MAX(qr.DateTaken) AS LastSolved,
                             ISNULL(SUM(CASE WHEN qr.DateTaken >= DATEADD(day, -7, GETDATE()) THEN qr.Score ELSE 0 END), 0) AS WeeklyPoints,
                             ISNULL(SUM(qr.Score), 0) AS TotalPoints
@@ -160,7 +173,7 @@ namespace Aidcademy
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine("Dashboard error: " + ex.Message);
+                System.Diagnostics.Debug.WriteLine("Leaderboard error: " + ex.Message);
             }
         }
 

@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="SubmitQuestion.aspx.cs" Inherits="Aidcademy.SubmitQuestion" %>
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="SubmitQuestion.aspx.cs" Inherits="Aidcademy.SubmitQuestion" %>
 
 <!DOCTYPE html>
 <html>
@@ -278,7 +278,7 @@
                 <h2 style="margin-bottom: 20px; color: #333;">My Questions</h2>
 
                 <asp:Panel ID="pnlNoQuestions" runat="server" Visible="false" CssClass="empty-state">
-                    <div style="font-size: 48px; margin-bottom: 15px;">❓</div>
+                    <i class="fas fa-question-circle" style="font-size: 48px; color: #ddd; display: block; margin-bottom: 15px;"></i>
                     <p>You haven't asked any questions yet</p>
                 </asp:Panel>
 

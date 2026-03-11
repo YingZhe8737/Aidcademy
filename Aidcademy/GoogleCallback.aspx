@@ -44,7 +44,7 @@
     <form id="form1" runat="server">
         <div class="spinner-box">
             <div class="spinner"></div>
-            <p>Please wait, signing you in with Google…</p>
+            <p>Please wait, signing you in with Google...</p>
         </div>
     </form>
 </body>
