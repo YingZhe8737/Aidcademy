@@ -6,6 +6,8 @@
 
 <head runat="server">
     <title>My Progress - Aidcademy</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="~/Styles/aidcademy-theme.css" />
     <style>
         * {
@@ -188,16 +190,18 @@
     <form id="form1" runat="server">
         <div class="navbar">
             <div class="navbar-brand">
-                <a href="MainPage.aspx" style="color: white; text-decoration: none;">🏥
-                        AIDCADEMY</a>
+                <a href="MainPage.aspx" style="color: white; text-decoration: none; display: flex; align-items: center;">
+                    <img src="Image/logo2.jpeg" alt="Aidcademy Logo" style="height: 40px; margin-right: 10px; border-radius: 5px;" />
+                    AIDCADEMY
+                </a>
             </div>
             <div class="navbar-menu">
-                <asp:HyperLink runat="server" NavigateUrl="~/MemberDashboard.aspx">Dashboard</asp:HyperLink>
-                <asp:HyperLink runat="server" NavigateUrl="~/LearningCourse.aspx">Courses</asp:HyperLink>
-                <asp:HyperLink runat="server" NavigateUrl="~/LearningProgress.aspx">My Progress</asp:HyperLink>
-                <asp:HyperLink runat="server" NavigateUrl="~/SubmitQuestion.aspx">Ask Question</asp:HyperLink>
-                <asp:HyperLink runat="server" NavigateUrl="~/MemberProfile.aspx">Profile</asp:HyperLink>
-                <asp:LinkButton ID="btnLogout" runat="server" OnClick="btnLogout_Click" CssClass="navbar-btn">Logout</asp:LinkButton>
+                <asp:HyperLink ID="lnkDashboard" runat="server" NavigateUrl="~/MemberDashboard.aspx"><i class="fas fa-chart-line"></i> Dashboard</asp:HyperLink>
+                <asp:HyperLink ID="lnkCourses" runat="server" NavigateUrl="~/LearningCourse.aspx"><i class="fas fa-book"></i> Courses</asp:HyperLink>
+                <asp:HyperLink ID="lnkProgress" runat="server" NavigateUrl="~/LearningProgress.aspx" CssClass="fw-bold text-white font-weight-bold"><i class="fas fa-chart-pie"></i> My Progress</asp:HyperLink>
+                <asp:HyperLink ID="lnkAskQuestion" runat="server" NavigateUrl="~/SubmitQuestion.aspx"><i class="fas fa-comments"></i> Ask Question</asp:HyperLink>
+                <asp:HyperLink ID="lnkProfile" runat="server" NavigateUrl="~/MemberProfile.aspx"><i class="fas fa-user"></i> Profile</asp:HyperLink>
+                <asp:LinkButton ID="btnLogout" runat="server" OnClick="btnLogout_Click" CssClass="navbar-btn"><i class="fas fa-sign-out-alt"></i> Logout</asp:LinkButton>
             </div>
         </div>
 
@@ -218,8 +222,9 @@
 
             <asp:Repeater ID="rptProgress" runat="server">
                 <ItemTemplate>
-                    <div class="progress-card">
-                        <div class="progress-header">
+                    <div class="progress-card position-relative" style='<%# Eval("Status").ToString() == "Completed" ? "border: 2px solid #28a745;" : "" %>'>
+                        <%# Eval("Status").ToString() == "Completed" ? "<span class=\"position-absolute top-0 start-50 translate-middle badge rounded-pill bg-success px-3 py-2 fs-6 shadow\"><i class=\"fa-solid fa-check-circle me-1\"></i> Course Completed</span>" : "" %>
+                        <div class="progress-header mt-2">
                             <h3 class="course-name">
                                 <%# Eval("CourseName") %>
                                 </h3>
@@ -239,7 +244,7 @@
                             <strong style="color: #667eea; font-size: 18px;">
                                 <%# Eval("ProgressPercentage", "{0:F0}" ) %>%
                                 </strong>Complete
-                           
+                            <%# Eval("Status").ToString() != "Completed" ? "<a href='" + GetContinueUrl(Eval("NextLessonID")) + "' class='btn btn-sm btn-outline-primary ms-3 rounded-pill fw-bold'>Continue Learning <i class='fa-solid fa-arrow-right ms-1'></i></a>" : "" %>
                         </div>
 
                         <div class="progress-stats">
@@ -257,10 +262,9 @@
                             </div>
                             <div class="stat-item">
                                 <div class="stat-value">
-                                    <%# Eval("ProgressPercentage", "{0:F0}" ) %>%
-                                   
+                                    <%# Convert.ToInt32(Eval("AvgQuizScore")) == -1 ? "N/A" : Eval("AvgQuizScore", "{0:F0}") %> 
                                 </div>
-                                <div class="stat-label">Overall Progress</div>
+                                <div class="stat-label">Avg Quiz Score</div>
                             </div>
                         </div>
                     </div>

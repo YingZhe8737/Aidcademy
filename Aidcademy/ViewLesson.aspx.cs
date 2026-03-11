@@ -38,6 +38,9 @@ namespace Aidcademy
 
             if (!IsPostBack)
             {
+                // Show the admin action bar only if the logged-in user is an admin
+                pnlAdminActions.Visible = SessionHelper.IsAdmin();
+
                 if (Request.QueryString["LessonID"] != null)
                 {
                     int currentLessonId = Convert.ToInt32(Request.QueryString["LessonID"]);
@@ -51,8 +54,9 @@ namespace Aidcademy
         {
             using (SqlConnection conn = new SqlConnection(connString))
             {
-                // 1. Load the Content
-                using (SqlCommand cmd = new SqlCommand("SELECT Title, ContentBody, SequenceOrder FROM Lessons WHERE LessonID = @LessonID", conn))
+                // Load lesson content
+                using (SqlCommand cmd = new SqlCommand(
+                    "SELECT Title, ContentBody, SequenceOrder FROM Lessons WHERE LessonID = @LessonID", conn))
                 {
                     cmd.Parameters.AddWithValue("@LessonID", lessonId);
                     conn.Open();
@@ -74,9 +78,8 @@ namespace Aidcademy
                     cmd.Parameters.AddWithValue("@LessonID", lessonId);
                     using (SqlDataAdapter sda = new SqlDataAdapter(cmd))
                     {
-                        System.Data.DataTable dt = new System.Data.DataTable();
+                        DataTable dt = new DataTable();
                         sda.Fill(dt);
-
                         if (dt.Rows.Count > 0)
                         {
                             pnlQuiz.Visible = true;
@@ -108,7 +111,7 @@ namespace Aidcademy
             if (e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem)
             {
                 RadioButtonList rbl = (RadioButtonList)e.Item.FindControl("rblOptions");
-                System.Data.DataRowView row = (System.Data.DataRowView)e.Item.DataItem;
+                DataRowView row = (DataRowView)e.Item.DataItem;
 
                 rbl.Items.Add(new ListItem(" A) " + row["OptionA"].ToString(), "A"));
                 rbl.Items.Add(new ListItem(" B) " + row["OptionB"].ToString(), "B"));
@@ -143,6 +146,8 @@ namespace Aidcademy
 
             int userId = Session["UserID"] != null ? Convert.ToInt32(Session["UserID"]) : 1;
             int quizId = Convert.ToInt32(hfQuizID.Value);
+            int newStreak = 1;
+            int pointsToAdd = 0;
 
             using (SqlConnection conn = new SqlConnection(connString))
             {
@@ -150,6 +155,8 @@ namespace Aidcademy
                 string checkQuery = "SELECT Score FROM QuizResults WHERE UserID = @UserID AND QuizID = @QuizID";
                 int? existingScore = null;
 
+                int? existingScore = null;
+                string checkQuery = "SELECT Score FROM QuizResults WHERE UserID = @UserID AND QuizID = @QuizID";
                 using (SqlCommand cmd = new SqlCommand(checkQuery, conn))
                 {
                     cmd.Parameters.AddWithValue("@UserID", userId);
@@ -158,7 +165,7 @@ namespace Aidcademy
                     if (result != null) existingScore = Convert.ToInt32(result);
                 }
 
-                int earnedXP = 0;
+                int earnedXP;
                 bool isFirstAttempt = !existingScore.HasValue;
 
                 if (isFirstAttempt)
@@ -192,7 +199,18 @@ namespace Aidcademy
                     int highestSaved = Math.Max(earnedXP, existingScore.Value);
                     lblQuizScore.Text = $"You scored {score} out of {totalQuestions}. (Retry earned {earnedXP} XP. Highest saved: {highestSaved} XP)";
                 }
-            }
+
+                int currentStreak = 0;
+                string getStreakQuery = "SELECT ISNULL(DailyStreak, 0) FROM Leaderboard WHERE UserID = @UserID";
+                using (SqlCommand cmd = new SqlCommand(getStreakQuery, conn))
+                {
+                    cmd.Parameters.AddWithValue("@UserID", userId);
+                    object res = cmd.ExecuteScalar();
+                    if (res != null && res != DBNull.Value)
+                    {
+                        currentStreak = Convert.ToInt32(res);
+                    }
+                }
 
             if (score == totalQuestions)
             {
@@ -322,6 +340,10 @@ namespace Aidcademy
                     }
                 }
             }
+
+            btnMarkComplete.Text = "Completed ✓";
+            btnMarkComplete.Enabled = false;
+            btnMarkComplete.CssClass = "btn btn-secondary rounded-pill fw-bold px-4 shadow-sm";
         }
     }
 }

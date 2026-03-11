@@ -1664,6 +1664,24 @@
                                 </label>
                                 <input type="range" class="form-range w-100" id="armSlider" min="0" max="100" value="0" style="height: 25px; cursor: pointer;">
                             </div>
+                card.innerHTML = `
+                <div class="flip-card-inner">
+                    <div class="flip-card-front shadow-sm position-relative">
+                        ${hintHtml}
+                        ${imgHtml}
+                        <h3 class="fw-bold m-0">${front}</h3>
+                        <small class="text-danger mt-3 fw-bold text-uppercase" style="letter-spacing:1px;">
+                            <i class="fa-solid fa-hand-pointer me-1"></i> Hover to reveal
+                        </small>
+                    </div>
+                    <div class="flip-card-back shadow-sm">
+                        <p class="fs-5 m-0 px-2">${back}</p>
+                    </div>
+                </div>`;
+                card.className = 'actual-3d-flip-card';
+                card.removeAttribute('style');
+                card.removeAttribute('contenteditable');
+            });
 
                             <div id="triageStatus" class="mt-4 fs-5 text-center text-dark" style="min-height: 60px;">
                                 <i class="fa-solid fa-triangle-exclamation pulse-anim d-inline-block text-danger me-1"></i> <strong>Severe bleed detected!</strong> Click the wound to apply a Gauze Pad!
@@ -2385,7 +2403,48 @@
                     phaseStroke.style.transform = "translateX(0)";
                 };
             }
+            // ── Unpack Accordions ──
+            document.querySelectorAll('.aidcademy-custom-accordion').forEach(function (acc) {
+                let title = acc.getAttribute('data-title');
+                let content = acc.getAttribute('data-content');
+                acc.innerHTML = `
+                <details class="member-accordion my-4">
+                    <summary class="fw-bold fs-5 text-dark">
+                        <i class="fa-solid fa-chevron-right me-3 text-danger transition-icon"></i>${title}
+                    </summary>
+                    <div class="mt-3 pt-3 border-top text-secondary fs-6">${content}</div>
+                </details>`;
+                acc.className = '';
+                acc.removeAttribute('style');
+                acc.removeAttribute('contenteditable');
+            });
         };
+    </script>
+    </form>
+    
+    <!-- Day Streak Modal -->
+    <div class="modal fade" id="streakModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center" style="border-radius: 15px; border: none; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+          <div class="modal-header bg-warning text-white" style="border-bottom: none; justify-content: center; padding: 2rem 1rem 1rem;">
+            <i class="fa-solid fa-fire fa-4x mb-2" style="color: #ff5722;"></i>
+          </div>
+          <div class="modal-body p-4">
+            <h3 class="fw-bold mb-3">Day Streak!</h3>
+            <p class="text-muted fs-5 mb-0" id="streakModalMessage">You just extended your daily streak. Keep playing!</p>
+          </div>
+          <div class="modal-footer" style="border-top: none; justify-content: center; padding-bottom: 2rem;">
+            <button type="button" class="btn btn-warning text-white fw-bold px-4 py-2" data-bs-dismiss="modal" style="border-radius: 30px;">Awesome!</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function showStreakModal() {
+            var myModal = new bootstrap.Modal(document.getElementById('streakModal'));
+            myModal.show();
+        }
     </script>
 </body>
 </html>

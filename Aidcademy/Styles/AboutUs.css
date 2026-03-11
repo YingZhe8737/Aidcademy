@@ -17,12 +17,24 @@ body {
     padding: 15px 20px;
     background-color: rgba(0,0,0,0.7);
 }
-
 .brand {
-    font-size: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+}
+
+.brand img {
+    height: 100px;
+    width: auto;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.brand-text {
+    font-size: 22px;
     font-weight: bold;
     color: white;
-    text-decoration: none; /* remove underline */
 }
 
 .nav {
@@ -107,8 +119,11 @@ body {
 }
 
 .contact {
+    background-color: #1f2d3d;
     text-align: center;
     padding: 60px 20px;
+    margin-top: 50px;
+    color: white;
 }
 
 .btn-feedback {

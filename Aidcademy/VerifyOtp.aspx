@@ -226,6 +226,10 @@
             <!-- Hidden field passed to server -->
             <asp:HiddenField ID="txtOtp" runat="server" />
 
+            <div id="countdownTimer" style="font-size: 16px; font-weight: bold; color: #dc2626; margin-bottom: 20px;">
+                Code expires in: <span id="timeDisplay">10:00</span>
+            </div>
+
             <asp:Button ID="btnVerify" runat="server" Text="Verify Code" CssClass="btn-primary"
                 OnClick="btnVerify_Click" OnClientClick="return aggregateOtp();" />
 
@@ -270,6 +274,34 @@
             document.getElementById('<%= txtOtp.ClientID %>').value = code;
             return true;
         }
+
+        // Countdown Timer
+        var timeLeft = 600; // 10 minutes
+        var timerDisplay = document.getElementById("timeDisplay");
+        var resendBtn = document.getElementById('<%= btnResend.ClientID %>');
+        var verifyBtn = document.getElementById('<%= btnVerify.ClientID %>');
+        
+        function updateTimer() {
+            var minutes = Math.floor(timeLeft / 60);
+            var seconds = timeLeft % 60;
+            if (seconds < 10) seconds = "0" + seconds;
+            timerDisplay.innerText = minutes + ":" + seconds;
+
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                timerDisplay.innerText = "0:00";
+                resendBtn.disabled = false;
+                resendBtn.style.opacity = "1";
+                verifyBtn.disabled = true;
+                verifyBtn.style.opacity = "0.5";
+            } else {
+                timeLeft--;
+            }
+        }
+        
+        resendBtn.disabled = true;
+        resendBtn.style.opacity = "0.5";
+        var timerInterval = setInterval(updateTimer, 1000);
     </script>
 </body>
 

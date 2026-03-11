@@ -5,6 +5,8 @@
 
 <head runat="server">
     <title>Courses - Aidcademy</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="~/Styles/aidcademy-theme.css" />
     <style>
         * {
@@ -203,16 +205,18 @@
     <form id="form1" runat="server">
         <div class="navbar">
             <div class="navbar-brand">
-                <a href="MainPage.aspx" style="color: white; text-decoration: none;">🏥
-                        AIDCADEMY</a>
+                <a href="MainPage.aspx" style="color: white; text-decoration: none; display: flex; align-items: center;">
+                    <img src="Image/logo2.jpeg" alt="Aidcademy Logo" style="height: 40px; margin-right: 10px; border-radius: 5px;" />
+                    AIDCADEMY
+                </a>
             </div>
             <div class="navbar-menu">
-                <asp:HyperLink runat="server" NavigateUrl="~/MemberDashboard.aspx">Dashboard</asp:HyperLink>
-                <asp:HyperLink runat="server" NavigateUrl="~/LearningCourse.aspx">Courses</asp:HyperLink>
-                <asp:HyperLink runat="server" NavigateUrl="~/LearningProgress.aspx">My Progress</asp:HyperLink>
-                <asp:HyperLink runat="server" NavigateUrl="~/SubmitQuestion.aspx">Ask Question</asp:HyperLink>
-                <asp:HyperLink runat="server" NavigateUrl="~/MemberProfile.aspx">Profile</asp:HyperLink>
-                <asp:LinkButton ID="btnLogout" runat="server" OnClick="btnLogout_Click" CssClass="navbar-btn">Logout</asp:LinkButton>
+                <asp:HyperLink ID="lnkDashboard" runat="server" NavigateUrl="~/MemberDashboard.aspx"><i class="fas fa-chart-line"></i> Dashboard</asp:HyperLink>
+                <asp:HyperLink ID="lnkCourses" runat="server" NavigateUrl="~/LearningCourse.aspx" CssClass="fw-bold text-white font-weight-bold"><i class="fas fa-book"></i> Courses</asp:HyperLink>
+                <asp:HyperLink ID="lnkProgress" runat="server" NavigateUrl="~/LearningProgress.aspx"><i class="fas fa-chart-pie"></i> My Progress</asp:HyperLink>
+                <asp:HyperLink ID="lnkAskQuestion" runat="server" NavigateUrl="~/SubmitQuestion.aspx"><i class="fas fa-comments"></i> Ask Question</asp:HyperLink>
+                <asp:HyperLink ID="lnkProfile" runat="server" NavigateUrl="~/MemberProfile.aspx"><i class="fas fa-user"></i> Profile</asp:HyperLink>
+                <asp:LinkButton ID="btnLogout" runat="server" OnClick="btnLogout_Click" CssClass="navbar-btn"><i class="fas fa-sign-out-alt"></i> Logout</asp:LinkButton>
             </div>
         </div>
 
@@ -220,6 +224,9 @@
             <div class="page-header">
                 <h1>Available Courses</h1>
                 <p>Enroll in courses to start your first aid learning journey</p>
+                <div class="mt-4" style="max-width: 500px; margin: 0 auto;">
+                    <input type="text" id="txtSearch" class="form-control rounded-pill text-center shadow-sm py-2" placeholder="🔍 Search courses by name..." oninput="filterCourses()" />
+                </div>
             </div>
 
             <div class="course-grid">
@@ -230,33 +237,39 @@
                             <div class="course-content">
                                 <h3 class="course-title">
                                     <%# Eval("CourseName") %>
-                                    </h3>
-                                <p class="course-description">
-                                    <%# Eval("CourseDescription") %>
-                                </p>
+                                </h3>
+                                
+                                <div class="course-description-container" style="margin-bottom: 15px;">
+                                    <p class="course-description m-0" style="display:inline;">
+                                        <%# Eval("CourseDescription").ToString().Length > 100 ? Eval("CourseDescription").ToString().Substring(0, 100) + "..." : Eval("CourseDescription") %>
+                                    </p>
+                                    <%# Eval("CourseDescription").ToString().Length > 100 ? 
+                                        "<span class='full-desc d-none'>" + Eval("CourseDescription") + "</span><a href='#' class='text-primary fw-bold ms-1' style='text-decoration:none; font-size:0.9em;' onclick='toggleDesc(this, event)'>Read more &#9660;</a>"
+                                        : "" %>
+                                </div>
 
-                                <%-- Category badge (from new schema: Category column) --%>
                                 <div style="margin-bottom: 15px;">
                                     <span class="course-category">
                                         <%# Eval("Category") %>
-                                            </span>
+                                    </span>
                                     <%# Convert.ToBoolean(Eval("IsEnrolled"))
                                                 ? "<span class='badge-enrolled'>✓ Enrolled</span>" : "" %>
                                 </div>
+                                
+                                <%# Convert.ToBoolean(Eval("IsEnrolled")) ? 
+                                    "<div class='progress mb-3' style='height: 6px;'><div class='progress-bar bg-success' style='width: " + Eval("ProgressPercentage") + "%;'></div></div><div class='text-end text-muted' style='font-size:0.8em; margin-top:-10px; margin-bottom:10px;'>" + String.Format("{0:F0}", Eval("ProgressPercentage")) + "% Complete</div>"
+                                    : "" %>
 
-                                <%-- Enroll button OR View Course link based on enrollment status --%>
                                 <%# Convert.ToBoolean(Eval("IsEnrolled"))
-                                                ? "<a href='LearningProgress.aspx' class='btn-enrolled-view'>View My Progress →</a>"
+                                                ? "<a href='" + GetContinueUrl(Eval("NextLessonID")) + "' class='btn-enrolled-view'>Continue Learning &#x2192;</a>"
                                                 : "" %>
 
-                                <%-- asp:Button for enroll — must be a server control, not inside inline
-                                                    string --%>
                                 <asp:LinkButton runat="server"
                                     Visible='<%# !Convert.ToBoolean(Eval("IsEnrolled")) %>'
                                     CommandName="Enroll" CommandArgument='<%# Eval("CourseID") %>'
                                     OnCommand="btnEnroll_Command" CssClass="btn-enroll">
-                                                        Enroll Now
-                                                    </asp:LinkButton>
+                                    Enroll Now
+                                </asp:LinkButton>
                             </div>
                         </div>
                     </ItemTemplate>
@@ -264,6 +277,38 @@
             </div>
         </div>
     </form>
+
+    <script>
+        function filterCourses() {
+            var search = document.getElementById("txtSearch").value.toLowerCase();
+            var cards = document.querySelectorAll(".course-card");
+            cards.forEach(function (card) {
+                var title = card.querySelector(".course-title").innerText.toLowerCase();
+                if (title.includes(search)) {
+                    card.style.display = "block";
+                } else {
+                    card.style.display = "none";
+                }
+            });
+        }
+
+        function toggleDesc(btn, e) {
+            e.preventDefault();
+            var container = btn.parentElement;
+            var shortP = container.querySelector(".course-description");
+            var fullSpan = container.querySelector(".full-desc");
+
+            if (fullSpan.classList.contains("d-none")) {
+                shortP.style.display = "none";
+                fullSpan.classList.remove("d-none");
+                btn.innerText = "Show less ▲";
+            } else {
+                shortP.style.display = "inline";
+                fullSpan.classList.add("d-none");
+                btn.innerText = "Read more ▼";
+            }
+        }
+    </script>
 </body>
 
 </html>

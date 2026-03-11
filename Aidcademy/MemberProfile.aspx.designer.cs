@@ -145,5 +145,14 @@ namespace Aidcademy
         /// txtConfirmNewPassword control.
         /// </summary>
         protected global::System.Web.UI.WebControls.TextBox txtConfirmNewPassword;
+
+        /// <summary>
+        /// txtBio control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtBio;
     }
 }

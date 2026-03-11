@@ -37,15 +37,32 @@ namespace Aidcademy
                         e.ProgressPercentage,
                         e.EnrollmentDate,
                         CASE WHEN e.IsCompleted = 1 THEN 'Completed' ELSE 'In Progress' END AS Status,
+                        (SELECT TOP 1 l.LessonID
+                            FROM Lessons l
+                            WHERE l.CourseID = c.CourseID
+                            AND l.LessonID NOT IN (
+                                SELECT lp.LessonID FROM LessonProgress lp
+                                WHERE lp.UserID = @UserID AND lp.Status = 'Completed'
+                            )
+                            ORDER BY l.SequenceOrder, l.LessonID) AS NextLessonID,
                         (SELECT COUNT(*) FROM Lessons WHERE CourseID = c.CourseID) AS TotalLessons,
                         (SELECT COUNT(*)
                          FROM LessonProgress lp
                          INNER JOIN Lessons l ON lp.LessonID = l.LessonID
                          WHERE l.CourseID = c.CourseID
                            AND lp.UserID  = e.UserID
-                           AND lp.Status  = 'Completed') AS CompletedLessons
+                           AND lp.Status  = 'Completed') AS CompletedLessons,
+                        ISNULL(q.AvgScore, -1) AS AvgQuizScore
                     FROM Enrollments e
                     INNER JOIN Courses c ON e.CourseID = c.CourseID
+                    LEFT JOIN (
+                        SELECT ls.CourseID, AVG(qr.Score) as AvgScore 
+                        FROM QuizResults qr
+                        INNER JOIN Quizzes qz ON qr.QuizID = qz.QuizID
+                        INNER JOIN Lessons ls ON qz.LessonID = ls.LessonID
+                        WHERE qr.UserID = @UserID 
+                        GROUP BY ls.CourseID
+                    ) q ON q.CourseID = c.CourseID
                     WHERE e.UserID = @UserID
                     ORDER BY e.EnrollmentDate DESC";
 
@@ -60,6 +77,13 @@ namespace Aidcademy
                 System.Diagnostics.Debug.WriteLine("Progress error: " + ex.Message);
                 pnlNoProgress.Visible = true;
             }
+        }
+
+        protected string GetContinueUrl(object lessonId)
+        {
+            if (lessonId != null && lessonId != DBNull.Value)
+                return ResolveUrl("~/ViewLesson.aspx?LessonID=" + lessonId.ToString());
+            return ResolveUrl("~/LearningCourse.aspx");
         }
 
         protected void btnLogout_Click(object sender, EventArgs e)

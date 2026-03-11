@@ -47,20 +47,33 @@ namespace Aidcademy
                 }
 
                 // Verify current password
-                string currentHash = SecurityHelper.HashPassword(currentPassword);
                 string checkQuery = "SELECT PasswordHash FROM Users WHERE UserID = @UserID";
                 SqlParameter[] checkParams = { new SqlParameter("@UserID", userID) };
 
                 string storedHash = DatabaseHelper.ExecuteScalar(checkQuery, checkParams)?.ToString();
 
-                if (storedHash == null || storedHash != currentHash)
+                bool isPasswordCorrect = false;
+                if (!string.IsNullOrEmpty(storedHash))
+                {
+                    try
+                    {
+                        isPasswordCorrect = BCrypt.Net.BCrypt.Verify(currentPassword, storedHash);
+                    }
+                    catch (BCrypt.Net.SaltParseException)
+                    {
+                        // Fallback to SHA if user hasn't migrated yet
+                        isPasswordCorrect = (storedHash == SecurityHelper.HashPassword(currentPassword));
+                    }
+                }
+
+                if (!isPasswordCorrect)
                 {
                     ShowMessage("Your current password is incorrect.", false);
                     return;
                 }
 
                 // Save new password
-                string newHash = SecurityHelper.HashPassword(newPassword);
+                string newHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
                 string updateQuery = "UPDATE Users SET PasswordHash = @PasswordHash WHERE UserID = @UserID";
                 SqlParameter[] updateParams =
                 {

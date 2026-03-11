@@ -12,7 +12,10 @@
     <form id="form1" runat="server">
 
         <div class="header">
-            <div class="brand">🏥 AIDCADEMY</div>
+            <div class="brand">
+                <img src="image/Logo.jpeg" alt="Aidcademy Logo">
+                <span class="brand-text">Aidcademy</span>
+            </div>
             <div class="nav">
             <asp:Button ID="btnAbout" runat="server" Text="About" 
                 CssClass="nav-btn" OnClick="btnAboutUs" />
@@ -58,20 +61,13 @@
 
         </div>
 
-        <div class="footer-section">
-            <div class="contact-info">
-                <h3>Contact Us</h3>
-                <p>📞 Phone: +60 12-345 6789</p>
-                <p>📧 Email: support@aidcademy.com</p>
-            </div>
+        <div class="contact">
+            <h2>Contact Us</h2>
+            <p>Email: support@aidcademy.com</p>
+            <p>Phone: +60 12-345 6789</p>
 
-            <div class="feedback-area">
-                <asp:Button ID="btnFeedback"
-                    runat="server"
-                    Text="Send Feedback"
-                    CssClass="feedback-btn"
-                    OnClick="btnFeedback_Click" />
-            </div>
+            <asp:Button ID="btnFeedback" runat="server" 
+                Text="Send Feedback" CssClass="btn-feedback" />
         </div>
 
     </form>
