@@ -146,6 +146,18 @@ namespace Aidcademy
                         finalLessonId = Convert.ToInt32(cmd.ExecuteScalar());
                     }
 
+                    // Save the Simulation if the instructor created one!
+                    if (!string.IsNullOrEmpty(hfSimulationType.Value) && !string.IsNullOrEmpty(hfSimulationData.Value))
+                    {
+                        string simQuery = "INSERT INTO LessonSimulations (LessonID, SimulationType, SimulationData) VALUES (@LID, @Type, @Data)";
+                        using (SqlCommand simCmd = new SqlCommand(simQuery, conn, transaction))
+                        {
+                            simCmd.Parameters.AddWithValue("@LID", finalLessonId);
+                            simCmd.Parameters.AddWithValue("@Type", hfSimulationType.Value);
+                            simCmd.Parameters.AddWithValue("@Data", hfSimulationData.Value);
+                            simCmd.ExecuteNonQuery();
+                        }
+                    }
                     transaction.Commit();
                     isSuccess = true; // The transaction finished perfectly!
                 }

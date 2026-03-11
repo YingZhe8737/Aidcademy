@@ -159,6 +159,24 @@ namespace Aidcademy
         protected global::System.Web.UI.WebControls.HiddenField hfContentBody;
 
         /// <summary>
+        /// hfSimulationType control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfSimulationType;
+
+        /// <summary>
+        /// hfSimulationData control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfSimulationData;
+
+        /// <summary>
         /// btnSaveDraft control.
         /// </summary>
         /// <remarks>
