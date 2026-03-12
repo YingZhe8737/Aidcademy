@@ -48,6 +48,93 @@
         .lesson-content { font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 1.1rem; line-height: 1.8; color: #333; }
         .lesson-content img { max-width: 100%; height: auto; border-radius: 8px; margin: 15px 0; }
         .lesson-content iframe.ql-video { width: 100%; aspect-ratio: 16 / 9; height: auto; border-radius: 8px; margin: 15px 0; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+
+        /* ── Admin Action Bar ── */
+        .admin-action-bar {
+            background: white;
+            border-top: 3px solid #eee;
+            border-radius: 12px;
+            padding: 28px 32px;
+            margin-top: 40px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+        .admin-action-bar .bar-label {
+            font-size: 14px;
+            font-weight: 700;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .admin-action-bar .bar-buttons { display: flex; gap: 12px; }
+
+        .btn-approve {
+            background: #198754; color: white; border: none;
+            padding: 10px 28px; border-radius: 8px; font-weight: 700;
+            font-size: 15px; cursor: pointer; transition: 0.2s;
+        }
+        .btn-approve:hover { background: #146c43; }
+
+        .btn-reject {
+            background: white; color: #dc3545;
+            border: 2px solid #dc3545;
+            padding: 10px 28px; border-radius: 8px; font-weight: 700;
+            font-size: 15px; cursor: pointer; transition: 0.2s;
+        }
+        .btn-reject:hover { background: #dc3545; color: white; }
+
+        /* ── Reject Modal Overlay ── */
+        .modal-overlay {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal-box {
+            background: white;
+            border-radius: 14px;
+            padding: 36px;
+            width: 100%;
+            max-width: 480px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        .modal-box h5 {
+            font-size: 18px; font-weight: 700;
+            color: #dc3545; margin-bottom: 6px;
+        }
+        .modal-box p {
+            font-size: 13px; color: #888; margin-bottom: 16px;
+        }
+        .modal-box textarea {
+            width: 100%; padding: 12px; border-radius: 8px;
+            border: 1.5px solid #ddd; font-size: 14px;
+            font-family: 'Segoe UI', sans-serif;
+            resize: vertical; min-height: 110px;
+            transition: border 0.2s;
+        }
+        .modal-box textarea:focus { outline: none; border-color: #dc3545; }
+        .modal-footer-btns {
+            display: flex; justify-content: flex-end;
+            gap: 10px; margin-top: 16px;
+        }
+        .btn-cancel-modal {
+            background: #f1f1f1; color: #555; border: none;
+            padding: 9px 20px; border-radius: 8px;
+            font-weight: 600; cursor: pointer;
+        }
+        .btn-cancel-modal:hover { background: #e2e2e2; }
+        .btn-confirm-reject {
+            background: #dc3545; color: white; border: none;
+            padding: 9px 20px; border-radius: 8px;
+            font-weight: 700; cursor: pointer;
+        }
+        .btn-confirm-reject:hover { background: #b02a37; }
     </style>
 </head>
 
@@ -156,6 +243,58 @@
                             <asp:Label ID="lblVisitorQuizWarning" runat="server" CssClass="text-danger fw-bold ms-3" Visible="false"><i class="fa-solid fa-lock me-1"></i> Log in to submit quizzes and earn XP!</asp:Label>
                             
                             <asp:Label ID="lblQuizScore" runat="server" CssClass="d-block mt-3"></asp:Label>
+
+                            <!-- ══ ADMIN ACTION BAR (visible to admin only) ══ -->
+                            <asp:Panel ID="pnlAdminActions" runat="server" Visible="false">
+                                <div class="admin-action-bar">
+                                    <span class="bar-label">
+                                        <i class="fa-solid fa-shield-halved me-2 text-danger"></i>Admin Review
+                                    </span>
+                                    <div class="bar-buttons">
+                                        <asp:Button ID="btnApprove" runat="server"
+                                            CssClass="btn-approve"
+                                            Text="✔ Approve"
+                                            OnClick="btnApprove_Click" />
+                                        <button type="button" class="btn-reject" onclick="openRejectModal()">
+                                            ✖ Reject
+                                        </button>
+                                    </div>
+                                </div>
+                                <asp:Label ID="lblActionResult" runat="server" CssClass="d-block mt-3 fw-bold text-center" />
+                            </asp:Panel>
+
+
+                            <!-- ══ REJECT MODAL ══ -->
+                            <div class="modal-overlay" id="rejectModal">
+                                <div class="modal-box">
+                                    <h5><i class="fa-solid fa-circle-xmark me-2"></i>Reject Lesson</h5>
+                                    <p>Please provide a reason so the instructor knows what to fix.</p>
+                                    <textarea id="txtRejectComment" placeholder="e.g. Content is incomplete, missing references..."></textarea>
+                                    <div class="modal-footer-btns">
+                                        <button type="button" class="btn-cancel-modal" onclick="closeRejectModal()">Cancel</button>
+                                        <asp:Button ID="btnConfirmReject" runat="server"
+                                            CssClass="btn-confirm-reject"
+                                            Text="Confirm Reject"
+                                            OnClick="btnReject_Click"
+                                            OnClientClick="return submitReject();" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Hidden field to carry the comment to the server -->
+                            <asp:HiddenField ID="hfRejectComment" runat="server" />
+                            <!-- Lesson Navigation -->
+                            <div class="d-flex justify-content-between align-items-center mt-5 p-3 bg-light rounded-pill shadow-sm border">
+                                <asp:LinkButton ID="btnPrevLesson" runat="server" CssClass="btn btn-outline-secondary rounded-pill fw-bold" OnClick="btnPrevLesson_Click" Visible="false">
+                                    <i class="fa-solid fa-arrow-left me-2"></i> Previous Lesson
+                                </asp:LinkButton>
+
+                                <asp:Button ID="btnMarkComplete" runat="server" Text="✓ Mark as Complete" CssClass="btn btn-success rounded-pill fw-bold px-4 shadow-sm" OnClick="btnMarkComplete_Click" />
+
+                                <asp:LinkButton ID="btnNextLesson" runat="server" CssClass="btn btn-outline-primary rounded-pill fw-bold" OnClick="btnNextLesson_Click" Visible="false">
+                                    Next Lesson <i class="fa-solid fa-arrow-right ms-2"></i>
+                                </asp:LinkButton>
+                            </div>
                         </asp:Panel>
                     </div>
                 </div>
@@ -164,6 +303,25 @@
     </form>
 
     <script>
+        function openRejectModal() {
+            document.getElementById('rejectModal').classList.add('show');
+            document.getElementById('txtRejectComment').focus();
+        }
+        function closeRejectModal() {
+            document.getElementById('rejectModal').classList.remove('show');
+        }
+        function submitReject() {
+            var comment = document.getElementById('txtRejectComment').value.trim();
+            if (comment === '') {
+                document.getElementById('txtRejectComment').style.borderColor = '#dc3545';
+                document.getElementById('txtRejectComment').placeholder = 'Please enter a reason before submitting.';
+                return false;
+            }
+            // Copy comment into hidden field so server can read it
+            document.getElementById('<%= hfRejectComment.ClientID %>').value = comment;
+            return true;
+        }
+
         window.onload = function () {
             // HAMBURGER TOGGLE LOGIC
             document.getElementById("sidebarToggle").addEventListener("click", function (e) {
@@ -1008,7 +1166,6 @@
                 let targetCycles = parseInt(config.cycles) || 2;
 
                 // 1. Draw the UI
-                // 1. Draw the UI
                 container.innerHTML = `
                     <div class="card bg-white text-dark rounded-4 shadow-lg border-2 border-warning overflow-hidden">
                         <div class="card-header bg-warning text-dark text-center py-3 fw-bold fs-5 d-flex justify-content-between px-4">
@@ -1664,24 +1821,6 @@
                                 </label>
                                 <input type="range" class="form-range w-100" id="armSlider" min="0" max="100" value="0" style="height: 25px; cursor: pointer;">
                             </div>
-                card.innerHTML = `
-                <div class="flip-card-inner">
-                    <div class="flip-card-front shadow-sm position-relative">
-                        ${hintHtml}
-                        ${imgHtml}
-                        <h3 class="fw-bold m-0">${front}</h3>
-                        <small class="text-danger mt-3 fw-bold text-uppercase" style="letter-spacing:1px;">
-                            <i class="fa-solid fa-hand-pointer me-1"></i> Hover to reveal
-                        </small>
-                    </div>
-                    <div class="flip-card-back shadow-sm">
-                        <p class="fs-5 m-0 px-2">${back}</p>
-                    </div>
-                </div>`;
-                card.className = 'actual-3d-flip-card';
-                card.removeAttribute('style');
-                card.removeAttribute('contenteditable');
-            });
 
                             <div id="triageStatus" class="mt-4 fs-5 text-center text-dark" style="min-height: 60px;">
                                 <i class="fa-solid fa-triangle-exclamation pulse-anim d-inline-block text-danger me-1"></i> <strong>Severe bleed detected!</strong> Click the wound to apply a Gauze Pad!
@@ -2403,24 +2542,8 @@
                     phaseStroke.style.transform = "translateX(0)";
                 };
             }
-            // ── Unpack Accordions ──
-            document.querySelectorAll('.aidcademy-custom-accordion').forEach(function (acc) {
-                let title = acc.getAttribute('data-title');
-                let content = acc.getAttribute('data-content');
-                acc.innerHTML = `
-                <details class="member-accordion my-4">
-                    <summary class="fw-bold fs-5 text-dark">
-                        <i class="fa-solid fa-chevron-right me-3 text-danger transition-icon"></i>${title}
-                    </summary>
-                    <div class="mt-3 pt-3 border-top text-secondary fs-6">${content}</div>
-                </details>`;
-                acc.className = '';
-                acc.removeAttribute('style');
-                acc.removeAttribute('contenteditable');
-            });
         };
     </script>
-    </form>
     
     <!-- Day Streak Modal -->
     <div class="modal fade" id="streakModal" tabindex="-1" aria-hidden="true">
