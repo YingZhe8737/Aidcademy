@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="LearningProgress.aspx.cs"
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="LearningProgress.aspx.cs"
     Inherits="Aidcademy.LearningProgress" %>
 
 <!DOCTYPE html>
@@ -212,7 +212,7 @@
             </div>
 
             <asp:Panel ID="pnlNoProgress" runat="server" Visible="false" CssClass="empty-state">
-                <div style="font-size: 64px;">📚</div>
+                <i class="fas fa-book" style="font-size: 64px; color: #ddd; display: block; margin-bottom: 20px;"></i>
                 <h3>No Enrolled Courses Yet</h3>
                 <p style="color: #666; margin: 15px 0;">Start learning by enrolling in a course</p>
                 <asp:HyperLink runat="server" NavigateUrl="~/LearningCourse.aspx"
