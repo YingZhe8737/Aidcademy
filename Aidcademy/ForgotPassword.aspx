@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="ForgotPassword.aspx.cs" Inherits="Aidcademy.ForgotPassword" %>
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="ForgotPassword.aspx.cs" Inherits="Aidcademy.ForgotPassword" %>
 
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -219,15 +219,19 @@
 
                 <div class="info-box">
                     <strong>Password Requirements:</strong><br />
-                    • At least 8 characters long<br />
-                    • Contains uppercase and lowercase letters<br />
-                    • Contains at least one number
+                    &bull; At least 8 characters long<br />
+                    &bull; Contains uppercase and lowercase letters<br />
+                    &bull; Contains at least one number
                 </div>
 
                 <div class="form-group">
                     <label for="txtNewPassword">New Password</label>
                     <asp:TextBox ID="txtNewPassword" runat="server" TextMode="Password"
-                        placeholder="Enter new password" />
+                        ClientIDMode="Static" placeholder="Enter new password" />
+                    <div style="height:10px; background:#e0e0e0; margin-top:10px; border-radius:6px; overflow:hidden;">
+                        <div id="strengthBar" style="height:100%; width:0%; border-radius:6px; transition:width 0.4s ease, background-color 0.4s ease;"></div>
+                    </div>
+                    <div id="strengthText" style="font-size:13px; margin-top:6px; font-weight:700; text-align:right; letter-spacing:0.5px;"></div>
                 </div>
 
                 <div class="form-group">
@@ -245,6 +249,45 @@
             </asp:Panel>
         </div>
     </form>
+    <script>
+        function checkStrength() {
+            var input = document.getElementById('txtNewPassword');
+            if (!input) return;
+            var pwd = input.value;
+            var strengthText = document.getElementById('strengthText');
+            var strengthBar  = document.getElementById('strengthBar');
+
+            if (pwd.length === 0) {
+                strengthBar.style.width = '0%';
+                strengthText.innerHTML = '';
+                return;
+            }
+            var score = 0;
+            if (pwd.length >= 8)               score++;
+            if (pwd.match(/[a-z]/))            score++;
+            if (pwd.match(/[A-Z]/))            score++;
+            if (pwd.match(/[0-9]/))            score++;
+            if (pwd.match(/[@$!%*?&##+]/))     score++;
+
+            if (score <= 2) {
+                strengthBar.style.width = '33%';
+                strengthBar.style.backgroundColor = '#e74c3c';
+                strengthText.innerHTML = '<span style="color:#e74c3c;">&#9679; Weak</span>';
+            } else if (score <= 4) {
+                strengthBar.style.width = '66%';
+                strengthBar.style.backgroundColor = '#f39c12';
+                strengthText.innerHTML = '<span style="color:#f39c12;">&#9679; Fair</span>';
+            } else {
+                strengthBar.style.width = '100%';
+                strengthBar.style.backgroundColor = '#27ae60';
+                strengthText.innerHTML = '<span style="color:#27ae60;">&#9679; Strong</span>';
+            }
+        }
+        window.addEventListener('load', function () {
+            var input = document.getElementById('txtNewPassword');
+            if (input) input.addEventListener('input', checkStrength);
+        });
+    </script>
 </body>
 
 </html>

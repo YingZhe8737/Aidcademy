@@ -71,7 +71,7 @@ namespace Aidcademy
 
                         if (!EmailHelper.SendOtpEmail(email, otp, "ForgotPassword", out errMsg))
                         {
-                            ShowMessage($"OTP generated (dev mode — code: {otp}). Configure SMTP to receive by email.", true);
+                            ShowMessage($"OTP generated (dev mode - code: {otp}). Configure SMTP to receive by email.", true);
                         }
 
                         Response.Redirect("~/VerifyOtp.aspx?purpose=ForgotPassword");
@@ -119,7 +119,8 @@ namespace Aidcademy
                         "UPDATE Users SET PasswordHash = @PasswordHash WHERE UserID = @UserID";
                     using (SqlCommand cmd = new SqlCommand(updatePassword, conn))
                     {
-                        cmd.Parameters.AddWithValue("@PasswordHash", SecurityHelper.HashPassword(newPassword));
+                        string newHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+                        cmd.Parameters.AddWithValue("@PasswordHash", newHash);
                         cmd.Parameters.AddWithValue("@UserID", userID);
                         cmd.ExecuteNonQuery();
                     }

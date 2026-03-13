@@ -169,7 +169,7 @@ namespace Aidcademy.Utilities
     }
 
     // =====================================================================
-    // OTP — generate, save, and verify one-time passwords
+    // OTP - generate, save, and verify one-time passwords
     // =====================================================================
     public static class OtpHelper
     {
@@ -497,17 +497,17 @@ namespace Aidcademy.Utilities
 
         public static bool IsMember()
         {
-            return GetRole() == "Member";
+            return string.Equals(GetRole(), "Member", StringComparison.OrdinalIgnoreCase);
         }
 
         public static bool IsAdmin()
         {
-            return GetRole() == "Admin";
+            return string.Equals(GetRole(), "Admin", StringComparison.OrdinalIgnoreCase);
         }
 
         public static bool IsInstructor()
         {
-            return GetRole() == "Instructor";
+            return string.Equals(GetRole(), "Instructor", StringComparison.OrdinalIgnoreCase);
         }
 
         public static int GetUserID()
@@ -524,10 +524,10 @@ namespace Aidcademy.Utilities
 
         public static string GetRole()
         {
-            return HttpContext.Current.Session["UserRole"]?.ToString() ?? "";
+            return (HttpContext.Current.Session["UserRole"]?.ToString() ?? "").Trim();
         }
 
-        // Legacy alias — kept so existing callers compile without change
+        // Legacy alias - kept so existing callers compile without change
         public static void ClearSession()
         {
             SignOut();

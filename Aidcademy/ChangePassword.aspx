@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="ChangePassword.aspx.cs" Inherits="Aidcademy.ChangePassword" %>
+<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="ChangePassword.aspx.cs" Inherits="Aidcademy.ChangePassword" %>
 
 <!DOCTYPE html>
 <html>
@@ -88,7 +88,7 @@
         .btn {
             width: 100%;
             padding: 14px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
             color: white;
             border: none;
             border-radius: 8px;
@@ -100,7 +100,7 @@
 
             .btn:hover {
                 transform: translateY(-2px);
-                box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+                box-shadow: 0 5px 20px rgba(220, 38, 38, 0.4);
             }
 
         .message {
@@ -136,7 +136,8 @@
     <form id="form1" runat="server">
         <div class="container">
             <div class="logo">
-                <h1>🏥 AIDCADEMY</h1>
+                <img src="Image/Logo.jpeg" alt="Aidcademy Logo" style="height: 60px; border-radius: 8px; margin-bottom: 10px;" />
+                <h1 style="color: #c9242b;">AIDCADEMY</h1>
             </div>
 
             <h2>Change Password</h2>
@@ -157,10 +158,14 @@
             <div class="form-group">
                 <label>New Password *</label>
                 <asp:TextBox ID="txtNewPassword" runat="server" TextMode="Password"
-                    placeholder="Enter new password"></asp:TextBox>
+                    ClientIDMode="Static" placeholder="Enter new password"></asp:TextBox>
+                <div style="height: 10px; background: #e0e0e0; margin-top: 10px; border-radius: 6px; overflow: hidden;">
+                    <div id="strengthBar" style="height: 100%; width: 0%; border-radius: 6px; transition: width 0.4s ease, background-color 0.4s ease;"></div>
+                </div>
+                <div id="strengthText" style="font-size: 13px; margin-top: 6px; font-weight: 700; text-align: right; letter-spacing: 0.5px;"></div>
                 <asp:RequiredFieldValidator runat="server" ControlToValidate="txtNewPassword"
                     ErrorMessage="Required" CssClass="error" Display="Dynamic" ValidationGroup="ChangePassword" />
-                <small style="color: #666; font-size: 12px;">At least 8 characters with uppercase, lowercase, and
+                <small style="color: #666; font-size: 12px; display: block; margin-top: 4px;">At least 8 characters with uppercase, lowercase, and
                         numbers</small>
             </div>
 
@@ -179,10 +184,52 @@
                 OnClick="btnChangePassword_Click" ValidationGroup="ChangePassword" />
 
             <div class="back-link">
-                <asp:HyperLink runat="server" NavigateUrl="~/MemberProfile.aspx">← Back to Profile</asp:HyperLink>
+                <asp:HyperLink runat="server" NavigateUrl="~/MemberProfile.aspx">&larr; Back to Profile</asp:HyperLink>
             </div>
         </div>
     </form>
+    <script>
+        function checkStrength() {
+            var input = document.getElementById('txtNewPassword');
+            if (!input) return;
+            var pwd = input.value;
+            var strengthText = document.getElementById('strengthText');
+            var strengthBar  = document.getElementById('strengthBar');
+
+            if (pwd.length === 0) {
+                strengthBar.style.width = '0%';
+                strengthText.innerHTML = '';
+                return;
+            }
+
+            var score = 0;
+            if (pwd.length >= 8)                  score++;
+            if (pwd.match(/[a-z]/))               score++;
+            if (pwd.match(/[A-Z]/))               score++;
+            if (pwd.match(/[0-9]/))               score++;
+            if (pwd.match(/[@$!%*?&##+]/))        score++;
+
+            if (score <= 2) {
+                strengthBar.style.width = '33%';
+                strengthBar.style.backgroundColor = '#e74c3c';
+                strengthText.innerHTML = '<span style="color:#e74c3c;">&#9679; Weak</span>';
+            } else if (score <= 4) {
+                strengthBar.style.width = '66%';
+                strengthBar.style.backgroundColor = '#f39c12';
+                strengthText.innerHTML = '<span style="color:#f39c12;">&#9679; Fair</span>';
+            } else {
+                strengthBar.style.width = '100%';
+                strengthBar.style.backgroundColor = '#27ae60';
+                strengthText.innerHTML = '<span style="color:#27ae60;">&#9679; Strong</span>';
+            }
+        }
+
+        // Wire up after DOM is ready - oninput on Password TextBox is stripped by ASP.NET
+        window.addEventListener('load', function () {
+            var input = document.getElementById('txtNewPassword');
+            if (input) input.addEventListener('input', checkStrength);
+        });
+    </script>
 </body>
 
 </html>

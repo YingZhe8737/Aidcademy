@@ -49,6 +49,14 @@
                                         <label class="small text-muted fw-bold">Category</label>
                                         <asp:TextBox ID="txtEditCourseCategory" runat="server" CssClass="form-control form-control-sm"></asp:TextBox>
                                     </div>
+                                    <div class="mb-2">
+                                        <label class="small text-muted fw-bold">Course Description</label>
+                                        <asp:TextBox ID="txtEditCourseDescription" runat="server" CssClass="form-control form-control-sm" TextMode="MultiLine" Rows="2"></asp:TextBox>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="small text-muted fw-bold">Course Thumbnail</label>
+                                        <asp:FileUpload ID="fuEditCourseThumbnail" runat="server" CssClass="form-control form-control-sm" accept=".png,.jpg,.jpeg" />
+                                    </div>
                                     <div class="text-end mt-2">
                                         <asp:Button ID="btnCancelCourseEdit" runat="server" Text="Cancel" CssClass="btn btn-sm btn-light" OnClick="btnCancelCourseEdit_Click" CausesValidation="false" />
                                         <asp:Button ID="btnSaveCourseEdit" runat="server" Text="Update Course" CssClass="btn btn-sm btn-warning fw-bold" OnClick="btnSaveCourseEdit_Click" CausesValidation="false" />
@@ -56,12 +64,18 @@
                                 </asp:Panel>
                             </div>
                             
-                            <div id="newCourseDiv" style="display:none;">
-                                <div class="input-group">
-                                    <asp:TextBox ID="txtNewCourseTitle" runat="server" CssClass="form-control border-0 bg-light fw-bold" placeholder="New course name..."></asp:TextBox>
-                                    <asp:DropDownList ID="ddlNewCourseCategory" runat="server" CssClass="form-select border-0 bg-light fw-bold" onchange="toggleCustomCategory(this)" style="max-width: 130px;">
-                                    </asp:DropDownList>
-                                    <asp:TextBox ID="txtCustomCategory" runat="server" CssClass="form-control border-0 bg-light fw-bold" style="display:none; max-width: 150px;" placeholder="Type category..."></asp:TextBox>
+                            <div id="newCourseDiv" style="display:none;" class="p-3 border rounded bg-light">
+                                <div class="input-group mb-2">
+                                    <asp:TextBox ID="txtNewCourseTitle" runat="server" CssClass="form-control border-0 fw-bold" placeholder="New course name..."></asp:TextBox>
+                                    <asp:DropDownList ID="ddlNewCourseCategory" runat="server" CssClass="form-select border-0 fw-bold" onchange="toggleCustomCategory(this)" style="max-width: 130px;"></asp:DropDownList>
+                                    <asp:TextBox ID="txtCustomCategory" runat="server" CssClass="form-control border-0 fw-bold" style="display:none; max-width: 150px;" placeholder="Type category..."></asp:TextBox>
+                                </div>
+                                <div class="mb-2">
+                                    <asp:TextBox ID="txtNewCourseDescription" runat="server" CssClass="form-control border-0" placeholder="Course Description..." TextMode="MultiLine" Rows="2"></asp:TextBox>
+                                </div>
+                                <div>
+                                    <label class="small text-muted fw-bold">Course Thumbnail</label>
+                                    <asp:FileUpload ID="fuNewCourseThumbnail" runat="server" CssClass="form-control form-control-sm border-0" accept=".png,.jpg,.jpeg" />
                                 </div>
                             </div>
                             <asp:HiddenField ID="hfIsNewCourse" runat="server" Value="0" />
@@ -75,9 +89,116 @@
                     <div class="mb-4">
                         <asp:TextBox ID="txtLessonTitle" runat="server" CssClass="form-control border-0 px-0 shadow-none fs-2 fw-bold" placeholder="Lesson Title..."></asp:TextBox>
                     </div>
-
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <asp:TextBox ID="txtLessonDescription" runat="server" CssClass="form-control border-0 px-3 py-2 shadow-sm bg-light" placeholder="Short description of this lesson..." TextMode="MultiLine" Rows="2"></asp:TextBox>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="small text-muted fw-bold">Lesson Thumbnail</label>
+                            <asp:FileUpload ID="fuLessonThumbnail" runat="server" CssClass="form-control form-control-sm border-0 shadow-sm bg-light" accept=".png,.jpg,.jpeg" />
+                        </div>
+                    </div>
                     <div class="mb-3"><div id="editor-container"></div></div>
                     <asp:HiddenField ID="hfContentBody" runat="server" />
+                    <div class="mt-4 p-4 border rounded bg-light border-info border-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="fw-bold text-info m-0"><i class="fa-solid fa-gamepad me-2"></i>Interactive Simulation</h5>
+                                <small class="text-muted">Attach a playable mini-game to this lesson.</small>
+                            </div>
+                            <button type="button" class="btn btn-info text-white fw-bold" data-bs-toggle="modal" data-bs-target="#simulationModal">
+                                Configure Game
+                            </button>
+                        </div>
+                        <div id="simulationStatus" class="mt-3 text-success fw-bold" style="display:none;">
+                            <i class="fa-solid fa-check-circle me-1"></i> Simulation Attached!
+                        </div>
+                    </div>
+
+                    <asp:HiddenField ID="hfSimulationType" runat="server" />
+                    <asp:HiddenField ID="hfSimulationData" runat="server" />
+
+                    <div class="modal fade" id="simulationModal" tabindex="-1">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header bg-info text-white">
+                                    <h5 class="modal-title fw-bold"><i class="fa-solid fa-wrench me-2"></i>Game Builder</h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="mb-3">
+                                        <label class="fw-bold text-muted small">Select Game Engine</label>
+                                        <select id="ddlGameEngine" class="form-select border-2" onchange="toggleGameSettings()">
+                                            <option value="">-- No Game --</option>
+                                            <option value="DragDropSequence">Drag & Drop Sequence (DRSABCD)</option>
+                                            <option value="RhythmCPR">CPR Simulator: Hand Placement & Rhythm</option>
+                                            <option value="ChokingCombo">Choking: Grip & Action Combo</option>
+                                            <option value="BleedingTriage">Severe Bleeding (D.E.I. Protocol)</option>
+                                            <option value="StrokeFAST">Medical Emergencies (Stroke & Asthma)</option>
+                                        </select>
+                                    </div>
+
+                                    <div id="settingsDragDrop" style="display:none;" class="p-3 bg-light rounded border">
+                                            <h6 class="fw-bold text-primary"><i class="fa-solid fa-list-ol me-1"></i> Sequence Settings</h6>
+                                            <div class="mb-2">
+                                                <label class="small fw-bold">Correct Sequence (Comma Separated)</label>
+                                                <textarea id="txtSequenceItems" class="form-control" rows="3">Danger, Response, Send for help, Airway, Breathing, CPR, Defibrillation</textarea>
+                                                <small class="text-muted">Type the items in the EXACT correct order.</small>
+                                            </div>
+                                        </div>    
+                                    </div>
+
+                                    <div id="settingsRhythmCPR" style="display:none;" class="p-3 bg-light rounded border">
+                                        <h6 class="fw-bold text-danger"><i class="fa-solid fa-heart-pulse me-1"></i> CPR Settings</h6>
+                                        <div class="mb-2">
+                                            <label class="small fw-bold">Target Beats Per Minute (BPM)</label>
+                                            <input type="number" id="txtCprBpm" class="form-control" value="110" />
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="small fw-bold">Survival Time (Seconds)</label>
+                                            <input type="number" id="txtCprTime" class="form-control" value="30" />
+                                        </div>
+                                    </div>
+
+                                    <div id="settingsChoking" style="display:none;" class="p-3 bg-light rounded border">
+                                        <h6 class="fw-bold text-warning"><i class="fa-solid fa-lungs-virus me-1"></i> Choking Emergency Settings</h6>
+                                        <div class="mb-2">
+                                            <label class="small fw-bold">Survival Time (Seconds)</label>
+                                            <input type="number" id="txtChokingTime" class="form-control" value="30" />
+                                            <small class="text-muted">How long they have to successfully complete the 5-and-5 cycles.</small>
+                                        </div>
+                                        <div class="mb-2">
+                                            <label class="small fw-bold">Cycles to clear airway</label>
+                                            <input type="number" id="txtChokingCycles" class="form-control" value="2" />
+                                            <small class="text-muted">Number of full 5-and-5 cycles required to win.</small>
+                                        </div>
+                                    </div>
+
+                                    <div id="settingsBleeding" style="display:none;" class="p-3 bg-light rounded border">
+                                        <h6 class="fw-bold text-danger"><i class="fa-solid fa-droplet me-1"></i> Severe Bleeding Settings</h6>
+                                        <div class="mb-2">
+                                            <label class="small fw-bold">Bleed-Out Time (Seconds)</label>
+                                            <input type="number" id="txtBleedTime" class="form-control" value="45" />
+                                            <small class="text-muted">How long the patient has before blood volume reaches 0%.</small>
+                                        </div>
+                                    </div>
+
+                                    <div id="settingsStroke" style="display:none;" class="p-3 bg-light rounded border">
+                                        <h6 class="fw-bold text-primary"><i class="fa-solid fa-brain me-1"></i> Stroke Diagnostic Settings</h6>
+                                        <div class="mb-2">
+                                            <label class="small fw-bold">Emergency Reaction Time (Seconds)</label>
+                                            <input type="number" id="txtStrokeTime" class="form-control" value="10" />
+                                            <small class="text-muted">How many seconds the student has to call for help AFTER identifying all 3 symptoms.</small>
+                                        </div>
+                                    </div>
+
+                                <div class="modal-footer d-flex justify-content-between">
+                                    <button type="button" class="btn btn-outline-danger" onclick="clearSimulation()" data-bs-dismiss="modal">Remove Game</button>
+                                    <button type="button" class="btn btn-info text-white fw-bold" onclick="saveSimulation()" data-bs-dismiss="modal">Attach Game</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -113,6 +234,49 @@
 
             // Launch the shared logic!
             initLessonSystem(contentBodyId, isNewCourseId, customCategoryId, existingHtml);
+
+            // UNPACK SAVED SIMULATION INTO THE MODAL
+            let existingSimType = document.getElementById('<%= hfSimulationType.ClientID %>').value;
+            let existingSimData = document.getElementById('<%= hfSimulationData.ClientID %>').value;
+            if (existingSimType) {
+                // Map raw DB names to readable titles!
+                let readableTitle = existingSimType;
+                if (existingSimType === "RhythmCPR") readableTitle = "Rhythm Clicker (CPR Simulator)";
+                if (existingSimType === "DragDropSequence") readableTitle = "Drag & Drop Sequence (DRSABCD)";
+                if (existingSimType === "ChokingCombo") readableTitle = "Choking: Grip & Action Combo";
+                if (existingSimType === "BleedingTriage") readableTitle = "Severe Bleeding (D.E.I. Protocol)";
+                if (existingSimType === "StrokeFAST") readableTitle = "F.A.S.T. Stroke Identifier";
+
+                document.getElementById("simulationStatus").style.display = "block";
+                document.getElementById("simulationStatus").innerHTML = `<i class="fa-solid fa-check-circle me-1"></i> ${readableTitle} Attached!`;
+
+                let dropdown = document.getElementById("ddlGameEngine");
+                if (dropdown) {
+                    dropdown.value = existingSimType;
+                    toggleGameSettings();
+                }
+
+                if (existingSimData) {
+                    let parsedData = JSON.parse(existingSimData);
+                    if (existingSimType === "RhythmCPR") {
+                        if (parsedData.bpm) document.getElementById("txtCprBpm").value = parsedData.bpm;
+                        if (parsedData.targetTime) document.getElementById("txtCprTime").value = parsedData.targetTime;
+                    }
+                    else if (existingSimType === "DragDropSequence") {
+                        if (parsedData.items) document.getElementById("txtSequenceItems").value = parsedData.items.join(', ');
+                    }
+                    else if (existingSimType === "ChokingCombo") {
+                        if (parsedData.targetTime) document.getElementById("txtChokingTime").value = parsedData.targetTime;
+                        if (parsedData.cycles) document.getElementById("txtChokingCycles").value = parsedData.cycles;
+                    }
+                    else if (existingSimType === "BleedingTriage") {
+                        if (parsedData.targetTime) document.getElementById("txtBleedTime").value = parsedData.targetTime;
+                    }
+                    else if (existingSimType === "StrokeFAST") {
+                        if (parsedData.targetTime) document.getElementById("txtStrokeTime").value = parsedData.targetTime;
+                    }
+                }
+            }
         };
     </script>
 
@@ -132,6 +296,71 @@
                 return false;
             }
             return true;
+        }
+
+        function toggleGameSettings() {
+            let engine = document.getElementById("ddlGameEngine").value;
+            if (existingSimType === "RhythmCPR") readableTitle = "CPR Simulator: Hand Placement & Rhythm";
+            if (existingSimType === "DragDropSequence") readableTitle = "Drag & Drop Sequence (DRSABCD)";
+            if (existingSimType === "ChokingCombo") readableTitle = "Choking: Grip & Action Combo";
+            if (existingSimType === "BleedingTriage") readableTitle = "Severe Bleeding (D.E.I. Protocol)";
+            if (existingSimType === "StrokeFAST") readableTitle = "F.A.S.T. Stroke Identifier";
+        }
+
+        function saveSimulation() {
+            let engine = document.getElementById("ddlGameEngine").value;
+            if (!engine) return;
+
+            let gameData = {};
+            let readableTitle = engine;
+
+            if (engine === "RhythmCPR") {
+                gameData = {
+                    bpm: document.getElementById("txtCprBpm").value,
+                    targetTime: document.getElementById("txtCprTime").value
+                };
+                readableTitle = "CPR Simulator: Hand Placement & Rhythm";
+            }
+            else if (engine === "DragDropSequence") {
+                let rawText = document.getElementById("txtSequenceItems").value;
+                gameData = {
+                    items: rawText.split(',').map(item => item.trim()).filter(item => item !== "")
+                };
+                readableTitle = "Drag & Drop Sequence (DRSABCD)";
+            }
+            else if (engine === "ChokingCombo") {
+                gameData = {
+                    targetTime: document.getElementById("txtChokingTime").value,
+                    cycles: document.getElementById("txtChokingCycles").value
+                };
+                readableTitle = "Choking: Grip & Action Combo";
+            }
+            else if (engine === "BleedingTriage") {
+                gameData = { targetTime: document.getElementById("txtBleedTime").value };
+                readableTitle = "Severe Bleeding (D.E.I. Protocol)";
+            }
+            else if (engine === "StrokeFAST") {
+                gameData = { targetTime: document.getElementById("txtStrokeTime").value };
+                readableTitle = "F.A.S.T. Stroke Identifier";
+            }
+
+            // Save to hidden fields
+            document.getElementById('<%= hfSimulationType.ClientID %>').value = engine;
+            document.getElementById('<%= hfSimulationData.ClientID %>').value = JSON.stringify(gameData);
+
+            // Show success text
+            document.getElementById("simulationStatus").style.display = "block";
+            // Now using readableTitle instead of the raw engine ID!
+            document.getElementById("simulationStatus").innerHTML = `<i class="fa-solid fa-check-circle me-1"></i> ${readableTitle} Attached!`;
+        }
+
+
+        function clearSimulation() {
+            document.getElementById('<%= hfSimulationType.ClientID %>').value = "";
+            document.getElementById('<%= hfSimulationData.ClientID %>').value = "";
+            document.getElementById("simulationStatus").style.display = "none";
+            document.getElementById("ddlGameEngine").value = "";
+            toggleGameSettings();
         }
     </script>
 

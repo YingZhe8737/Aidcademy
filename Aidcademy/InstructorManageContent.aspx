@@ -87,47 +87,64 @@
             <ItemTemplate>
                 <div class="category-group mb-5">
                     
-                    <h4 class="fw-bold border-bottom pb-2 text-danger mb-3">
-                        <i class="fa-solid fa-book-medical me-2"></i><%# Eval("CourseTitle") %> 
-                        <span class="badge bg-secondary fs-6 ms-2 align-middle"><i class="fa-solid fa-tag me-1"></i><%# Eval("Category") %></span>
-                    </h4>
+                    <div class="card border-0 shadow-sm mb-4 mt-3 position-relative overflow-hidden rounded-4">
+                        <div class="position-absolute top-0 start-0 h-100 bg-danger" style="width: 8px; z-index: 5;"></div>
+                        
+                        <div class="card-body p-4 d-flex align-items-center bg-white ms-2">
+                            <img src='<%# Eval("CourseThumbnailPath") != DBNull.Value && !string.IsNullOrEmpty(Eval("CourseThumbnailPath").ToString()) ? ResolveUrl(Eval("CourseThumbnailPath").ToString()) : "Images/default-course.png" %>' class="rounded-3 shadow-sm me-4" style="width: 100px; height: 100px; object-fit: cover; border: 1px solid #dee2e6;" />
+                            <div>
+                                <h3 class="fw-bold text-dark mb-2">
+                                    <%# Eval("CourseTitle") %> 
+                                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger fs-6 ms-2 align-middle px-2 py-1"><i class="fa-solid fa-tag me-1"></i><%# Eval("Category") %></span>
+                                </h3>
+                                <p class="text-muted mb-0" style="font-size: 1rem; max-width: 900px;"><%# Eval("CourseDescription") %></p>
+                            </div>
+                        </div>
+                    </div>
                     
                     <div class="row g-4">
                         <asp:Repeater ID="rptLessons" runat="server">
                             <ItemTemplate>
-                                <div class="col-md-4 col-lg-3">
-                                    <div class='card lesson-card shadow-sm h-100 <%# Convert.ToString(Eval("ApprovalStatus")) == "Draft" ? "status-Draft" : (Convert.ToString(Eval("ApprovalStatus")) == "Pending Admin" ? "status-Pending" : "status-Published") %>'>
+                                <div class="col-md-4 col-lg-3 d-flex align-items-stretch">
+                                    
+                                    <div class='card lesson-card shadow-sm w-100 overflow-hidden border-0 border-start border-4 <%# Convert.ToString(Eval("ApprovalStatus")) == "Draft" ? "border-secondary" : (Convert.ToString(Eval("ApprovalStatus")) == "Pending Admin" ? "border-warning" : "border-success") %>'>
                                         
-                                        <div class="card-body p-4 d-flex flex-column">
-                                            
+                                        <div class="bg-light position-relative" style="height: 180px;">
+                                            <img src='<%# Eval("LessonThumbnailPath") != DBNull.Value && !string.IsNullOrEmpty(Eval("LessonThumbnailPath").ToString()) ? ResolveUrl(Eval("LessonThumbnailPath").ToString()) : "Images/default-lesson.png" %>' class="w-100 h-100 border-bottom" style="object-fit: cover;" alt="Lesson Thumbnail" />
+                                        </div>
+
+                                        <div class="card-body p-4 d-flex flex-column bg-white">
                                             <div class="d-flex justify-content-between align-items-start mb-3">
-                                                <span class="badge bg-light text-secondary border px-2 py-1">
+                                                <span class="badge bg-light text-dark border px-2 py-1 fw-bold">
                                                     <i class="fa-solid fa-list-ol me-1"></i>Step <%# Eval("SequenceOrder") %>
                                                 </span>
-                                                
-                                                <span class='badge <%# Convert.ToString(Eval("ApprovalStatus")) == "Draft" ? "bg-secondary" : (Convert.ToString(Eval("ApprovalStatus")) == "Pending Admin" ? "bg-warning text-dark" : "bg-success") %>'>
+                                                <span class='badge shadow-sm <%# Convert.ToString(Eval("ApprovalStatus")) == "Draft" ? "bg-secondary" : (Convert.ToString(Eval("ApprovalStatus")) == "Pending Admin" ? "bg-warning text-dark" : "bg-success") %>'>
                                                     <%# Eval("ApprovalStatus") %>
                                                 </span>
                                             </div>
 
-                                            <h5 class="fw-bold text-dark mb-4 lh-base"><%# Eval("LessonTitle") %></h5>
+                                            <h5 class="fw-bold text-dark mb-2 lh-base" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 48px;">
+                                                <%# Eval("LessonTitle") %>
+                                            </h5>
                                             
-                                            <div class="mt-auto d-flex justify-content-end gap-2 border-top pt-3">
-                                                <asp:LinkButton ID="btnEdit" runat="server" CssClass="btn btn-sm btn-outline-primary" 
-                                                    CommandArgument='<%# Eval("LessonID") %>' OnClick="btnEditLesson_Click" ToolTip="Edit Lesson">
-                                                    <i class="fa-solid fa-pen"></i> Edit
-                                                </asp:LinkButton>
-                                                
-                                                <asp:LinkButton ID="btnDel" runat="server" CssClass="btn btn-sm btn-outline-danger" 
-                                                    CommandArgument='<%# Eval("LessonID") %>' OnClick="btnDeleteLesson_Click"
-                                                    data-lesson-title='<%# Eval("LessonTitle") %>'
-                                                    OnClientClick="return confirmLessonDelete(this);" ToolTip="Delete Lesson">
-                                                    <i class="fa-solid fa-trash"></i>
-                                                </asp:LinkButton>
-                                            </div>
+                                            <p class="text-muted small mb-0 flex-grow-1" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;"><%# Eval("LessonDescription") %></p>
+                                        </div>
 
+                                        <div class="card-footer bg-light border-top p-3 d-flex justify-content-end gap-2 mt-auto">
+                                            <asp:LinkButton ID="btnEdit" runat="server" CssClass="btn btn-sm btn-outline-primary fw-bold px-3" 
+                                                CommandArgument='<%# Eval("LessonID") %>' OnClick="btnEditLesson_Click" ToolTip="Edit Lesson">
+                                                <i class="fa-solid fa-pen me-1"></i> Edit
+                                            </asp:LinkButton>
+                                            
+                                            <asp:LinkButton ID="btnDel" runat="server" CssClass="btn btn-sm btn-outline-danger fw-bold px-3" 
+                                                CommandArgument='<%# Eval("LessonID") %>' OnClick="btnDeleteLesson_Click"
+                                                data-lesson-title='<%# Eval("LessonTitle") %>'
+                                                OnClientClick="return confirmLessonDelete(this);" ToolTip="Delete Lesson">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </asp:LinkButton>
                                         </div>
                                     </div>
+
                                 </div>
                             </ItemTemplate>
                         </asp:Repeater>

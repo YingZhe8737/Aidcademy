@@ -14,7 +14,7 @@ namespace Aidcademy
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (Session["UserID"] == null)
+            if (!SessionHelper.IsUserLoggedIn() || !SessionHelper.IsMember())
             {
                 Response.Redirect("~/Login_signup.aspx");
                 return;
@@ -61,6 +61,10 @@ namespace Aidcademy
 
                                 txtPhone.Text = reader["PhoneNumber"] != DBNull.Value
                                                 ? reader["PhoneNumber"].ToString()
+                                                : "";
+
+                                txtBio.Text = reader["Bio"] != DBNull.Value
+                                                ? reader["Bio"].ToString()
                                                 : "";
 
                                 string photo = reader["ProfilePhoto"] != DBNull.Value
@@ -141,6 +145,7 @@ namespace Aidcademy
                         updateProfile = @"UPDATE UserProfiles SET
                                             FullName     = @FullName,
                                             PhoneNumber  = @PhoneNumber,
+                                            Bio          = @Bio,
                                             ProfilePhoto = @ProfilePhoto
                                           WHERE UserID = @UserID";
                     }
@@ -148,7 +153,8 @@ namespace Aidcademy
                     {
                         updateProfile = @"UPDATE UserProfiles SET
                                             FullName    = @FullName,
-                                            PhoneNumber = @PhoneNumber
+                                            PhoneNumber = @PhoneNumber,
+                                            Bio         = @Bio
                                           WHERE UserID = @UserID";
                     }
 
@@ -156,6 +162,7 @@ namespace Aidcademy
                     {
                         cmd.Parameters.AddWithValue("@FullName", fullName);
                         cmd.Parameters.AddWithValue("@PhoneNumber", txtPhone.Text.Trim());
+                        cmd.Parameters.AddWithValue("@Bio", txtBio.Text.Trim());
                         cmd.Parameters.AddWithValue("@UserID", userID);
                         if (photoFileName != null)
                             cmd.Parameters.AddWithValue("@ProfilePhoto", photoFileName);
@@ -192,18 +199,30 @@ namespace Aidcademy
                         return;
                     }
 
-                    string currentHash = SecurityHelper.HashPassword(current);
                     string checkQuery  = "SELECT PasswordHash FROM Users WHERE UserID = @UserID";
                     SqlParameter[] checkParams = { new SqlParameter("@UserID", userID) };
                     string storedHash = DatabaseHelper.ExecuteScalar(checkQuery, checkParams)?.ToString();
 
-                    if (storedHash == null || storedHash != currentHash)
+                    bool isPasswordCorrect = false;
+                    if (!string.IsNullOrEmpty(storedHash))
+                    {
+                        try
+                        {
+                            isPasswordCorrect = BCrypt.Net.BCrypt.Verify(current, storedHash);
+                        }
+                        catch (BCrypt.Net.SaltParseException)
+                        {
+                            isPasswordCorrect = (storedHash == SecurityHelper.HashPassword(current));
+                        }
+                    }
+
+                    if (!isPasswordCorrect)
                     {
                         ShowMessage("Profile saved, but current password is incorrect.", false);
                         return;
                     }
 
-                    string newHash     = SecurityHelper.HashPassword(newPwd);
+                    string newHash     = BCrypt.Net.BCrypt.HashPassword(newPwd);
                     string updatePwdQ  = "UPDATE Users SET PasswordHash = @PasswordHash WHERE UserID = @UserID";
                     SqlParameter[] pwdParams =
                     {
@@ -234,10 +253,6 @@ namespace Aidcademy
             pnlMessage.CssClass = isSuccess ? "message success" : "message error";
         }
 
-        protected void btnLogout_Click(object sender, EventArgs e)
-        {
-            SessionHelper.SignOut();
-            Response.Redirect("~/Login_signup.aspx");
-        }
+        // btnLogout_Click is now handled by Member.Master
     }
 }

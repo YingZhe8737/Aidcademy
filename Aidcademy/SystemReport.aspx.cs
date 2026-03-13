@@ -4,6 +4,7 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Aidcademy.Utilities;
 using Aidcademy.App_Code_Logic;
 
 namespace Aidcademy
@@ -14,6 +15,11 @@ namespace Aidcademy
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            if (!SessionHelper.IsUserLoggedIn() || !SessionHelper.IsAdmin())
+            {
+                Response.Redirect("~/Login_signup.aspx");
+                return;
+            }
             if (!IsPostBack)
             {
                 LoadTraffic();

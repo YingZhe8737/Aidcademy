@@ -118,7 +118,7 @@ namespace Aidcademy
                 return;
             }
 
-            // OTP valid — promote to full session
+            // OTP valid - promote to full session
             Session.Remove("PendingUserID");
             Session.Remove("PendingRole");
             Session.Remove("PendingName");
@@ -147,7 +147,7 @@ namespace Aidcademy
                 return;
             }
 
-            // OTP valid — let the reset-password form show
+            // OTP valid - let the reset-password form show
             Session["ResetVerifiedUserID"] = userID;
             Session.Remove("ResetPendingUserID");
             Session.Remove("ResetPendingEmail");
