@@ -25,10 +25,7 @@ namespace Aidcademy
         {
             Response.Redirect("LearningCourse.aspx");
         }
-        protected void btnFeedback_Click(object sender, EventArgs e)
-        {
-            Response.Redirect("Feedback.aspx");
-        }
+
         protected void btnAboutUs(object sender, EventArgs e)
         {
             Response.Redirect("About.aspx");
@@ -56,6 +53,12 @@ namespace Aidcademy
                     cmd.ExecuteNonQuery();
                 }
             }
+        }
+
+        protected void btnFeedback_Click1(object sender, EventArgs e)
+        {
+            Response.Redirect("FeedbackForm.aspx");
+
         }
     }
 }

@@ -16,7 +16,7 @@
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <UseIISExpress>true</UseIISExpress>
     <Use64BitIISExpress />
-    <IISExpressSSLPort>44327</IISExpressSSLPort>
+    <IISExpressSSLPort>44310</IISExpressSSLPort>
     <IISExpressAnonymousAuthentication>
     </IISExpressAnonymousAuthentication>
     <IISExpressWindowsAuthentication>
@@ -113,10 +113,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="About.aspx" />
-    <Content Include="App_Data\AidcademyDB.mdf" />
-    <Content Include="App_Data\AidcademyDB_log.ldf">
-      <DependentUpon>AidcademyDB.mdf</DependentUpon>
-    </Content>
     <Content Include="ContentManagement.aspx" />
     <Content Include="MainPage.aspx" />
     <Content Include="Scripts\bootstrap.bundle.js" />
@@ -129,6 +125,7 @@
     <Content Include="Instructor.Master" />
     <Content Include="Member.Master" />
     <Content Include="AccountModification.aspx" />
+    <Content Include="FeedbackForm.aspx" />
     <None Include="Scripts\jquery-3.7.0.intellisense.js" />
     <Content Include="Scripts\jquery-3.7.0.js" />
     <Content Include="Scripts\jquery-3.7.0.min.js" />
@@ -438,8 +435,16 @@
     <Compile Include="AccountModification.aspx.designer.cs">
       <DependentUpon>AccountModification.aspx</DependentUpon>
     </Compile>
+    <Compile Include="FeedbackForm.aspx.cs">
+      <DependentUpon>FeedbackForm.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="FeedbackForm.aspx.designer.cs">
+      <DependentUpon>FeedbackForm.aspx</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="App_Data\" />
     <Folder Include="image\" />
   </ItemGroup>
   <ItemGroup>

@@ -67,7 +67,7 @@
             <p>Phone: +60 12-345 6789</p>
 
             <asp:Button ID="btnFeedback" runat="server" 
-                Text="Send Feedback" CssClass="btn-feedback" />
+                Text="Send Feedback" CssClass="btn-feedback" OnClick="btnFeedback_Click1" />
         </div>
 
     </form>
