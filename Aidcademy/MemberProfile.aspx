@@ -1,76 +1,16 @@
-<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="MemberProfile.aspx.cs" Inherits="Aidcademy.MemberProfile" %>
+<%@ Page Language="C#" AutoEventWireup="true" MasterPageFile="~/Member.Master" CodeBehind="MemberProfile.aspx.cs" Inherits="Aidcademy.MemberProfile" %>
 
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
+<asp:Content ID="Content1" ContentPlaceHolderID="TitleContent" runat="server">My Profile - Aidcademy</asp:Content>
 
-<head runat="server">
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Profile - Aidcademy</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-    <link rel="stylesheet" href="~/Styles/aidcademy-theme.css" />
+<asp:Content ID="Content2" ContentPlaceHolderID="HeadContent" runat="server">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #FFFBF1;
-            min-height: 100vh;
-        }
-
-        .navbar {
-            background: linear-gradient(to right, #dc2626, #b91c1c);
-            padding: 15px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            color: white;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .navbar-brand {
-            font-size: 24px;
-            font-weight: bold;
-        }
-
-        .navbar-menu {
-            display: flex;
-            gap: 20px;
-            align-items: center;
-        }
-
-            .navbar-menu a {
-                color: white;
-                text-decoration: none;
-                padding: 8px 15px;
-                border-radius: 5px;
-                transition: background 0.3s;
-            }
-
-                .navbar-menu a:hover,
-                .navbar-menu .navbar-btn:hover {
-                    background: rgba(255, 255, 255, 0.2);
-                }
-
-        .navbar-btn {
-            color: white;
-            background: none;
-            border: none;
-            font-size: 1rem;
-            padding: 8px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-
-        .container {
+        .profile-container {
             max-width: 900px;
-            margin: 0 auto;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .profile-card {
             background: white;
             border-radius: 20px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
@@ -206,36 +146,13 @@
             .profile-content {
                 padding: 20px;
             }
-
-            .navbar {
-                flex-direction: column;
-                text-align: center;
-                gap: 15px;
-            }
         }
     </style>
-</head>
+</asp:Content>
 
-<body>
-    <form id="form1" runat="server">
-        <!-- Navigation Bar -->
-        <div class="navbar">
-            <div class="navbar-brand">
-                <a href="MainPage.aspx" style="color: white; text-decoration: none; display: flex; align-items: center;">
-                    <img src="Image/logo2.jpeg" alt="Aidcademy Logo" style="height: 40px; margin-right: 10px; border-radius: 5px;" />
-                    AIDCADEMY
-                </a>
-            </div>
-            <div class="navbar-menu">
-                <asp:HyperLink ID="lnkDashboard" runat="server" NavigateUrl="~/MemberDashboard.aspx"><i class="fas fa-chart-line"></i> Dashboard</asp:HyperLink>
-                <asp:HyperLink ID="lnkCourses" runat="server" NavigateUrl="~/LearningCourse.aspx"><i class="fas fa-book"></i> Courses</asp:HyperLink>
-                <asp:HyperLink ID="lnkProgress" runat="server" NavigateUrl="~/LearningProgress.aspx"><i class="fas fa-chart-pie"></i> My Progress</asp:HyperLink>
-                <asp:HyperLink ID="lnkAskQuestion" runat="server" NavigateUrl="~/SubmitQuestion.aspx"><i class="fas fa-comments"></i> Ask Question</asp:HyperLink>
-                <asp:HyperLink ID="lnkProfile" runat="server" NavigateUrl="~/MemberProfile.aspx" CssClass="fw-bold text-white font-weight-bold"><i class="fas fa-user"></i> Profile</asp:HyperLink>
-                <asp:LinkButton ID="btnLogout" runat="server" OnClick="btnLogout_Click" CssClass="navbar-btn"><i class="fas fa-sign-out-alt"></i> Logout</asp:LinkButton>
-            </div>
-        </div>
-        <div class="container">
+<asp:Content ID="Content3" ContentPlaceHolderID="MainContent" runat="server">
+    <div class="profile-container">
+        <div class="profile-card">
             <!-- Profile Header -->
             <div class="profile-header">
                 <div class="profile-image-container">
@@ -331,7 +248,5 @@
                 </div>
             </div>
         </div>
-    </form>
-</body>
-
-</html>
+    </div>
+</asp:Content>

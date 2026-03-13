@@ -129,10 +129,6 @@ namespace Aidcademy
             pnlMessage.CssClass = isSuccess ? "message success" : "message error";
         }
 
-        protected void btnLogout_Click(object sender, EventArgs e)
-        {
-            SessionHelper.SignOut();
-            Response.Redirect("~/Login_signup.aspx");
-        }
+        // btnLogout_Click is now handled by Member.Master
     }
 }

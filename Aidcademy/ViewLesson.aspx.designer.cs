@@ -60,6 +60,11 @@ namespace Aidcademy
         protected global::System.Web.UI.WebControls.Panel pnlNavAdmin;
 
         /// <summary>
+        /// pnlVisitorContinue control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel pnlVisitorContinue;
+
+        /// <summary>
         /// rptSidebarCourses control.
         /// </summary>
         /// <remarks>

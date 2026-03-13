@@ -11,7 +11,7 @@ namespace Aidcademy
     {
         protected void btnTryFree_Click(object sender, EventArgs e)
         {
-            Response.Redirect("Register.aspx");
+            Response.Redirect("LearningCourse.aspx");
         }
         protected void btnFeedback_Click(object sender, EventArgs e)
         {

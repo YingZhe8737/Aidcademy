@@ -16,7 +16,7 @@
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <UseIISExpress>true</UseIISExpress>
     <Use64BitIISExpress />
-    <IISExpressSSLPort>44310</IISExpressSSLPort>
+    <IISExpressSSLPort>44327</IISExpressSSLPort>
     <IISExpressAnonymousAuthentication>
     </IISExpressAnonymousAuthentication>
     <IISExpressWindowsAuthentication>
@@ -127,6 +127,7 @@
     <Content Include="Scripts\bootstrap.min.js" />
     <Content Include="Scripts\Instructor\lesson-editor.js" />
     <Content Include="Instructor.Master" />
+    <Content Include="Member.Master" />
     <Content Include="AccountModification.aspx" />
     <None Include="Scripts\jquery-3.7.0.intellisense.js" />
     <Content Include="Scripts\jquery-3.7.0.js" />
@@ -176,6 +177,14 @@
     <Content Include="Styles\MainPage.css" />
     <Content Include="SystemReport.aspx" />
     <Content Include="Uploads\ProfilePhotos\Instructor_1_639080064044065843.png" />
+    <Content Include="Uploads\Thumbnails\048212d1-bc83-4b4e-8b57-2e6f952fd947.jpg" />
+    <Content Include="Uploads\Thumbnails\3c32796e-ad74-4ef0-b6b4-83a4095e329d.jpg" />
+    <Content Include="Uploads\Thumbnails\4eab017b-9fc6-43e3-9272-cc0c4aad3d45.jpg" />
+    <Content Include="Uploads\Thumbnails\7587ab03-4062-42f7-8b7b-bd83b854fc15.jpg" />
+    <Content Include="Uploads\Thumbnails\7cc13dd3-13e2-4410-a9db-2bd3358cf55d.png" />
+    <Content Include="Uploads\Thumbnails\9c1947ce-f903-432b-94de-78db69810191.jpg" />
+    <Content Include="Uploads\Thumbnails\a59d0772-8ffa-4c26-82a9-129ac2e3c50f.png" />
+    <Content Include="Uploads\Thumbnails\fc04096a-373d-4947-bba9-52e06dfd2eea.png" />
     <Content Include="UserManagement.aspx" />
     <Content Include="ViewLesson.aspx" />
     <Content Include="Web.config" />
@@ -183,6 +192,7 @@
     <Content Include="ChangePassword.aspx" />
     <Content Include="ForgotPassword.aspx" />
     <Content Include="LearningCourse.aspx" />
+    <Content Include="LearningLesson.aspx" />
     <Content Include="LearningProgress.aspx" />
     <Content Include="Login_signup.aspx" />
     <Content Include="MemberDashboard.aspx" />
@@ -247,6 +257,13 @@
     <Compile Include="Instructor.Master.designer.cs">
       <DependentUpon>Instructor.Master</DependentUpon>
     </Compile>
+    <Compile Include="Member.master.cs">
+      <DependentUpon>Member.Master</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Member.master.designer.cs">
+      <DependentUpon>Member.Master</DependentUpon>
+    </Compile>
     <Compile Include="ForgotPassword.aspx.cs">
       <DependentUpon>ForgotPassword.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -267,6 +284,13 @@
     </Compile>
     <Compile Include="LearningCourse.aspx.designer.cs">
       <DependentUpon>LearningCourse.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="LearningLesson.aspx.cs">
+      <DependentUpon>LearningLesson.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="LearningLesson.aspx.designer.cs">
+      <DependentUpon>LearningLesson.aspx</DependentUpon>
     </Compile>
     <Compile Include="InstructorManageContent.aspx.cs">
       <DependentUpon>InstructorManageContent.aspx</DependentUpon>

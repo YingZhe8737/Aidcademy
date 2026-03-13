@@ -3,6 +3,7 @@ using System.Data.SqlClient;
 using System.Configuration;
 using System.Web.UI.WebControls;
 using System.IO;
+using Aidcademy.Utilities;
 
 namespace Aidcademy
 {
@@ -12,18 +13,15 @@ namespace Aidcademy
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            if (!SessionHelper.IsUserLoggedIn() || !SessionHelper.IsInstructor())
+            {
+                Response.Redirect("~/Login_signup.aspx");
+                return;
+            }
+
             if (!IsPostBack)
             {
-                int currentInstructorId;
-
-                if (Session["UserID"] != null)
-                {
-                    currentInstructorId = Convert.ToInt32(Session["UserID"]);
-                }
-                else
-                {
-                    currentInstructorId = 1;
-                }
+                int currentInstructorId = Convert.ToInt32(Session["UserID"]);
                 BindCoursesDropdown(currentInstructorId);
                 BindGlobalCategories();
 

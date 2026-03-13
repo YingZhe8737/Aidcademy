@@ -150,6 +150,16 @@ namespace Aidcademy
         protected global::System.Web.UI.WebControls.GridView gvLeaderboard;
 
         /// <summary>
+        /// rptLeaderboard control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Repeater rptLeaderboard;
+
+        /// <summary>
+        /// pnlEmptyLeaderboard control.
+        /// </summary>
+        protected global::System.Web.UI.WebControls.Panel pnlEmptyLeaderboard;
+
+        /// <summary>
         /// lblBadge control.
         /// </summary>
         /// <remarks>

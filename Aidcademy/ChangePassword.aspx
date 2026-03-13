@@ -136,7 +136,7 @@
     <form id="form1" runat="server">
         <div class="container">
             <div class="logo">
-                <img src="Image/logo2.jpeg" alt="Aidcademy Logo" style="height: 60px; border-radius: 8px; margin-bottom: 10px;" />
+                <img src="Image/Logo.jpeg" alt="Aidcademy Logo" style="height: 60px; border-radius: 8px; margin-bottom: 10px;" />
                 <h1 style="color: #c9242b;">AIDCADEMY</h1>
             </div>
 

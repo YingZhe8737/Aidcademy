@@ -71,7 +71,7 @@ namespace Aidcademy
 
                         if (!EmailHelper.SendOtpEmail(email, otp, "ForgotPassword", out errMsg))
                         {
-                            ShowMessage($"OTP generated (dev mode — code: {otp}). Configure SMTP to receive by email.", true);
+                            ShowMessage($"OTP generated (dev mode - code: {otp}). Configure SMTP to receive by email.", true);
                         }
 
                         Response.Redirect("~/VerifyOtp.aspx?purpose=ForgotPassword");
