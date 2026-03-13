@@ -2,6 +2,7 @@
 using System.Data.SqlClient;
 using System.Configuration;
 using System.Web.UI.WebControls;
+using System.IO;
 
 namespace Aidcademy
 {
@@ -27,6 +28,24 @@ namespace Aidcademy
                     txtSequenceOrder.Text = "1";
                 }
             }
+        }
+
+        private string SaveThumbnail(FileUpload fu)
+        {
+            if (fu.HasFile)
+            {
+                string ext = Path.GetExtension(fu.FileName).ToLower();
+                if (ext == ".jpg" || ext == ".jpeg" || ext == ".png")
+                {
+                    string fileName = Guid.NewGuid().ToString() + ext;
+                    string relativePath = "~/Uploads/Thumbnails/" + fileName;
+                    string physicalPath = Server.MapPath("~/Uploads/Thumbnails/");
+                    if (!Directory.Exists(physicalPath)) Directory.CreateDirectory(physicalPath);
+                    fu.SaveAs(Server.MapPath(relativePath));
+                    return relativePath;
+                }
+            }
+            return null;
         }
 
         private void CalculateNextStep()
@@ -114,15 +133,19 @@ namespace Aidcademy
                     if (isNewCourse)
                     {
                         string finalCategory = ddlNewCourseCategory.SelectedValue == "Other" ? txtCustomCategory.Text.Trim() : ddlNewCourseCategory.SelectedValue;
-                        string courseQuery = @"INSERT INTO Courses (UserID, Title, Description, Category) 
-                                               VALUES (@UserID, @Title, 'Instructor generated course', @Category);
+                        string courseThumb = SaveThumbnail(fuNewCourseThumbnail);
+
+                        string courseQuery = @"INSERT INTO Courses (UserID, Title, Description, Category, ThumbnailPath) 
+                                               VALUES (@UserID, @Title, @Description, @Category, @ThumbnailPath);
                                                SELECT SCOPE_IDENTITY();";
 
                         using (SqlCommand cmd = new SqlCommand(courseQuery, conn, transaction))
                         {
                             cmd.Parameters.AddWithValue("@UserID", currentInstructorId);
                             cmd.Parameters.AddWithValue("@Title", txtNewCourseTitle.Text.Trim());
+                            cmd.Parameters.AddWithValue("@Description", txtNewCourseDescription.Text.Trim());
                             cmd.Parameters.AddWithValue("@Category", finalCategory);
+                            cmd.Parameters.AddWithValue("@ThumbnailPath", (object)courseThumb ?? DBNull.Value);
                             finalCourseId = Convert.ToInt32(cmd.ExecuteScalar());
                         }
                     }
@@ -131,17 +154,20 @@ namespace Aidcademy
                         finalCourseId = Convert.ToInt32(ddlCourses.SelectedValue);
                     }
 
-                    string lessonQuery = @"INSERT INTO Lessons (CourseID, Title, ContentBody, SequenceOrder, ApprovalStatus) 
-                                           VALUES (@CourseID, @Title, @ContentBody, @SequenceOrder, @ApprovalStatus);
+                    string lessonThumb = SaveThumbnail(fuLessonThumbnail);
+                    string lessonQuery = @"INSERT INTO Lessons (CourseID, Title, Description, ContentBody, SequenceOrder, ApprovalStatus, ThumbnailPath) 
+                                           VALUES (@CourseID, @Title, @Description, @ContentBody, @SequenceOrder, @ApprovalStatus, @ThumbnailPath);
                                            SELECT SCOPE_IDENTITY();";
 
                     using (SqlCommand cmd = new SqlCommand(lessonQuery, conn, transaction))
                     {
                         cmd.Parameters.AddWithValue("@CourseID", finalCourseId);
                         cmd.Parameters.AddWithValue("@Title", txtLessonTitle.Text.Trim());
+                        cmd.Parameters.AddWithValue("@Description", txtLessonDescription.Text.Trim());
                         cmd.Parameters.AddWithValue("@ContentBody", hfContentBody.Value.Trim());
                         cmd.Parameters.AddWithValue("@SequenceOrder", Convert.ToInt32(txtSequenceOrder.Text));
                         cmd.Parameters.AddWithValue("@ApprovalStatus", status);
+                        cmd.Parameters.AddWithValue("@ThumbnailPath", (object)lessonThumb ?? DBNull.Value);
 
                         finalLessonId = Convert.ToInt32(cmd.ExecuteScalar());
                     }
@@ -183,7 +209,7 @@ namespace Aidcademy
             // Fetch current course details and display them in the edit boxes
             using (SqlConnection conn = new SqlConnection(connString))
             {
-                SqlCommand cmd = new SqlCommand("SELECT Title, Category FROM Courses WHERE CourseID = @CourseID", conn);
+                SqlCommand cmd = new SqlCommand("SELECT Title, Category, Description FROM Courses WHERE CourseID = @CourseID", conn);
                 cmd.Parameters.AddWithValue("@CourseID", ddlCourses.SelectedValue);
                 conn.Open();
                 using (SqlDataReader reader = cmd.ExecuteReader())
@@ -192,6 +218,7 @@ namespace Aidcademy
                     {
                         txtEditCourseTitle.Text = reader["Title"].ToString();
                         txtEditCourseCategory.Text = reader["Category"].ToString();
+                        txtEditCourseDescription.Text = reader["Description"].ToString();
                         pnlEditCourse.Visible = true; // Reveal the panel
                     }
                 }
@@ -208,12 +235,20 @@ namespace Aidcademy
             if (string.IsNullOrEmpty(ddlCourses.SelectedValue) || string.IsNullOrEmpty(txtEditCourseTitle.Text)) return;
 
             // Update the database with the new name/category
+            string newThumbPath = SaveThumbnail(fuEditCourseThumbnail);
             using (SqlConnection conn = new SqlConnection(connString))
             {
-                SqlCommand cmd = new SqlCommand("UPDATE Courses SET Title = @Title, Category = @Category WHERE CourseID = @CourseID", conn);
+                string updateQ = "UPDATE Courses SET Title = @Title, Category = @Category, Description = @Desc ";
+                if (newThumbPath != null) updateQ += ", ThumbnailPath = @Thumb ";
+                updateQ += " WHERE CourseID = @CourseID";
+
+                SqlCommand cmd = new SqlCommand(updateQ, conn);
                 cmd.Parameters.AddWithValue("@Title", txtEditCourseTitle.Text.Trim());
                 cmd.Parameters.AddWithValue("@Category", txtEditCourseCategory.Text.Trim());
+                cmd.Parameters.AddWithValue("@Desc", txtEditCourseDescription.Text.Trim());
+                if (newThumbPath != null) cmd.Parameters.AddWithValue("@Thumb", newThumbPath);
                 cmd.Parameters.AddWithValue("@CourseID", ddlCourses.SelectedValue);
+
                 conn.Open();
                 cmd.ExecuteNonQuery();
             }

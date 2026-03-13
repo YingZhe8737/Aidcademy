@@ -73,7 +73,16 @@ namespace Aidcademy
         {
             using (SqlConnection conn = new SqlConnection(connString))
             {
-                string query = "SELECT CourseID, Title AS CourseTitle, ISNULL(Category, 'General') AS Category FROM Courses WHERE UserID = @InstructorID ORDER BY CourseID DESC";
+                // UPDATED: Added CourseDescription and CourseThumbnailPath to the SELECT statement
+                string query = @"SELECT CourseID, 
+                                        Title AS CourseTitle, 
+                                        ISNULL(Category, 'General') AS Category, 
+                                        Description AS CourseDescription, 
+                                        ThumbnailPath AS CourseThumbnailPath 
+                                 FROM Courses 
+                                 WHERE UserID = @InstructorID 
+                                 ORDER BY CourseID DESC";
+
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
                     cmd.Parameters.AddWithValue("@InstructorID", currentInstructorId);
@@ -97,11 +106,13 @@ namespace Aidcademy
 
                 using (SqlConnection conn = new SqlConnection(connString))
                 {
-                    // FIX: We changed c.ApprovalStatus to l.ApprovalStatus!
+                    // UPDATED: Added LessonDescription and LessonThumbnailPath
                     string query = @"SELECT l.LessonID, 
                                             l.Title AS LessonTitle, 
                                             l.SequenceOrder, 
-                                            ISNULL(l.ApprovalStatus, 'Draft') AS ApprovalStatus 
+                                            ISNULL(l.ApprovalStatus, 'Draft') AS ApprovalStatus,
+                                            l.Description AS LessonDescription,
+                                            l.ThumbnailPath AS LessonThumbnailPath
                                      FROM Lessons l 
                                      INNER JOIN Courses c ON l.CourseID = c.CourseID 
                                      WHERE l.CourseID = @CourseID

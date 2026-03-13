@@ -78,6 +78,24 @@ namespace Aidcademy
         protected global::System.Web.UI.WebControls.TextBox txtEditCourseCategory;
 
         /// <summary>
+        /// txtEditCourseDescription control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtEditCourseDescription;
+
+        /// <summary>
+        /// fuEditCourseThumbnail control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.FileUpload fuEditCourseThumbnail;
+
+        /// <summary>
         /// btnCancelCourseEdit control.
         /// </summary>
         /// <remarks>
@@ -123,6 +141,24 @@ namespace Aidcademy
         protected global::System.Web.UI.WebControls.TextBox txtCustomCategory;
 
         /// <summary>
+        /// txtNewCourseDescription control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtNewCourseDescription;
+
+        /// <summary>
+        /// fuNewCourseThumbnail control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.FileUpload fuNewCourseThumbnail;
+
+        /// <summary>
         /// hfIsNewCourse control.
         /// </summary>
         /// <remarks>
@@ -148,6 +184,24 @@ namespace Aidcademy
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.TextBox txtLessonTitle;
+
+        /// <summary>
+        /// txtLessonDescription control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.TextBox txtLessonDescription;
+
+        /// <summary>
+        /// fuLessonThumbnail control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.FileUpload fuLessonThumbnail;
 
         /// <summary>
         /// hfContentBody control.

@@ -49,6 +49,14 @@
                                         <label class="small text-muted fw-bold">Category</label>
                                         <asp:TextBox ID="txtEditCourseCategory" runat="server" CssClass="form-control form-control-sm"></asp:TextBox>
                                     </div>
+                                    <div class="mb-2">
+                                        <label class="small text-muted fw-bold">Course Description</label>
+                                        <asp:TextBox ID="txtEditCourseDescription" runat="server" CssClass="form-control form-control-sm" TextMode="MultiLine" Rows="2"></asp:TextBox>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="small text-muted fw-bold">Course Thumbnail</label>
+                                        <asp:FileUpload ID="fuEditCourseThumbnail" runat="server" CssClass="form-control form-control-sm" accept=".png,.jpg,.jpeg" />
+                                    </div>
                                     <div class="text-end mt-2">
                                         <asp:Button ID="btnCancelCourseEdit" runat="server" Text="Cancel" CssClass="btn btn-sm btn-light" OnClick="btnCancelCourseEdit_Click" CausesValidation="false" />
                                         <asp:Button ID="btnSaveCourseEdit" runat="server" Text="Update Course" CssClass="btn btn-sm btn-warning fw-bold" OnClick="btnSaveCourseEdit_Click" CausesValidation="false" />
@@ -56,12 +64,18 @@
                                 </asp:Panel>
                             </div>
                             
-                            <div id="newCourseDiv" style="display:none;">
-                                <div class="input-group">
-                                    <asp:TextBox ID="txtNewCourseTitle" runat="server" CssClass="form-control border-0 bg-light fw-bold" placeholder="New course name..."></asp:TextBox>
-                                    <asp:DropDownList ID="ddlNewCourseCategory" runat="server" CssClass="form-select border-0 bg-light fw-bold" onchange="toggleCustomCategory(this)" style="max-width: 130px;">
-                                    </asp:DropDownList>
-                                    <asp:TextBox ID="txtCustomCategory" runat="server" CssClass="form-control border-0 bg-light fw-bold" style="display:none; max-width: 150px;" placeholder="Type category..."></asp:TextBox>
+                            <div id="newCourseDiv" style="display:none;" class="p-3 border rounded bg-light">
+                                <div class="input-group mb-2">
+                                    <asp:TextBox ID="txtNewCourseTitle" runat="server" CssClass="form-control border-0 fw-bold" placeholder="New course name..."></asp:TextBox>
+                                    <asp:DropDownList ID="ddlNewCourseCategory" runat="server" CssClass="form-select border-0 fw-bold" onchange="toggleCustomCategory(this)" style="max-width: 130px;"></asp:DropDownList>
+                                    <asp:TextBox ID="txtCustomCategory" runat="server" CssClass="form-control border-0 fw-bold" style="display:none; max-width: 150px;" placeholder="Type category..."></asp:TextBox>
+                                </div>
+                                <div class="mb-2">
+                                    <asp:TextBox ID="txtNewCourseDescription" runat="server" CssClass="form-control border-0" placeholder="Course Description..." TextMode="MultiLine" Rows="2"></asp:TextBox>
+                                </div>
+                                <div>
+                                    <label class="small text-muted fw-bold">Course Thumbnail</label>
+                                    <asp:FileUpload ID="fuNewCourseThumbnail" runat="server" CssClass="form-control form-control-sm border-0" accept=".png,.jpg,.jpeg" />
                                 </div>
                             </div>
                             <asp:HiddenField ID="hfIsNewCourse" runat="server" Value="0" />
@@ -75,7 +89,15 @@
                     <div class="mb-4">
                         <asp:TextBox ID="txtLessonTitle" runat="server" CssClass="form-control border-0 px-0 shadow-none fs-2 fw-bold" placeholder="Lesson Title..."></asp:TextBox>
                     </div>
-
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <asp:TextBox ID="txtLessonDescription" runat="server" CssClass="form-control border-0 px-3 py-2 shadow-sm bg-light" placeholder="Short description of this lesson..." TextMode="MultiLine" Rows="2"></asp:TextBox>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="small text-muted fw-bold">Lesson Thumbnail</label>
+                            <asp:FileUpload ID="fuLessonThumbnail" runat="server" CssClass="form-control form-control-sm border-0 shadow-sm bg-light" accept=".png,.jpg,.jpeg" />
+                        </div>
+                    </div>
                     <div class="mb-3"><div id="editor-container"></div></div>
                     <asp:HiddenField ID="hfContentBody" runat="server" />
                     <div class="mt-4 p-4 border rounded bg-light border-info border-2">
