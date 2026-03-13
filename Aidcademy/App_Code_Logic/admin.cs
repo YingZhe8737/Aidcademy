@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Web;
@@ -217,5 +218,82 @@ namespace Aidcademy.App_Code_Logic
 
             return users;
         }
+
+        public int GetTotalMembersFiltered(string search, string startDate, string endDate)
+        {
+            using (SqlConnection conn = new SqlConnection(connStr))
+            {
+                conn.Open();
+
+                string query = @"SELECT COUNT(*) FROM SiteTraffic
+                         WHERE IsRegisteredUser = 1
+                         AND (@search = '' OR SessionID LIKE '%' + @search + '%')
+                         AND (@startDate = '' OR VisitDate >= @startDate)
+                         AND (@endDate = '' OR VisitDate <= @endDate)";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@search", search);
+                    cmd.Parameters.AddWithValue("@startDate", startDate);
+                    cmd.Parameters.AddWithValue("@endDate", endDate);
+
+                    return (int)cmd.ExecuteScalar();
+                }
+            }
+        }
+
+
+        public int GetTotalVisitorsFiltered(string search, string startDate, string endDate)
+        {
+            using (SqlConnection conn = new SqlConnection(connStr))
+            {
+                conn.Open();
+
+                string query = @"SELECT COUNT(*) FROM SiteTraffic
+                         WHERE IsRegisteredUser = 0
+                         AND (@search = '' OR SessionID LIKE '%' + @search + '%')
+                         AND (@startDate = '' OR VisitDate >= @startDate)
+                         AND (@endDate = '' OR VisitDate <= @endDate)";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@search", search);
+                    cmd.Parameters.AddWithValue("@startDate", startDate);
+                    cmd.Parameters.AddWithValue("@endDate", endDate);
+
+                    return (int)cmd.ExecuteScalar();
+                }
+            }
+        }
+
+        public DataTable GetTraffic(string search, string startDate, string endDate)
+        {
+            using (SqlConnection conn = new SqlConnection(connStr))
+            {
+                conn.Open();
+
+                string query = @"SELECT * FROM SiteTraffic
+                         WHERE (@search = '' OR SessionID LIKE '%' + @search + '%')
+                         AND (@startDate = '' OR VisitDate >= @startDate)
+                         AND (@endDate = '' OR VisitDate <= @endDate)
+                         ORDER BY VisitDate DESC";
+
+                using (SqlCommand cmd = new SqlCommand(query, conn))
+                {
+                    cmd.Parameters.AddWithValue("@search", search);
+                    cmd.Parameters.AddWithValue("@startDate", startDate);
+                    cmd.Parameters.AddWithValue("@endDate", endDate);
+
+                    SqlDataAdapter da = new SqlDataAdapter(cmd);
+                    DataTable dt = new DataTable();
+                    da.Fill(dt);
+
+                    return dt;
+                }
+            }
+        }
+
+
+
     }
 }

@@ -29,6 +29,68 @@
 
     </div>
 
+    <div class="user-management-container">
+
+        <!-- FILTER -->
+        <div class="filter-bar">
+
+            Search Session:
+            <asp:TextBox ID="txtSearch" runat="server" AutoPostBack="true"
+                OnTextChanged="Filter_Changed"></asp:TextBox>
+
+            From:
+            <asp:TextBox ID="txtStartDate" runat="server" TextMode="Date"
+                AutoPostBack="true" OnTextChanged="Filter_Changed"></asp:TextBox>
+
+            To:
+            <asp:TextBox ID="txtEndDate" runat="server" TextMode="Date"
+                AutoPostBack="true" OnTextChanged="Filter_Changed"></asp:TextBox>
+
+        </div>
+
+
+        <!-- SUMMARY -->
+        <div class="summary-cards system-margin">
+
+            <div class="summary-card visitor">
+                <h3>Total Member Visited:</h3>
+                <asp:Label ID="lblTotalMembers" runat="server"
+                    style="font-size:32px;font-weight:bold;"></asp:Label>
+            </div>
+
+            <div class="summary-card member">
+                <h3>Total Visitor Visited:</h3>
+                <asp:Label ID="lblTotalVisitors" runat="server"
+                    style="font-size:32px;font-weight:bold;"></asp:Label>
+            </div>
+
+        </div>
+
+
+        <!-- GRID -->
+        <asp:GridView ID="gvTraffic" runat="server" AutoGenerateColumns="false"
+            CssClass="table">
+
+            <Columns>
+
+                <asp:BoundField DataField="TrafficID" HeaderText="Traffic ID" />
+
+                <asp:BoundField DataField="SessionID" HeaderText="Session ID" />
+
+                <asp:BoundField DataField="VisitDate" HeaderText="Visit Date"
+                    DataFormatString="{0:yyyy-MM-dd HH:mm}" />
+
+                <asp:TemplateField HeaderText="User Type">
+                    <ItemTemplate>
+                        <%# Convert.ToBoolean(Eval("IsRegisteredUser")) ? "Member" : "Visitor" %>
+                    </ItemTemplate>
+                </asp:TemplateField>
+
+            </Columns>
+
+        </asp:GridView>
+
+    </div>
 
 
     </form>

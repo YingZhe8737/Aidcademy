@@ -653,3 +653,25 @@ td {
         background: #c9242b;
         color: white;
     }
+
+
+
+/*system report part*/
+
+
+
+.member {
+   background: #f39c12;
+   gap: 20px;
+}
+
+.visitor {
+    background: #27ae60;
+    gap: 20px
+}
+
+system-margin{
+    margin: 20px;
+    gap: 20px;
+}
+

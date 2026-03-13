@@ -1,4 +1,6 @@
 using System;
+using System.Configuration;
+using System.Data.SqlClient;
 using System.Web.UI;
 using Aidcademy.Utilities;
 
@@ -124,6 +126,7 @@ namespace Aidcademy
 
             SessionHelper.SetLoginSession(userID, role, fullName, email);
 
+
             // Redirect by role
             if (role == "Admin")
                 Response.Redirect("~/AdminDashboard.aspx");
@@ -157,6 +160,9 @@ namespace Aidcademy
             pnlMessage.Visible    = true;
             lblMessage.Text       = message;
             lblMessage.CssClass   = isSuccess ? "message success" : "message error";
+        }
+
+       
         }
     }
 }
