@@ -19,8 +19,8 @@
             <div class="nav">
             <asp:Button ID="btnAbout" runat="server" Text="About" 
                 CssClass="nav-btn" OnClick="btnAboutUs" />
-            <asp:Button ID="btnCourse" runat="server" Text="Course" 
-                CssClass="nav-btn" PostBackUrl="Course.aspx" />
+            <asp:Button ID="btnCourse" runat="server" Text="Course"
+                CssClass="nav-btn" PostBackUrl="LearningCourse.aspx" />
             <asp:Button ID="btnLogin" runat="server" Text="Login"      
                 CssClass="nav-btn login-btn" PostBackUrl="Login_Signup.aspx" />
             </div>
@@ -67,7 +67,7 @@
             <p>Phone: +60 12-345 6789</p>
 
             <asp:Button ID="btnFeedback" runat="server" 
-                Text="Send Feedback" CssClass="btn-feedback" />
+                Text="Send Feedback" CssClass="btn-feedback" OnClick="btnFeedback_Click1" />
         </div>
 
     </form>

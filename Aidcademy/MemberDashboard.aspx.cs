@@ -29,7 +29,7 @@ namespace Aidcademy
         {
             int userID = Convert.ToInt32(Session["UserID"]);
 
-            // Display name — UserName is set by SessionHelper.SetLoginSession
+            // Display name - UserName is set by SessionHelper.SetLoginSession
             lblMemberName.Text = SessionHelper.GetUsername().Length > 0
                 ? SessionHelper.GetUsername()
                 : Session["Name"]?.ToString() ?? "Member";
@@ -59,11 +59,11 @@ namespace Aidcademy
                                 lblTotalPoints.Text = totalPts.ToString();
 
                                 if (totalPts >= 1000)
-                                    lblBadge.Text = "<span class='badge bg-warning text-dark shadow-sm ms-2'>🥇 Gold</span>";
+                                    lblBadge.Text = "<span class='badge bg-warning text-dark shadow-sm ms-2'>&#129351; Gold</span>";
                                 else if (totalPts >= 500)
-                                    lblBadge.Text = "<span class='badge bg-secondary shadow-sm ms-2'>🥈 Silver</span>";
+                                    lblBadge.Text = "<span class='badge bg-secondary shadow-sm ms-2'>&#129352; Silver</span>";
                                 else if (totalPts >= 100)
-                                    lblBadge.Text = "<span class='badge ms-2 shadow-sm' style='background-color:#cd7f32;'>🥉 Bronze</span>";
+                                    lblBadge.Text = "<span class='badge ms-2 shadow-sm' style='background-color:#cd7f32;'>&#129353; Bronze</span>";
                             }
                             else
                             {
@@ -116,11 +116,11 @@ namespace Aidcademy
 
                     // Load recently completed courses
                     string queryRecentCompleted = @"
-                        SELECT TOP 3 c.CourseID, c.Title AS CourseName, e.EnrollmentDate
+                        SELECT TOP 3 c.CourseID, c.Title, e.EnrolmentDate
                         FROM Enrollments e
                         INNER JOIN Courses c ON e.CourseID = c.CourseID
                         WHERE e.UserID = @UserID AND e.IsCompleted = 1
-                        ORDER BY e.EnrollmentDate DESC";
+                        ORDER BY e.EnrolmentDate DESC";
 
                     using (SqlCommand cmd = new SqlCommand(queryRecentCompleted, conn))
                     {
@@ -134,24 +134,11 @@ namespace Aidcademy
                             pnlCompletedSection.Visible = true;
                     }
 
-                }
-            }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine("Dashboard error: " + ex.Message);
-            }
-
-            // Leaderboard runs in its own block so errors above never block it
-            try
-            {
-                string connectionString = ConfigurationManager.ConnectionStrings["AidcademyDB"].ConnectionString;
-                using (SqlConnection conn = new SqlConnection(connectionString))
-                {
-                    conn.Open();
+                    // Load Leaderboard Data - derived from QuizResults so it works even if the Leaderboard table is empty
                     string queryLeaderboard = @"
                         SELECT TOP 10
                             p.UserID,
-                            ISNULL(NULLIF(p.FullName, ''), 'Anonymous') AS FullName,
+                            p.FullName,
                             MAX(qr.DateTaken) AS LastSolved,
                             ISNULL(SUM(CASE WHEN qr.DateTaken >= DATEADD(day, -7, GETDATE()) THEN qr.Score ELSE 0 END), 0) AS WeeklyPoints,
                             ISNULL(SUM(qr.Score), 0) AS TotalPoints
@@ -166,14 +153,15 @@ namespace Aidcademy
                         SqlDataAdapter da = new SqlDataAdapter(cmd);
                         DataTable dt = new DataTable();
                         da.Fill(dt);
-                        gvLeaderboard.DataSource = dt;
-                        gvLeaderboard.DataBind();
+                        rptLeaderboard.DataSource = dt;
+                        rptLeaderboard.DataBind();
+                        pnlEmptyLeaderboard.Visible = dt.Rows.Count == 0;
                     }
                 }
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine("Leaderboard error: " + ex.Message);
+                System.Diagnostics.Debug.WriteLine("Dashboard error: " + ex.Message);
             }
         }
 
@@ -187,6 +175,40 @@ namespace Aidcademy
                     e.Row.CssClass = "table-warning fw-bold";
                 }
             }
+        }
+
+        public string GetLeaderboardRowClass(int rowIndex, object userIdObj)
+        {
+            string css = "lb-row";
+            if (rowIndex == 0)
+                css += " podium-gold";
+            else if (rowIndex == 1)
+                css += " podium-silver";
+            else if (rowIndex == 2)
+                css += " podium-bronze";
+
+            int sessionUserId = Session["UserID"] != null ? Convert.ToInt32(Session["UserID"]) : 0;
+            int rowUserId = userIdObj != null && userIdObj != DBNull.Value ? Convert.ToInt32(userIdObj) : 0;
+            if (rowUserId == sessionUserId)
+                css += " me-row";
+
+            return css;
+        }
+
+        public string GetRankClass(int rowIndex)
+        {
+            if (rowIndex == 0) return "rank-gold";
+            if (rowIndex == 1) return "rank-silver";
+            if (rowIndex == 2) return "rank-bronze";
+            return "rank-other";
+        }
+
+        public string GetRankIcon(int rowIndex)
+        {
+            if (rowIndex == 0) return "&#129351;";
+            if (rowIndex == 1) return "&#129352;";
+            if (rowIndex == 2) return "&#129353;";
+            return (rowIndex + 1).ToString();
         }
 
         protected string GetContinueUrl(object lessonId)

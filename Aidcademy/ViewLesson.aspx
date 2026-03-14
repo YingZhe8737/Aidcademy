@@ -295,6 +295,22 @@
                                     Next Lesson <i class="fa-solid fa-arrow-right ms-2"></i>
                                 </asp:LinkButton>
                             </div>
+
+                            <!-- Visitor Continue Banner -->
+                            <asp:Panel ID="pnlVisitorContinue" runat="server" Visible="false">
+                                <div class="alert alert-warning border-0 shadow-sm rounded-4 mt-4 p-4 text-center" style="background:linear-gradient(135deg,#fffbeb,#fef3c7);">
+                                    <i class="fa-solid fa-lock fa-2x text-warning mb-3 d-block"></i>
+                                    <h5 class="fw-bold mb-2">Want to learn more?</h5>
+                                    <p class="text-muted mb-3">You've completed your free preview lesson. Login or sign up to access all lessons and track your progress.</p>
+                                    <a href="Login_signup.aspx" class="btn btn-danger rounded-pill px-4 fw-bold shadow-sm me-2">
+                                        <i class="fa-solid fa-right-to-bracket me-2"></i>Login / Sign Up
+                                    </a>
+                                    <a href="LearningCourse.aspx" class="btn btn-outline-secondary rounded-pill px-4 fw-bold">
+                                        <i class="fa-solid fa-arrow-left me-2"></i>Back to Courses
+                                    </a>
+                                </div>
+                            </asp:Panel>
+
                         </asp:Panel>
                     </div>
                 </div>

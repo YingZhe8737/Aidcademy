@@ -6,6 +6,7 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Aidcademy.Utilities;
 
 namespace Aidcademy
 {
@@ -15,22 +16,25 @@ namespace Aidcademy
 
         protected void Page_Load(object sender, EventArgs e)
         {
+            if (!SessionHelper.IsUserLoggedIn() || !SessionHelper.IsAdmin())
+            {
+                Response.Redirect("~/Login_signup.aspx");
+                return;
+            }
 
         }
 
         protected void btnCreate_Click(object sender, EventArgs e)
         {
 
-              string fullName = txtFullName.Text.Trim();
+            string fullName = txtFullName.Text.Trim();
             string username = txtUsername.Text.Trim();
             string email = txtEmail.Text.Trim();
             string password = txtPassword.Text.Trim();
             string confirm = txtConfirmPassword.Text.Trim();
             string role = ddlRole.SelectedValue;
 
-            // ===============================
-            // Validation
-            // ===============================
+            //validation
             if (string.IsNullOrEmpty(fullName) ||
                 string.IsNullOrEmpty(username) ||
                 string.IsNullOrEmpty(email) ||

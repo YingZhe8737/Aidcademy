@@ -14,28 +14,46 @@ namespace Aidcademy
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            // 1. Determine User Role
-            string role = Session["Role"] != null ? Session["Role"].ToString() : "Visitor";
+            // 1. Determine User Role - use Session["UserRole"] (set by SessionHelper)
+            string role = Session["UserRole"] != null ? Session["UserRole"].ToString() : "Visitor";
 
-            // 2. Setup Top Navbar depending on Role (Toggles the ASP.NET Panels)
-            pnlNavVisitor.Visible = (role == "Visitor");
-            pnlNavMember.Visible = (role == "Member");
+            // 2. Setup Top Navbar depending on Role
+            pnlNavVisitor.Visible    = (role == "Visitor");
+            pnlNavMember.Visible     = (role == "Member");
             pnlNavInstructor.Visible = (role == "Instructor");
-            pnlNavAdmin.Visible = (role == "Admin");
+            pnlNavAdmin.Visible      = (role == "Admin");
+
+            // Only members can mark lessons complete.
+            btnMarkComplete.Visible  = (role == "Member");
+
+            pnlAdminActions.Visible = (role == "Admin");
 
             // 3. Set dynamic back button URL
-            string backUrl = "MainPage.aspx";
-            if (role == "Member") backUrl = "MemberDashboard.aspx";
+            string backUrl = "LearningCourse.aspx";
+            if (role == "Member")     backUrl = "MemberDashboard.aspx";
             else if (role == "Instructor") backUrl = "InstructorManageContent.aspx";
             else if (role == "Admin") backUrl = "AdminDashboard.aspx";
-
             hlBackBtn.NavigateUrl = backUrl;
 
-            // 4. Disable Quiz Submissions for Visitors
+            // 4. Disable quiz submissions for visitors; also enforce free-lesson rule
             if (role == "Visitor")
             {
                 btnSubmitQuiz.Enabled = false;
                 lblVisitorQuizWarning.Visible = true;
+
+                // Enforce: visitors may only access CPR lesson 2 preview.
+                if (Request.QueryString["LessonID"] != null)
+                {
+                    int lid = Convert.ToInt32(Request.QueryString["LessonID"]);
+                    if (!IsFreeLessonForVisitor(lid))
+                    {
+                        Response.Redirect("~/LearningCourse.aspx");
+                        return;
+                    }
+                }
+
+                // Show "Continue to login" banner for visitors
+                pnlVisitorContinue.Visible = true;
             }
 
             if (!IsPostBack)
@@ -45,6 +63,38 @@ namespace Aidcademy
                     int currentLessonId = Convert.ToInt32(Request.QueryString["LessonID"]);
                     BindSidebar(currentLessonId);
                     LoadLesson(currentLessonId);
+                }
+            }
+        }
+
+        // Returns true only when lesson is the second approved lesson in a CPR course.
+        private bool IsFreeLessonForVisitor(int lessonId)
+        {
+            using (SqlConnection conn = new SqlConnection(connString))
+            {
+                conn.Open();
+                string sql = @"
+                    SELECT CASE
+                        WHEN (c.Title LIKE '%CPR%' OR c.Category LIKE '%CPR%' OR c.Description LIKE '%CPR%')
+                             AND l.LessonID = (
+                                 SELECT q.LessonID
+                                 FROM (
+                                     SELECT l2.LessonID,
+                                            ROW_NUMBER() OVER (ORDER BY l2.SequenceOrder, l2.LessonID) AS rn
+                                     FROM Lessons l2
+                                     WHERE l2.CourseID = l.CourseID
+                                       AND l2.ApprovalStatus = 'Approved'
+                                 ) q
+                                 WHERE q.rn = 2)
+                        THEN 1 ELSE 0 END
+                    FROM Lessons l
+                    INNER JOIN Courses c ON c.CourseID = l.CourseID
+                    WHERE l.LessonID = @LessonID";
+                using (SqlCommand cmd = new SqlCommand(sql, conn))
+                {
+                    cmd.Parameters.AddWithValue("@LessonID", lessonId);
+                    object res = cmd.ExecuteScalar();
+                    return res != null && Convert.ToInt32(res) == 1;
                 }
             }
         }
@@ -233,17 +283,17 @@ namespace Aidcademy
                 DateTime today = DateTime.Today;
                 if (lastActivity.Date == today)
                 {
-                    // Already played today — keep streak as-is
+                    // Already played today - keep streak as-is
                     newStreak = currentStreak == 0 ? 1 : currentStreak;
                 }
                 else if (lastActivity.Date == today.AddDays(-1))
                 {
-                    // Played yesterday — extend streak
+                    // Played yesterday - extend streak
                     newStreak = currentStreak + 1;
                 }
                 else
                 {
-                    // Missed a day or brand new — reset to 1
+                    // Missed a day or brand new - reset to 1
                     newStreak = 1;
                 }
 
@@ -288,7 +338,7 @@ namespace Aidcademy
             if (!SessionHelper.IsAdmin()) return; // extra server-side guard
 
             int lessonId = Convert.ToInt32(Request.QueryString["LessonID"]);
-            UpdateStatus(lessonId, "Published");
+            UpdateStatus(lessonId, "Approved");
 
             lblActionResult.Text = "✅ Lesson has been approved and published.";
             lblActionResult.CssClass = "d-block mt-3 fw-bold text-center text-success";
@@ -348,7 +398,7 @@ namespace Aidcademy
 
         private void BindSidebar(int currentLessonId)
         {
-            string role = Session["Role"] != null ? Session["Role"].ToString() : "Visitor";
+            string role = Session["UserRole"] != null ? Session["UserRole"].ToString() : "Visitor";
             int userId = Session["UserID"] != null ? Convert.ToInt32(Session["UserID"]) : 0;
             int currentCourseId = 0;
 
@@ -380,7 +430,7 @@ namespace Aidcademy
                               FROM Courses c
                               INNER JOIN Enrollments e ON c.CourseID = e.CourseID
                               INNER JOIN Lessons l ON c.CourseID = l.CourseID
-                              WHERE l.ApprovalStatus = 'Published' AND e.UserID = @UserID
+                              WHERE l.ApprovalStatus = 'Approved' AND e.UserID = @UserID
                               ORDER BY c.Title";
                 }
                 else
@@ -389,7 +439,7 @@ namespace Aidcademy
                     query = @"SELECT DISTINCT c.CourseID, c.Title AS CourseTitle 
                               FROM Courses c
                               INNER JOIN Lessons l ON c.CourseID = l.CourseID
-                              WHERE l.ApprovalStatus = 'Published'
+                              WHERE l.ApprovalStatus = 'Approved'
                               ORDER BY c.Title";
                 }
 
@@ -418,7 +468,7 @@ namespace Aidcademy
                 int courseId = Convert.ToInt32(drv["CourseID"]);
                 Repeater rptSidebarLessons = (Repeater)e.Item.FindControl("rptSidebarLessons");
 
-                string role = Session["Role"] != null ? Session["Role"].ToString() : "Visitor";
+                string role = Session["UserRole"] != null ? Session["UserRole"].ToString() : "Visitor";
                 int currentLessonId = Convert.ToInt32(Request.QueryString["LessonID"]);
 
                 using (SqlConnection conn = new SqlConnection(connString))
@@ -437,7 +487,7 @@ namespace Aidcademy
                         // Others: Show all published lessons for the course
                         query = @"SELECT LessonID, Title AS LessonTitle, SequenceOrder 
                                   FROM Lessons 
-                                  WHERE CourseID = @CourseID AND ApprovalStatus = 'Published' 
+                                  WHERE CourseID = @CourseID AND ApprovalStatus = 'Approved' 
                                   ORDER BY SequenceOrder";
                     }
 
@@ -487,8 +537,8 @@ namespace Aidcademy
             {
                 string navQuery = @"
                     SELECT 
-                        (SELECT TOP 1 LessonID FROM Lessons WHERE CourseID = @CourseID AND ApprovalStatus = 'Published' AND SequenceOrder < @Seq ORDER BY SequenceOrder DESC) as PrevID,
-                        (SELECT TOP 1 LessonID FROM Lessons WHERE CourseID = @CourseID AND ApprovalStatus = 'Published' AND SequenceOrder > @Seq ORDER BY SequenceOrder ASC) as NextID";
+                        (SELECT TOP 1 LessonID FROM Lessons WHERE CourseID = @CourseID AND ApprovalStatus = 'Approved' AND SequenceOrder < @Seq ORDER BY SequenceOrder DESC) as PrevID,
+                        (SELECT TOP 1 LessonID FROM Lessons WHERE CourseID = @CourseID AND ApprovalStatus = 'Approved' AND SequenceOrder > @Seq ORDER BY SequenceOrder ASC) as NextID";
                 using (SqlCommand cmd = new SqlCommand(navQuery, conn))
                 {
                     cmd.Parameters.AddWithValue("@CourseID", courseId);
@@ -537,6 +587,9 @@ namespace Aidcademy
 
         protected void btnMarkComplete_Click(object sender, EventArgs e)
         {
+            if (!SessionHelper.IsMember())
+                return;
+
             if (Session["UserID"] == null || Request.QueryString["LessonID"] == null)
                 return;
 
@@ -550,30 +603,39 @@ namespace Aidcademy
             {
                 conn.Open();
 
-                // 1. Mark lesson as complete
+                // 1. Mark lesson as complete (LessonProgress columns: ProgressID, UserID, LessonID, Status, LastAccessedDate)
                 string upsertQuery = @"
                     IF NOT EXISTS (SELECT 1 FROM LessonProgress WHERE UserID = @UserID AND LessonID = @LessonID)
                     BEGIN
-                        INSERT INTO LessonProgress (UserID, LessonID, CourseID, IsCompleted, CompletionDate)
-                        VALUES (@UserID, @LessonID, @CourseID, 1, GETDATE())
+                        INSERT INTO LessonProgress (UserID, LessonID, Status, LastAccessedDate)
+                        VALUES (@UserID, @LessonID, 'Completed', GETDATE())
+                    END
+                    ELSE
+                    BEGIN
+                        UPDATE LessonProgress SET Status = 'Completed', LastAccessedDate = GETDATE()
+                        WHERE UserID = @UserID AND LessonID = @LessonID
                     END";
 
                 using (SqlCommand cmd = new SqlCommand(upsertQuery, conn))
                 {
                     cmd.Parameters.AddWithValue("@UserID", userId);
                     cmd.Parameters.AddWithValue("@LessonID", lessonId);
-                    cmd.Parameters.AddWithValue("@CourseID", courseId);
                     cmd.ExecuteNonQuery();
                 }
 
                 // 2. Recalculate Course Progress Percentage
+                // LessonProgress has no CourseID, so join through Lessons to get the course
                 string pctQuery = @"
-                    DECLARE @Total INT = (SELECT COUNT(LessonID) FROM Lessons WHERE CourseID = @CourseID AND ApprovalStatus = 'Published');
-                    DECLARE @Completed INT = (SELECT COUNT(LessonID) FROM LessonProgress WHERE CourseID = @CourseID AND UserID = @UserID AND IsCompleted = 1);
+                    DECLARE @Total INT = (SELECT COUNT(LessonID) FROM Lessons WHERE CourseID = @CourseID AND ApprovalStatus = 'Approved');
+                    DECLARE @Completed INT = (
+                        SELECT COUNT(lp.LessonID)
+                        FROM LessonProgress lp
+                        INNER JOIN Lessons l ON lp.LessonID = l.LessonID
+                        WHERE l.CourseID = @CourseID AND lp.UserID = @UserID AND lp.Status = 'Completed');
                     DECLARE @Pct INT = 0;
                     IF @Total > 0 SET @Pct = (@Completed * 100) / @Total;
 
-                    UPDATE Enrollments 
+                    UPDATE Enrollments
                     SET ProgressPercentage = @Pct,
                         IsCompleted = CASE WHEN @Pct = 100 THEN 1 ELSE 0 END
                     WHERE CourseID = @CourseID AND UserID = @UserID;

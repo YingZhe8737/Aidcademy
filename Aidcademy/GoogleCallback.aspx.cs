@@ -235,7 +235,7 @@ namespace Aidcademy
                     }
                 }
 
-                // No existing account — create a new one
+                // No existing account - create a new one
                 string baseUsername = email.Split('@')[0];
                 string username     = EnsureUniqueUsername(conn, baseUsername);
 

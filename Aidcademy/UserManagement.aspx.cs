@@ -5,6 +5,7 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Aidcademy.App_Code_Logic;
+using Aidcademy.Utilities;
 
 namespace Aidcademy
 {
@@ -13,6 +14,12 @@ namespace Aidcademy
         admin adminCS = new admin();
         protected void Page_Load(object sender, EventArgs e)
         {
+            if (!SessionHelper.IsUserLoggedIn() || !SessionHelper.IsAdmin())
+            {
+                Response.Redirect("~/Login_signup.aspx");
+                return;
+            }
+
             if (!IsPostBack)
             {
                 totalMember();

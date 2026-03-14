@@ -2,6 +2,8 @@
 using System.Data.SqlClient;
 using System.Web.UI;
 using BCrypt.Net;
+using Aidcademy.Utilities;
+using System.Configuration;
 
 namespace Aidcademy
 {
@@ -113,6 +115,15 @@ namespace Aidcademy
                                 int sessionUserId   = Convert.ToInt32(reader["UserID"]);
 
                                 reader.Close();
+
+                                // TEMP OTP BYPASS START (set Web.config appSettings SkipOtpVerification=true)
+                                if (IsOtpBypassEnabled())
+                                {
+                                    SessionHelper.SetLoginSession(sessionUserId, sessionRole, sessionName, sessionEmail);
+                                    RedirectByRole(sessionRole);
+                                    return;
+                                }
+                                // TEMP OTP BYPASS END
 
                                 // Generate & save OTP
                                 string otp = Aidcademy.Utilities.OtpHelper.SaveOtp(sessionUserId, "Login");
@@ -235,6 +246,15 @@ namespace Aidcademy
                                 profCmd.ExecuteNonQuery();
                             }
 
+                            // TEMP OTP BYPASS START (set Web.config appSettings SkipOtpVerification=true)
+                            if (IsOtpBypassEnabled())
+                            {
+                                SessionHelper.SetLoginSession(newUserId, "Member", fullName, email);
+                                RedirectByRole("Member");
+                                return;
+                            }
+                            // TEMP OTP BYPASS END
+
                             string otp = Aidcademy.Utilities.OtpHelper.SaveOtp(newUserId, "Login");
 
                             // Send OTP email
@@ -263,6 +283,32 @@ namespace Aidcademy
 
         private void RedirectByRole(string role)
         {
+            string sessionID = Session.SessionID;
+
+            using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["AidcademyDB"].ConnectionString))
+            {
+                conn.Open();
+
+                if (role == "Admin" || role == "Instructor")
+                {
+                    string deleteQuery = "DELETE FROM SiteTraffic WHERE SessionID = @SessionID";
+                    using (SqlCommand cmd = new SqlCommand(deleteQuery, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@SessionID", sessionID);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                else
+                {
+                    string updateQuery = "UPDATE SiteTraffic SET IsRegisteredUser = 1 WHERE SessionID = @SessionID";
+                    using (SqlCommand cmd = new SqlCommand(updateQuery, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@SessionID", sessionID);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+
             if (role == "Admin")
                 Response.Redirect("~/AdminDashboard.aspx");
             else if (role == "Instructor")
@@ -270,6 +316,8 @@ namespace Aidcademy
             else
                 Response.Redirect("~/MemberDashboard.aspx");
         }
+
+
 
         private bool ValidatePassword(string password)
         {
@@ -289,6 +337,13 @@ namespace Aidcademy
             pnlMessage.Visible  = true;
             lblMessage.Text     = message;
             lblMessage.CssClass = isSuccess ? "message success" : "message error";
+        }
+
+        private bool IsOtpBypassEnabled()
+        {
+            string raw = System.Configuration.ConfigurationManager.AppSettings["SkipOtpVerification"];
+            bool enabled;
+            return bool.TryParse(raw, out enabled) && enabled;
         }
 
         private void ClearSignupForm()
