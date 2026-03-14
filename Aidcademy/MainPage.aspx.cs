@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Web;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 
 namespace Aidcademy
 {
@@ -19,16 +15,16 @@ namespace Aidcademy
             }
         }
 
-
-
+        // "Try For Free" button → goes to LearningCourse.aspx
         protected void btnTryFree_Click(object sender, EventArgs e)
         {
             Response.Redirect("LearningCourse.aspx");
         }
 
-        protected void btnAboutUs(object sender, EventArgs e)
+        // "Send Feedback" button → goes to FeedbackForm.aspx
+        protected void btnFeedback_Click1(object sender, EventArgs e)
         {
-            Response.Redirect("About.aspx");
+            Response.Redirect("FeedbackForm.aspx");
         }
 
         private void TrackSiteVisit()
@@ -39,26 +35,18 @@ namespace Aidcademy
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
-
-                // Insert a new visit record for every page load
                 string insertQuery = @"
-            INSERT INTO SiteTraffic (SessionID, VisitDate, IsRegisteredUser)
-            VALUES (@SessionID, @VisitDate, @IsRegisteredUser)";
+                    INSERT INTO SiteTraffic (SessionID, VisitDate, IsRegisteredUser)
+                    VALUES (@SessionID, @VisitDate, @IsRegisteredUser)";
 
                 using (SqlCommand cmd = new SqlCommand(insertQuery, conn))
                 {
                     cmd.Parameters.AddWithValue("@SessionID", sessionID);
                     cmd.Parameters.AddWithValue("@VisitDate", DateTime.Now);
-                    cmd.Parameters.AddWithValue("@IsRegisteredUser", false); // default: visitor
+                    cmd.Parameters.AddWithValue("@IsRegisteredUser", false);
                     cmd.ExecuteNonQuery();
                 }
             }
-        }
-
-        protected void btnFeedback_Click1(object sender, EventArgs e)
-        {
-            Response.Redirect("FeedbackForm.aspx");
-
         }
     }
 }

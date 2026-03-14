@@ -194,7 +194,7 @@ namespace Aidcademy
                 }
             }
 
-            int userId = Session["UserID"] != null ? Convert.ToInt32(Session["UserID"]) : 1;
+            int userId = Convert.ToInt32(Session["UserID"]);
             int quizId = Convert.ToInt32(hfQuizID.Value);
             int newStreak = 1;
             int pointsToAdd = 0;
