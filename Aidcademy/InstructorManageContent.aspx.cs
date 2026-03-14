@@ -147,9 +147,21 @@ namespace Aidcademy
             using (SqlConnection conn = new SqlConnection(connString))
             {
                 conn.Open();
-                new SqlCommand($"DELETE FROM QuizQuestions WHERE QuizID IN (SELECT QuizID FROM Quizzes WHERE LessonID = {lessonId})", conn).ExecuteNonQuery();
-                new SqlCommand($"DELETE FROM Quizzes WHERE LessonID = {lessonId}", conn).ExecuteNonQuery();
-                new SqlCommand($"DELETE FROM Lessons WHERE LessonID = {lessonId}", conn).ExecuteNonQuery();
+                using (SqlCommand cmd = new SqlCommand("DELETE FROM QuizQuestions WHERE QuizID IN (SELECT QuizID FROM Quizzes WHERE LessonID = @LID)", conn))
+                {
+                    cmd.Parameters.AddWithValue("@LID", lessonId);
+                    cmd.ExecuteNonQuery();
+                }
+                using (SqlCommand cmd = new SqlCommand("DELETE FROM Quizzes WHERE LessonID = @LID", conn))
+                {
+                    cmd.Parameters.AddWithValue("@LID", lessonId);
+                    cmd.ExecuteNonQuery();
+                }
+                using (SqlCommand cmd = new SqlCommand("DELETE FROM Lessons WHERE LessonID = @LID", conn))
+                {
+                    cmd.Parameters.AddWithValue("@LID", lessonId);
+                    cmd.ExecuteNonQuery();
+                }
             }
             BindCourses();
             BindDashboardStats();

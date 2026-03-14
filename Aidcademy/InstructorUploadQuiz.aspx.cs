@@ -12,7 +12,7 @@ namespace Aidcademy
 
         private int currentInstructorId
         {
-            get { return Session["UserID"] != null ? Convert.ToInt32(Session["UserID"]) : 1; }
+            get { return Convert.ToInt32(Session["UserID"]); }
         }
 
         protected void Page_Load(object sender, EventArgs e)

@@ -165,7 +165,6 @@
                 alert("Delete Cancelled: The lesson name you entered did not match.");
                 return false;
             }
-            return true;
             return input === lessonName.trim();
         }
     </script>

@@ -17,10 +17,8 @@
     <UseIISExpress>true</UseIISExpress>
     <Use64BitIISExpress />
     <IISExpressSSLPort>44310</IISExpressSSLPort>
-    <IISExpressAnonymousAuthentication>
-    </IISExpressAnonymousAuthentication>
-    <IISExpressWindowsAuthentication>
-    </IISExpressWindowsAuthentication>
+    <IISExpressAnonymousAuthentication>enabled</IISExpressAnonymousAuthentication>
+    <IISExpressWindowsAuthentication>disabled</IISExpressWindowsAuthentication>
     <IISExpressUseClassicPipelineMode />
     <UseGlobalApplicationHostFile />
     <NuGetPackageImportStamp>
@@ -118,6 +116,7 @@
       <DependentUpon>AidcademyDB.mdf</DependentUpon>
     </Content>
     <Content Include="ContentManagement.aspx" />
+    <Content Include="InstructorCourseSelector.ascx" />
     <Content Include="MainPage.aspx" />
     <Content Include="Scripts\bootstrap.bundle.js" />
     <Content Include="Scripts\bootstrap.bundle.min.js" />
@@ -253,6 +252,13 @@
     </Compile>
     <Compile Include="ForgotPassword.aspx.designer.cs">
       <DependentUpon>ForgotPassword.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="InstructorCourseSelector.ascx.cs">
+      <DependentUpon>InstructorCourseSelector.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="InstructorCourseSelector.ascx.designer.cs">
+      <DependentUpon>InstructorCourseSelector.ascx</DependentUpon>
     </Compile>
     <Compile Include="InstructorEditContent.aspx.cs">
       <DependentUpon>InstructorEditContent.aspx</DependentUpon>
