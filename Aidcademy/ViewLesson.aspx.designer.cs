@@ -60,11 +60,6 @@ namespace Aidcademy
         protected global::System.Web.UI.WebControls.Panel pnlNavAdmin;
 
         /// <summary>
-        /// pnlVisitorContinue control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Panel pnlVisitorContinue;
-
-        /// <summary>
         /// rptSidebarCourses control.
         /// </summary>
         /// <remarks>
@@ -72,6 +67,33 @@ namespace Aidcademy
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Repeater rptSidebarCourses;
+
+        /// <summary>
+        /// pnlAdminActions1 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlAdminActions1;
+
+        /// <summary>
+        /// Button1 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Button Button1;
+
+        /// <summary>
+        /// Label1 control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label Label1;
 
         /// <summary>
         /// hlBackBtn control.
@@ -252,5 +274,14 @@ namespace Aidcademy
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.LinkButton btnNextLesson;
+
+        /// <summary>
+        /// pnlVisitorContinue control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlVisitorContinue;
     }
 }

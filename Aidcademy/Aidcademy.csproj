@@ -126,6 +126,7 @@
     <Content Include="Member.Master" />
     <Content Include="AccountModification.aspx" />
     <Content Include="FeedbackForm.aspx" />
+    <Content Include="Logout.aspx" />
     <None Include="Scripts\jquery-3.7.0.intellisense.js" />
     <Content Include="Scripts\jquery-3.7.0.js" />
     <Content Include="Scripts\jquery-3.7.0.min.js" />
@@ -441,6 +442,13 @@
     </Compile>
     <Compile Include="FeedbackForm.aspx.designer.cs">
       <DependentUpon>FeedbackForm.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Logout.aspx.cs">
+      <DependentUpon>Logout.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Logout.aspx.designer.cs">
+      <DependentUpon>Logout.aspx</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>

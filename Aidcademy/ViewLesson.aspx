@@ -198,6 +198,25 @@
             </div>
 
             <div id="page-content-wrapper" class="p-4 p-lg-5">
+
+                                <!-- ══ ADMIN ACTION BAR (visible to admin only) ══ -->
+                <asp:Panel ID="pnlAdminActions1" runat="server" Visible="false">
+                    <div class="admin-action-bar">
+                        <span class="bar-label">
+                            <i class="fa-solid fa-shield-halved me-2 text-danger"></i>Admin Review
+                        </span>
+                        <div class="bar-buttons">
+                            <asp:Button ID="Button1" runat="server"
+                                CssClass="btn-approve"
+                                Text="✔ Approve"
+                                OnClick="btnApprove_Click" />
+                            <button type="button" class="btn-reject" onclick="openRejectModal()">
+                                ✖ Reject
+                            </button>
+                        </div>
+                    </div>
+                    <asp:Label ID="Label1" runat="server" CssClass="d-block mt-3 fw-bold text-center" />
+                </asp:Panel>
                 
                 <div class="d-flex align-items-center mb-4">
                     <button class="btn btn-danger rounded-circle me-3 shadow-sm d-flex align-items-center justify-content-center" id="sidebarToggle" type="button" style="width: 45px; height: 45px;">

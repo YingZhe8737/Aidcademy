@@ -25,7 +25,7 @@
             <li><a href="SystemReport.aspx">System Report</a></li>
             <li><a href="UserManagement.aspx">User Management</a></li>
             <li><a href="ContentManagement.aspx" class="active">Content Management</a></li>
-            <li><a href="Login_signup.aspx">Logout</a></li>
+            <li><a href="Logout.aspx">Logout</a></li>
         </ul>
     </div>
 

@@ -23,7 +23,7 @@
                 <li class="nav-item"><a class="nav-link" href="SystemReport.aspx">System Report</a></li>
                 <li class="nav-item"><a class="nav-link" href="UserManagement.aspx">User Management</a></li>
                 <li class="nav-item"><a class="nav-link" href="ContentManagement.aspx">Content Management</a></li>
-                <li class="nav-item"><a class="nav-link" href="Login_signup.aspx">Logout</a></li>
+                <li class="nav-item"><a class="nav-link" href="Logout.aspx">Logout</a></li>
             </ul>
         </div>
 
