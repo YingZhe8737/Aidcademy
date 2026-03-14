@@ -24,6 +24,10 @@ namespace Aidcademy
             ? txtCustomCategory.Text.Trim()
             : ddlNewCourseCategory.SelectedValue;
 
+        // Expose client IDs so parent pages can pass them to lesson-editor.js
+        public string IsNewCourseClientId => hfIsNewCourse.ClientID;
+        public string CustomCategoryClientId => txtCustomCategory.ClientID;
+
         // Called by InstructorEditContent to pre-select the course after loading lesson data
         public void SetSelectedCourse(string courseId)
         {

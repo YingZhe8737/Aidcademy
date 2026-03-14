@@ -175,6 +175,8 @@
     <script>
         window.onload = function () {
             var contentBodyId = '<%= hfContentBody.ClientID %>';
+            var isNewCourseId = '<%= ctrlCourseSelector.IsNewCourseClientId %>';
+            var customCategoryId = '<%= ctrlCourseSelector.CustomCategoryClientId %>';
 
             var existingHtml = document.getElementById(contentBodyId).value;
 

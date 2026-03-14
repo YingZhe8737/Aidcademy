@@ -69,8 +69,16 @@
         </div>
 
         <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4 mt-5">
-            <h5 class="fw-bold text-danger m-0"><i class="fa-solid fa-folder-tree me-2"></i>Course Curriculum</h5>
-            
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+                <h5 class="fw-bold text-danger m-0"><i class="fa-solid fa-folder-tree me-2"></i>Course Curriculum</h5>
+                <div class="d-flex gap-2" id="lessonFilterTabs">
+                    <button type="button" onclick="filterLessons('All')" class="btn btn-sm btn-danger fw-bold filter-tab active-tab" id="tab-All">All</button>
+                    <button type="button" onclick="filterLessons('Draft')" class="btn btn-sm btn-outline-secondary fw-bold filter-tab" id="tab-Draft">Draft</button>
+                    <button type="button" onclick="filterLessons('Pending Admin')" class="btn btn-sm btn-outline-warning fw-bold filter-tab" id="tab-Pending">Pending</button>
+                    <button type="button" onclick="filterLessons('Published')" class="btn btn-sm btn-outline-success fw-bold filter-tab" id="tab-Published">Published</button>
+                </div>
+            </div>
+
             <div class="dropdown">
                 <button class="btn btn-danger fw-bold dropdown-toggle shadow-sm" type="button" data-bs-toggle="dropdown">
                     <i class="fa-solid fa-plus me-1"></i> Create
@@ -167,5 +175,57 @@
             }
             return input === lessonName.trim();
         }
+
+        function filterLessons(status) {
+            // Update active tab button styles
+            document.querySelectorAll('.filter-tab').forEach(function (btn) {
+                btn.classList.remove('btn-danger', 'btn-secondary', 'btn-warning', 'btn-success', 'active-tab');
+                btn.classList.add(
+                    btn.id === 'tab-Draft' ? 'btn-outline-secondary' :
+                        btn.id === 'tab-Pending' ? 'btn-outline-warning' :
+                            btn.id === 'tab-Published' ? 'btn-outline-success' :
+                                'btn-outline-secondary'
+                );
+            });
+
+            var activeBtn = status === 'All' ? document.getElementById('tab-All') :
+            status === 'Draft' ? document.getElementById('tab-Draft') :
+            status === 'Pending Admin' ? document.getElementById('tab-Pending') :
+            document.getElementById('tab-Published');
+
+            if (activeBtn) {
+                activeBtn.classList.remove('btn-outline-secondary', 'btn-outline-warning', 'btn-outline-success');
+            activeBtn.classList.add(
+            status === 'Draft' ? 'btn-secondary' :
+            status === 'Pending Admin' ? 'btn-warning' :
+            status === 'Published' ? 'btn-success' :
+            'btn-danger'
+            );
+            activeBtn.classList.add('active-tab');
+        }
+
+            // Show/hide lesson cards
+            document.querySelectorAll('.lesson-card').forEach(function (card) {
+            if (status === 'All') {
+                card.closest('.col-md-4').style.display = '';
+            } else {
+                // Read the badge text inside the card to match status
+                var badge = card.querySelector('.card-body .badge:last-child');
+            if (badge && badge.textContent.trim() === status) {
+                card.closest('.col-md-4').style.display = '';
+                } else {
+                card.closest('.col-md-4').style.display = 'none';
+                }
+            }
+        });
+
+            // Hide entire course row if all its lessons are hidden
+            document.querySelectorAll('.category-group').forEach(function (group) {
+            var visibleCards = group.querySelectorAll('.col-md-4[style=""], .col-md-4:not([style])');
+            var hiddenCards = group.querySelectorAll('.col-md-4[style="display: none;"]');
+            var allCards = group.querySelectorAll('.col-md-4');
+            group.style.display = (hiddenCards.length === allCards.length) ? 'none' : '';
+        });
+    }
     </script>
 </asp:Content>

@@ -169,13 +169,12 @@
     
     <script>
         window.onload = function () {
-            // Find the ASP.NET IDs on this specific page
             var contentBodyId = '<%= hfContentBody.ClientID %>';
+            var isNewCourseId = '<%= ctrlCourseSelector.IsNewCourseClientId %>';
+            var customCategoryId = '<%= ctrlCourseSelector.CustomCategoryClientId %>';
 
-            // Read the hidden field. (It will be empty on the Upload page, but full of data on the Edit page!)
             var existingHtml = document.getElementById(contentBodyId).value;
 
-            // Launch the shared logic!
             initLessonSystem(contentBodyId, isNewCourseId, customCategoryId, existingHtml);
 
             // UNPACK SAVED SIMULATION INTO THE MODAL
