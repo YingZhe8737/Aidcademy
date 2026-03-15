@@ -204,7 +204,7 @@
                     OnClick="btnSubmit_Click" />
 
                 <div class="back-to-login">
-                    <a href="Login_signup.aspx">← Back to Login</a>
+                    <a href="Login_signup.aspx">&larr; Back to Login</a>
                 </div>
             </asp:Panel>
 
@@ -244,7 +244,7 @@
                     OnClick="btnReset_Click" />
 
                 <div class="back-to-login">
-                    <a href="Login_signup.aspx">← Back to Login</a>
+                    <a href="Login_signup.aspx">&larr; Back to Login</a>
                 </div>
             </asp:Panel>
         </div>

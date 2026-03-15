@@ -13,11 +13,10 @@ namespace Aidcademy
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            isMember = SessionHelper.IsUserLoggedIn() && SessionHelper.IsMember();
-            userID = isMember ? SessionHelper.GetUserID() : 0;
-
-            pnlMemberNav.Visible = isMember;
-            pnlVisitorNav.Visible = !isMember;
+            string role = (Session["UserRole"] ?? Session["Role"] ?? string.Empty).ToString();
+            isMember = Session["UserID"] != null &&
+                       role.Equals("Member", StringComparison.OrdinalIgnoreCase);
+            userID = isMember ? Convert.ToInt32(Session["UserID"]) : 0;
 
             if (!int.TryParse(Request.QueryString["CourseID"], out courseID) || courseID <= 0)
             {
@@ -30,6 +29,34 @@ namespace Aidcademy
                 LoadCourseTitle();
                 LoadLessons();
             }
+        }
+
+        protected bool IsMemberView
+        {
+            get { return isMember; }
+        }
+
+        protected string GetMemberName()
+        {
+            string name = SessionHelper.GetUsername();
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                return name;
+            }
+
+            name = Session["Name"]?.ToString();
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                return name;
+            }
+
+            return "Member";
+        }
+
+        protected string GetMemberInitial()
+        {
+            string name = GetMemberName().Trim();
+            return name.Length > 0 ? name.Substring(0, 1).ToUpperInvariant() : "M";
         }
 
         private void LoadCourseTitle()
@@ -81,8 +108,17 @@ namespace Aidcademy
                                0 AS IsCompleted,
                                0 AS IsMember,
                                CASE
-                                   WHEN (c.Title LIKE '%CPR%' OR c.Category LIKE '%CPR%' OR c.Description LIKE '%CPR%')
-                                        AND v.rn = 2 THEN 1
+                                   WHEN v.LessonID = (
+                                       SELECT TOP 1 l3.LessonID
+                                       FROM Lessons l3
+                                       WHERE l3.CourseID = v.CourseID
+                                         AND l3.ApprovalStatus = 'Approved'
+                                         AND (
+                                             l3.Title LIKE '%CPR%' OR l3.Description LIKE '%CPR%'
+                                             OR l3.Title LIKE '%AED%' OR l3.Description LIKE '%AED%'
+                                         )
+                                       ORDER BY l3.SequenceOrder, l3.LessonID
+                                   ) THEN 1
                                    ELSE 0
                                END AS IsFreeLesson
                         FROM (

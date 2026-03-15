@@ -452,6 +452,10 @@ namespace Aidcademy.Utilities
             context.Session["UserName"] = fullName;
             context.Session["Email"]    = email;
 
+            // Legacy keys used by some older pages/master files
+            context.Session["Role"] = role;
+            context.Session["Name"] = fullName;
+
             // Create a Forms Auth ticket that carries the role as UserData
             // so User.IsInRole() can be wired up in Global.asax if needed
             FormsAuthenticationTicket ticket = new FormsAuthenticationTicket(
@@ -492,7 +496,7 @@ namespace Aidcademy.Utilities
 
         public static bool IsUserLoggedIn()
         {
-            return HttpContext.Current.Session["UserID"] != null;
+            return GetUserID() > 0;
         }
 
         public static bool IsMember()
@@ -514,6 +518,21 @@ namespace Aidcademy.Utilities
         {
             if (HttpContext.Current.Session["UserID"] != null)
                 return Convert.ToInt32(HttpContext.Current.Session["UserID"]);
+
+            // Fallback: restore from auth ticket when session is missing
+            try
+            {
+                if (HttpContext.Current.Request.IsAuthenticated)
+                {
+                    FormsIdentity id = HttpContext.Current.User?.Identity as FormsIdentity;
+                    string ticketName = id?.Ticket?.Name;
+                    int parsed;
+                    if (int.TryParse(ticketName, out parsed))
+                        return parsed;
+                }
+            }
+            catch { }
+
             return 0;
         }
 
@@ -524,7 +543,29 @@ namespace Aidcademy.Utilities
 
         public static string GetRole()
         {
-            return (HttpContext.Current.Session["UserRole"]?.ToString() ?? "").Trim();
+            string role = (HttpContext.Current.Session["UserRole"]?.ToString() ?? "").Trim();
+            if (!string.IsNullOrEmpty(role))
+                return role;
+
+            // Legacy key fallback
+            role = (HttpContext.Current.Session["Role"]?.ToString() ?? "").Trim();
+            if (!string.IsNullOrEmpty(role))
+                return role;
+
+            // Fallback from auth ticket UserData
+            try
+            {
+                if (HttpContext.Current.Request.IsAuthenticated)
+                {
+                    FormsIdentity id = HttpContext.Current.User?.Identity as FormsIdentity;
+                    role = (id?.Ticket?.UserData ?? "").Trim();
+                    if (!string.IsNullOrEmpty(role))
+                        return role;
+                }
+            }
+            catch { }
+
+            return "";
         }
 
         // Legacy alias - kept so existing callers compile without change

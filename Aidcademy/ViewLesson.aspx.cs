@@ -65,7 +65,7 @@ namespace Aidcademy
             }
         }
 
-        // Returns true only when lesson is the second approved lesson in a CPR course.
+        // Returns true only when the lesson is the designated CPR/AED preview lesson.
         private bool IsFreeLessonForVisitor(int lessonId)
         {
             using (SqlConnection conn = new SqlConnection(connString))
@@ -73,17 +73,17 @@ namespace Aidcademy
                 conn.Open();
                 string sql = @"
                     SELECT CASE
-                        WHEN (c.Title LIKE '%CPR%' OR c.Category LIKE '%CPR%' OR c.Description LIKE '%CPR%')
-                             AND l.LessonID = (
-                                 SELECT q.LessonID
-                                 FROM (
-                                     SELECT l2.LessonID,
-                                            ROW_NUMBER() OVER (ORDER BY l2.SequenceOrder, l2.LessonID) AS rn
-                                     FROM Lessons l2
-                                     WHERE l2.CourseID = l.CourseID
-                                       AND l2.ApprovalStatus = 'Approved'
-                                 ) q
-                                 WHERE q.rn = 2)
+                        WHEN l.LessonID = (
+                            SELECT TOP 1 l2.LessonID
+                            FROM Lessons l2
+                            WHERE l2.CourseID = l.CourseID
+                              AND l2.ApprovalStatus = 'Approved'
+                              AND (
+                                  l2.Title LIKE '%CPR%' OR l2.Description LIKE '%CPR%'
+                                  OR l2.Title LIKE '%AED%' OR l2.Description LIKE '%AED%'
+                              )
+                            ORDER BY l2.SequenceOrder, l2.LessonID
+                        )
                         THEN 1 ELSE 0 END
                     FROM Lessons l
                     INNER JOIN Courses c ON c.CourseID = l.CourseID

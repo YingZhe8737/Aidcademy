@@ -15,58 +15,94 @@ namespace Aidcademy
     {
 
         /// <summary>
-        /// form1 control.
+        /// lblUserInitial control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.HtmlControls.HtmlForm form1;
+        protected global::System.Web.UI.WebControls.Label lblUserInitial;
 
         /// <summary>
-        /// lnkDashboard control.
+        /// lblPersonalBest control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HyperLink lnkDashboard;
+        protected global::System.Web.UI.WebControls.Label lblPersonalBest;
 
         /// <summary>
-        /// lnkCourses control.
+        /// lblMonthlyPoints control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HyperLink lnkCourses;
+        protected global::System.Web.UI.WebControls.Label lblMonthlyPoints;
 
         /// <summary>
-        /// lnkProgress control.
+        /// lblLeaderboardRank control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HyperLink lnkProgress;
+        protected global::System.Web.UI.WebControls.Label lblLeaderboardRank;
 
         /// <summary>
-        /// lnkProfile control.
+        /// lblRankPercentile control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.HyperLink lnkProfile;
+        protected global::System.Web.UI.WebControls.Label lblRankPercentile;
 
         /// <summary>
-        /// btnLogout control.
+        /// lblOverallProgress control.
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
-        protected global::System.Web.UI.WebControls.LinkButton btnLogout;
+        protected global::System.Web.UI.WebControls.Label lblOverallProgress;
+
+        /// <summary>
+        /// lblQuizzesPassed control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblQuizzesPassed;
+
+        /// <summary>
+        /// litStreakDays control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litStreakDays;
+
+        /// <summary>
+        /// pnlPodium control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlPodium;
+
+        /// <summary>
+        /// litPodium control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Literal litPodium;
 
         /// <summary>
         /// lblMemberName control.
@@ -94,6 +130,15 @@ namespace Aidcademy
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblTotalPoints;
+
+        /// <summary>
+        /// lblBadge control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Label lblBadge;
 
         /// <summary>
         /// lblEnrolledCourses control.
@@ -141,34 +186,6 @@ namespace Aidcademy
         protected global::System.Web.UI.WebControls.Repeater rptEnrolledCourses;
 
         /// <summary>
-        /// gvLeaderboard control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.GridView gvLeaderboard;
-
-        /// <summary>
-        /// rptLeaderboard control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Repeater rptLeaderboard;
-
-        /// <summary>
-        /// pnlEmptyLeaderboard control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Panel pnlEmptyLeaderboard;
-
-        /// <summary>
-        /// lblBadge control.
-        /// </summary>
-        /// <remarks>
-        /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
-        /// </remarks>
-        protected global::System.Web.UI.WebControls.Label lblBadge;
-
-        /// <summary>
         /// pnlCompletedSection control.
         /// </summary>
         /// <remarks>
@@ -185,5 +202,23 @@ namespace Aidcademy
         /// To modify move field declaration from designer file to code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.Repeater rptCompletedCourses;
+
+        /// <summary>
+        /// rptLeaderboard control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Repeater rptLeaderboard;
+
+        /// <summary>
+        /// pnlEmptyLeaderboard control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.Panel pnlEmptyLeaderboard;
     }
 }

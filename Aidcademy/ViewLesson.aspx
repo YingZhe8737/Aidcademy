@@ -187,7 +187,7 @@
                                         <a href='ViewLesson.aspx?LessonID=<%# Eval("LessonID") %>' 
                                            class='sidebar-link <%# Eval("LessonID").ToString() == Request.QueryString["LessonID"] ? "active-lesson" : "" %>'>
                                             <i class="fa-regular fa-circle-play me-2 text-muted"></i>
-                                            Step <%# Eval("SequenceOrder") %>: <%# Eval("LessonTitle") %>
+                                            <%# Eval("LessonTitle") %>
                                         </a>
                                     </ItemTemplate>
                                 </asp:Repeater>
