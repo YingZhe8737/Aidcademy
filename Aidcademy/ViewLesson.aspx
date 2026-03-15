@@ -187,7 +187,7 @@
                                         <a href='ViewLesson.aspx?LessonID=<%# Eval("LessonID") %>' 
                                            class='sidebar-link <%# Eval("LessonID").ToString() == Request.QueryString["LessonID"] ? "active-lesson" : "" %>'>
                                             <i class="fa-regular fa-circle-play me-2 text-muted"></i>
-                                            Step <%# Eval("SequenceOrder") %>: <%# Eval("LessonTitle") %>
+                                            <%# Eval("LessonTitle") %>
                                         </a>
                                     </ItemTemplate>
                                 </asp:Repeater>
@@ -200,13 +200,13 @@
             <div id="page-content-wrapper" class="p-4 p-lg-5">
 
                                 <!-- ══ ADMIN ACTION BAR (visible to admin only) ══ -->
-                <asp:Panel ID="pnlAdminActions1" runat="server" Visible="false">
+                <asp:Panel ID="pnlAdminActions" runat="server" Visible="false">
                     <div class="admin-action-bar">
                         <span class="bar-label">
                             <i class="fa-solid fa-shield-halved me-2 text-danger"></i>Admin Review
                         </span>
                         <div class="bar-buttons">
-                            <asp:Button ID="Button1" runat="server"
+                            <asp:Button ID="btnApprove" runat="server"
                                 CssClass="btn-approve"
                                 Text="✔ Approve"
                                 OnClick="btnApprove_Click" />
@@ -215,7 +215,7 @@
                             </button>
                         </div>
                     </div>
-                    <asp:Label ID="Label1" runat="server" CssClass="d-block mt-3 fw-bold text-center" />
+                    <asp:Label ID="lblActionResult" runat="server" CssClass="d-block mt-3 fw-bold text-center" />
                 </asp:Panel>
                 
                 <div class="d-flex align-items-center mb-4">
@@ -264,23 +264,7 @@
                             <asp:Label ID="lblQuizScore" runat="server" CssClass="d-block mt-3"></asp:Label>
 
                             <!-- ══ ADMIN ACTION BAR (visible to admin only) ══ -->
-                            <asp:Panel ID="pnlAdminActions" runat="server" Visible="false">
-                                <div class="admin-action-bar">
-                                    <span class="bar-label">
-                                        <i class="fa-solid fa-shield-halved me-2 text-danger"></i>Admin Review
-                                    </span>
-                                    <div class="bar-buttons">
-                                        <asp:Button ID="btnApprove" runat="server"
-                                            CssClass="btn-approve"
-                                            Text="✔ Approve"
-                                            OnClick="btnApprove_Click" />
-                                        <button type="button" class="btn-reject" onclick="openRejectModal()">
-                                            ✖ Reject
-                                        </button>
-                                    </div>
-                                </div>
-                                <asp:Label ID="lblActionResult" runat="server" CssClass="d-block mt-3 fw-bold text-center" />
-                            </asp:Panel>
+
 
 
                             <!-- ══ REJECT MODAL ══ -->

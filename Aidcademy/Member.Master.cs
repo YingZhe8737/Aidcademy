@@ -22,10 +22,34 @@ namespace Aidcademy
             Response.Redirect("~/Login_signup.aspx");
         }
 
+        protected string GetMemberName()
+        {
+            string name = SessionHelper.GetUsername();
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                return name;
+            }
+
+            name = Session["Name"]?.ToString();
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                return name;
+            }
+
+            return "Member";
+        }
+
+        protected string GetMemberInitial()
+        {
+            string name = GetMemberName().Trim();
+            return name.Length > 0 ? name.Substring(0, 1).ToUpperInvariant() : "M";
+        }
+
         // Helper used in Master markup to highlight the active nav link
         protected bool IsActivePage(string pageName)
         {
-            return Request.Url.AbsolutePath.IndexOf(pageName, StringComparison.OrdinalIgnoreCase) >= 0;
+            string path = Request.Url.AbsolutePath ?? string.Empty;
+            return path.IndexOf(pageName, StringComparison.OrdinalIgnoreCase) >= 0;
         }
     }
 }

@@ -78,9 +78,8 @@ namespace Aidcademy
                                     {
                                         isPasswordValid = true;
 
-                                        // hash to BCrypt 
-                                        var pm = new PasswordManager();
-                                        string newBcryptHash = pm.HashPassword(password);
+                                        // Upgrade hash to BCrypt
+                                        string newBcryptHash = BCrypt.Net.BCrypt.HashPassword(password);
                                         
                                         using (SqlConnection updateConn = new SqlConnection(connectionString))
                                         {
@@ -148,7 +147,8 @@ namespace Aidcademy
             }
             catch (Exception ex)
             {
-                ShowMessage("Login error: " + ex.Message, false);
+                System.Diagnostics.Debug.WriteLine("Login error: " + ex.Message);
+                ShowMessage("Login failed. Please try again later.", false);
             }
         }
 
@@ -179,9 +179,10 @@ namespace Aidcademy
                 return;
             }
 
-            if (!ValidatePassword(password))
+            string pwdError;
+            if (!SecurityHelper.IsPasswordValid(password, out pwdError))
             {
-                ShowMessage("Password must be at least 8 characters with uppercase, lowercase, and numbers.", false);
+                ShowMessage(pwdError, false);
                 return;
             }
 
@@ -223,8 +224,7 @@ namespace Aidcademy
 
                     using (SqlCommand cmd = new SqlCommand(insertQuery, conn))
                     {
-                        var passwordManager = new PasswordManager();
-                        string hashedPassword = passwordManager.HashPassword(password);
+                        string hashedPassword = BCrypt.Net.BCrypt.HashPassword(password);
 
                         cmd.Parameters.AddWithValue("@Username",  username);
                         cmd.Parameters.AddWithValue("@Email",     email);
@@ -277,7 +277,8 @@ namespace Aidcademy
             }
             catch (Exception ex)
             {
-                ShowMessage("Registration error: " + ex.Message, false);
+                System.Diagnostics.Debug.WriteLine("Registration error: " + ex.Message);
+                ShowMessage("Registration failed. Please try again later.", false);
             }
         }
 
@@ -309,28 +310,12 @@ namespace Aidcademy
                 }
             }
 
-            if (role == "Admin")
-                Response.Redirect("~/AdminDashboard.aspx");
-            else if (role == "Instructor")
-                Response.Redirect("~/InstructorManageContent.aspx");
-            else
-                Response.Redirect("~/MemberDashboard.aspx");
+            SessionHelper.RedirectByRole(role);
         }
 
 
 
-        private bool ValidatePassword(string password)
-        {
-            if (password.Length < 8) return false;
-            bool hasUpper = false, hasLower = false, hasDigit = false;
-            foreach (char c in password)
-            {
-                if (char.IsUpper(c)) hasUpper = true;
-                if (char.IsLower(c)) hasLower = true;
-                if (char.IsDigit(c)) hasDigit = true;
-            }
-            return hasUpper && hasLower && hasDigit;
-        }
+        // ValidatePassword removed — uses SecurityHelper.IsPasswordValid() instead
 
         private void ShowMessage(string message, bool isSuccess)
         {
@@ -346,23 +331,8 @@ namespace Aidcademy
             return bool.TryParse(raw, out enabled) && enabled;
         }
 
-        private void ClearSignupForm()
-        {
-            txtSignupFullName.Text  = "";
-            txtSignupUsername.Text  = "";
-            txtSignupEmail.Text     = "";
-            txtSignupPhone.Text     = "";
-            txtSignupPassword.Text  = "";
-            txtConfirmPassword.Text = "";
-        }
+        // ClearSignupForm() removed — was unused (redirect happens after signup)
     }
 
-    public class PasswordManager
-    {
-        public string HashPassword(string plainTextPassword)
-        {
-            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(plainTextPassword);
-            return hashedPassword;
-        }
-    }
+    // PasswordManager class removed — use BCrypt.Net.BCrypt.HashPassword() directly
 }

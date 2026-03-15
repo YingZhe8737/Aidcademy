@@ -71,7 +71,9 @@ namespace Aidcademy
 
                         if (!EmailHelper.SendOtpEmail(email, otp, "ForgotPassword", out errMsg))
                         {
-                            ShowMessage($"OTP generated (dev mode - code: {otp}). Configure SMTP to receive by email.", true);
+                            // Log to server only — never show OTP code on screen
+                            System.Diagnostics.Debug.WriteLine($"[DEV] OTP for UserID {userID}: {otp}");
+                            ShowMessage("OTP generated. Check your email (or server log in dev mode).", true);
                         }
 
                         Response.Redirect("~/VerifyOtp.aspx?purpose=ForgotPassword");
@@ -80,7 +82,8 @@ namespace Aidcademy
             }
             catch (Exception ex)
             {
-                ShowMessage("An error occurred. Please try again. (" + ex.Message + ")", false);
+                System.Diagnostics.Debug.WriteLine("ForgotPassword error: " + ex.Message);
+                ShowMessage("An error occurred. Please try again later.", false);
             }
         }
 
@@ -134,7 +137,8 @@ namespace Aidcademy
             }
             catch (Exception ex)
             {
-                ShowMessage("An error occurred. Please try again. (" + ex.Message + ")", false);
+                System.Diagnostics.Debug.WriteLine("ForgotPassword error: " + ex.Message);
+                ShowMessage("An error occurred. Please try again later.", false);
             }
         }
 

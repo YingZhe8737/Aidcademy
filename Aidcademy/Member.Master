@@ -9,24 +9,65 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
     <link rel="stylesheet" href="~/Styles/aidcademy-theme.css" />
+    <link rel="stylesheet" href="~/Styles/Member.css" />
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #FFFBF1; min-height: 100vh; }
-        .member-nav { background: linear-gradient(to right, #dc2626, #b91c1c); box-shadow: 0 2px 10px rgba(0,0,0,0.12); }
-        .member-nav .navbar-brand { font-size: 22px; font-weight: 700; color: white !important; display: flex; align-items: center; gap: 10px; }
-        .member-nav .nav-link { color: rgba(255,255,255,0.88) !important; padding: 8px 14px; border-radius: 6px; font-weight: 500; transition: background 0.2s; }
-        .member-nav .nav-link:hover, .member-nav .nav-link.active-nav { background: rgba(255,255,255,0.18); color: #fff !important; }
-        .member-nav .btn-logout { color: white; background: rgba(255,255,255,0.15); border: 1.5px solid rgba(255,255,255,0.4); padding: 6px 18px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; transition: all 0.2s; cursor: pointer; }
-        .member-nav .btn-logout:hover { background: rgba(255,255,255,0.3); }
+        body.member-page { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #ffffff !important; min-height: 100vh; margin: 0; }
+        .global-topbar { background: linear-gradient(90deg, #d81f2a 0%, #b6121f 100%); box-shadow: 0 2px 8px rgba(0,0,0,0.12); position: fixed; top: 0; left: 0; right: 0; z-index: 1100; min-height: 74px; }
+        .global-topbar .navbar-brand { color: #fff !important; font-size: 1.55rem; font-weight: 800; letter-spacing: 0.5px; display: flex; align-items: center; gap: 10px; }
+        .global-topbar .navbar-brand img { height: 34px; width: 34px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.3); }
+        .global-topbar .nav-link { color: rgba(255,255,255,0.9) !important; font-weight: 600; padding: 8px 14px !important; border-radius: 8px; }
+        .global-topbar .nav-link:hover,
+        .global-topbar .nav-link.active-global { background: rgba(255,255,255,0.18); color: #fff !important; }
+        .global-topbar .btn-logout { color: #fff; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.45); padding: 7px 16px; border-radius: 999px; font-weight: 700; font-size: 0.92rem; }
+        .global-topbar .btn-logout:hover { background: rgba(255,255,255,0.2); color: #fff; }
+
+        .member-layout { min-height: 100vh; padding-top: 74px; }
+        .member-sidebar { width: 270px; background: linear-gradient(180deg, #020d2b 0%, #000718 100%); color: #d1d5db; padding: 24px 18px; position: fixed; top: 74px; left: 0; bottom: 0; z-index: 1040; overflow-y: auto; transition: width 0.25s ease, padding 0.25s ease; }
+        .member-sidebar .member-profile { display: flex; align-items: center; gap: 12px; padding: 10px 8px 18px; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 18px; }
+        .member-sidebar .profile-avatar { width: 42px; height: 42px; border-radius: 50%; background: #ef233c; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; }
+        .member-sidebar .profile-info h6 { margin: 0; color: #fff; font-size: 0.98rem; }
+        .member-sidebar .profile-info p { margin: 0; font-size: 0.82rem; color: #9ca3af; }
+        .member-side-nav { display: flex; flex-direction: column; gap: 8px; }
+        .member-side-nav a { text-decoration: none; color: #cbd5e1; padding: 11px 12px; border-radius: 12px; display: flex; align-items: center; gap: 10px; font-weight: 600; transition: 0.2s ease; }
+        .member-side-nav a:hover { background: rgba(255,255,255,0.08); color: #fff; }
+        .member-side-nav a.active-side { background: #ef233c; color: #fff; box-shadow: 0 4px 14px rgba(239,35,60,0.35); }
+        .member-shell-toggle { position: absolute; top: 26px; right: -18px; width: 36px; height: 36px; border: 0; border-radius: 50%; background: #fff; color: #111827; box-shadow: 0 10px 25px rgba(15, 23, 42, 0.18); display: flex; align-items: center; justify-content: center; transition: transform 0.2s ease; }
+        .member-shell-toggle:hover { transform: scale(1.04); }
+        .member-nav-label { display: inline; }
+
+        .member-main-content { min-width: 0; margin-left: 270px; width: calc(100% - 270px); transition: margin-left 0.25s ease, width 0.25s ease; }
+
+        body.member-page.sidebar-collapsed .member-sidebar { width: 96px; padding-left: 14px; padding-right: 14px; }
+        body.member-page.sidebar-collapsed .member-main-content { margin-left: 96px; width: calc(100% - 96px); }
+        body.member-page.sidebar-collapsed .member-sidebar .profile-info,
+        body.member-page.sidebar-collapsed .member-sidebar .member-nav-label { display: none; }
+        body.member-page.sidebar-collapsed .member-sidebar .member-profile { justify-content: center; padding-left: 0; padding-right: 0; }
+        body.member-page.sidebar-collapsed .member-side-nav a { justify-content: center; }
+        body.member-page.sidebar-collapsed .member-shell-toggle i { transform: rotate(180deg); }
+
+        @media (max-width: 991px) {
+            .global-topbar { position: sticky; min-height: auto; }
+            .member-layout { padding-top: 0; }
+            .member-sidebar { width: 100%; height: auto; position: relative; top: 0; bottom: auto; border-bottom: 1px solid rgba(255,255,255,0.08); }
+            .member-main-content { margin-left: 0; width: 100%; }
+            body.member-page.sidebar-collapsed .member-sidebar { width: 100%; padding-left: 18px; padding-right: 18px; }
+            body.member-page.sidebar-collapsed .member-main-content { margin-left: 0; width: 100%; }
+            body.member-page.sidebar-collapsed .member-sidebar .profile-info,
+            body.member-page.sidebar-collapsed .member-sidebar .member-nav-label { display: inline; }
+            body.member-page.sidebar-collapsed .member-sidebar .member-profile { justify-content: flex-start; }
+            body.member-page.sidebar-collapsed .member-side-nav a { justify-content: flex-start; }
+            .member-shell-toggle { display: none; }
+        }
     </style>
     <asp:ContentPlaceHolder ID="HeadContent" runat="server"></asp:ContentPlaceHolder>
 </head>
-<body>
+<body class="member-page">
     <form id="form1" runat="server">
 
-        <nav class="navbar navbar-expand-lg member-nav py-2">
+        <nav class="navbar navbar-expand-lg global-topbar py-2">
             <div class="container-fluid px-4">
                 <a class="navbar-brand" href="MainPage.aspx">
-                    <img src="Image/logo.jpeg" alt="Aidcademy" style="height:36px; border-radius:5px;" />
+                    <img src="Image/logo.jpeg" alt="Aidcademy" />
                     AIDCADEMY
                 </a>
                 <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#memberNavbar">
@@ -35,40 +76,20 @@
                 <div class="collapse navbar-collapse" id="memberNavbar">
                     <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-1">
                         <li class="nav-item">
-                            <a class='nav-link <%# IsActivePage("MemberDashboard") ? "active-nav fw-bold" : "" %>'
-                               href="MemberDashboard.aspx">
-                                <i class="fas fa-chart-line me-1"></i> Dashboard
+                            <a class='nav-link <%= IsActivePage("MemberDashboard.aspx") ? "active-global" : "" %>' href="MemberDashboard.aspx">
+                                Dashboard
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class='nav-link <%# IsActivePage("LearningCourse") ? "active-nav fw-bold" : "" %>'
-                               href="LearningCourse.aspx">
-                                <i class="fas fa-book me-1"></i> Courses
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class='nav-link <%# IsActivePage("LearningProgress") ? "active-nav fw-bold" : "" %>'
-                               href="LearningProgress.aspx">
-                                <i class="fas fa-chart-pie me-1"></i> My Progress
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class='nav-link <%# IsActivePage("SubmitQuestion") ? "active-nav fw-bold" : "" %>'
-                               href="SubmitQuestion.aspx">
-                                <i class="fas fa-comments me-1"></i> Ask Question
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class='nav-link <%# IsActivePage("MemberProfile") ? "active-nav fw-bold" : "" %>'
-                               href="MemberProfile.aspx">
-                                <i class="fas fa-user me-1"></i> Profile
+                            <a class='nav-link <%= IsActivePage("About.aspx") ? "active-global" : "" %>' href="About.aspx">
+                                About
                             </a>
                         </li>
                         <li class="nav-item ms-lg-2">
                             <asp:LinkButton ID="btnLogout" runat="server" OnClick="btnLogout_Click"
                                 CssClass="btn-logout"
                                 CausesValidation="false">
-                                <i class="fas fa-sign-out-alt me-1"></i> Logout
+                                Logout
                             </asp:LinkButton>
                         </li>
                     </ul>
@@ -76,10 +97,76 @@
             </div>
         </nav>
 
-        <asp:ContentPlaceHolder ID="MainContent" runat="server"></asp:ContentPlaceHolder>
+        <div class="member-layout">
+            <aside class="member-sidebar">
+                <button type="button" class="member-shell-toggle" onclick="toggleMemberSidebar()" aria-label="Toggle sidebar">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+
+                <div class="member-profile">
+                    <div class="profile-avatar">
+                        <%= GetMemberInitial() %>
+                    </div>
+                    <div class="profile-info">
+                        <h6><%= GetMemberName() %></h6>
+                        <p>Member</p>
+                    </div>
+                </div>
+
+                <nav class="member-side-nav">
+                    <a class='<%= IsActivePage("MemberDashboard.aspx") ? "active-side" : "" %>' href="MemberDashboard.aspx">
+                        <i class="fas fa-chart-line"></i><span class="member-nav-label">Dashboard</span>
+                    </a>
+                    <a class='<%= IsActivePage("LearningCourse.aspx") ? "active-side" : "" %>' href="LearningCourse.aspx">
+                        <i class="fas fa-book"></i><span class="member-nav-label">My Courses</span>
+                    </a>
+                    <a class='<%= IsActivePage("LearningProgress.aspx") ? "active-side" : "" %>' href="LearningProgress.aspx">
+                        <i class="fas fa-chart-pie"></i><span class="member-nav-label">Progress</span>
+                    </a>
+                    <a class='<%= IsActivePage("SubmitQuestion.aspx") ? "active-side" : "" %>' href="SubmitQuestion.aspx">
+                        <i class="fas fa-comments"></i><span class="member-nav-label">Q&amp;A</span>
+                    </a>
+                    <a class='<%= IsActivePage("MemberProfile.aspx") ? "active-side" : "" %>' href="MemberProfile.aspx">
+                        <i class="fas fa-user"></i><span class="member-nav-label">Profile</span>
+                    </a>
+                </nav>
+            </aside>
+
+            <main class="member-main-content">
+                <asp:ContentPlaceHolder ID="MainContent" runat="server"></asp:ContentPlaceHolder>
+            </main>
+        </div>
 
     </form>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (function () {
+            var storageKey = 'aidcademy-member-sidebar-collapsed';
+
+            window.toggleMemberSidebar = function () {
+                if (window.innerWidth <= 991) {
+                    return;
+                }
+
+                document.body.classList.toggle('sidebar-collapsed');
+                try {
+                    localStorage.setItem(storageKey, document.body.classList.contains('sidebar-collapsed') ? '1' : '0');
+                } catch (e) { }
+            };
+
+            try {
+                if (window.innerWidth > 991 && localStorage.getItem(storageKey) === '1') {
+                    document.body.classList.add('sidebar-collapsed');
+                }
+            } catch (e) { }
+
+            window.addEventListener('resize', function () {
+                if (window.innerWidth <= 991) {
+                    document.body.classList.remove('sidebar-collapsed');
+                }
+            });
+        })();
+    </script>
     <asp:ContentPlaceHolder ID="ScriptContent" runat="server"></asp:ContentPlaceHolder>
 </body>
 </html>

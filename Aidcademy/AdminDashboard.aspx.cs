@@ -63,7 +63,7 @@ namespace Aidcademy
 
                 string total = ScalarQuery(conn, "SELECT COUNT(*) FROM Lessons");
                 string pending = ScalarQuery(conn, "SELECT COUNT(*) FROM Lessons WHERE ApprovalStatus = 'Pending Admin'");
-                string published = ScalarQuery(conn, "SELECT COUNT(*) FROM Lessons WHERE ApprovalStatus = 'Published'");
+                string published = ScalarQuery(conn, "SELECT COUNT(*) FROM Lessons WHERE ApprovalStatus = 'Approved'");
                 string rejected = ScalarQuery(conn, "SELECT COUNT(*) FROM Lessons WHERE ApprovalStatus = 'Rejected'");
 
                 lblContentTotal.Text = total;

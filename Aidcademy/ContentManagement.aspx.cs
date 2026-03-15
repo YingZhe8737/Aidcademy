@@ -89,7 +89,7 @@ namespace Aidcademy
 
                 // Lessons already approved and visible to members
                 lblPublished.Text = ScalarQuery(conn,
-                    "SELECT COUNT(*) FROM Lessons WHERE ApprovalStatus = 'Published'");
+                    "SELECT COUNT(*) FROM Lessons WHERE ApprovalStatus = 'Approved'");
 
                 // Lessons sent back to the instructor
                 lblRejected.Text = ScalarQuery(conn,

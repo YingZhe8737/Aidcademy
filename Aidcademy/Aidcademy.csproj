@@ -16,9 +16,11 @@
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <UseIISExpress>true</UseIISExpress>
     <Use64BitIISExpress />
-    <IISExpressSSLPort>44310</IISExpressSSLPort>
-    <IISExpressAnonymousAuthentication>enabled</IISExpressAnonymousAuthentication>
-    <IISExpressWindowsAuthentication>disabled</IISExpressWindowsAuthentication>
+    <IISExpressSSLPort>44327</IISExpressSSLPort>
+    <IISExpressAnonymousAuthentication>
+    </IISExpressAnonymousAuthentication>
+    <IISExpressWindowsAuthentication>
+    </IISExpressWindowsAuthentication>
     <IISExpressUseClassicPipelineMode />
     <UseGlobalApplicationHostFile />
     <NuGetPackageImportStamp>
@@ -172,6 +174,7 @@
     <Content Include="Styles\CustomAdmin.css" />
     <Content Include="Styles\Instructor.css" />
     <Content Include="Styles\MainPage.css" />
+    <Content Include="Styles\Member.css" />
     <Content Include="SystemReport.aspx" />
     <Content Include="Uploads\ProfilePhotos\Instructor_1_639080064044065843.png" />
     <Content Include="Uploads\Thumbnails\048212d1-bc83-4b4e-8b57-2e6f952fd947.jpg" />

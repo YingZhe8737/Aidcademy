@@ -53,7 +53,8 @@ namespace Aidcademy
             }
             catch (Exception ex)
             {
-                ShowMessage("Verification error: " + ex.Message, false);
+                System.Diagnostics.Debug.WriteLine("Verification error: " + ex.Message);
+                ShowMessage("Verification failed. Please try again.", false);
             }
         }
 
@@ -99,7 +100,8 @@ namespace Aidcademy
             }
             catch (Exception ex)
             {
-                ShowMessage("Could not resend OTP: " + ex.Message, false);
+                System.Diagnostics.Debug.WriteLine("Resend OTP error: " + ex.Message);
+                ShowMessage("Could not resend OTP. Please try again later.", false);
             }
         }
 
@@ -125,15 +127,7 @@ namespace Aidcademy
             Session.Remove("PendingEmail");
 
             SessionHelper.SetLoginSession(userID, role, fullName, email);
-
-
-            // Redirect by role
-            if (role == "Admin")
-                Response.Redirect("~/AdminDashboard.aspx");
-            else if (role == "Instructor")
-                Response.Redirect("~/InstructorManageContent.aspx");
-            else
-                Response.Redirect("~/MemberDashboard.aspx");
+            SessionHelper.RedirectByRole(role);
         }
 
         private void HandleForgotPasswordVerification(string code)

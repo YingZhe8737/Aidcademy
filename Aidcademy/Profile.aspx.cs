@@ -88,7 +88,8 @@ namespace Aidcademy
             }
             catch (Exception ex)
             {
-                ShowMessage("Could not load your profile. (" + ex.Message + ")", false);
+                System.Diagnostics.Debug.WriteLine("LoadProfile error: " + ex.Message);
+                ShowMessage("Could not load your profile. Please try again later.", false);
             }
         }
 
@@ -138,25 +139,13 @@ namespace Aidcademy
                         cmd.ExecuteNonQuery();
                     }
 
-                    // Update profile details in UserProfiles
-                    string updateProfile;
-                    if (photoFileName != null)
-                    {
-                        updateProfile = @"UPDATE UserProfiles SET
-                                            FullName     = @FullName,
-                                            PhoneNumber  = @PhoneNumber,
-                                            Bio          = @Bio,
-                                            ProfilePhoto = @ProfilePhoto
-                                          WHERE UserID = @UserID";
-                    }
-                    else
-                    {
-                        updateProfile = @"UPDATE UserProfiles SET
-                                            FullName    = @FullName,
-                                            PhoneNumber = @PhoneNumber,
-                                            Bio         = @Bio
-                                          WHERE UserID = @UserID";
-                    }
+                    // Update profile — single query handles both with/without photo
+                    string updateProfile = @"UPDATE UserProfiles SET
+                                                FullName     = @FullName,
+                                                PhoneNumber  = @PhoneNumber,
+                                                Bio          = @Bio" +
+                        (photoFileName != null ? ", ProfilePhoto = @ProfilePhoto" : "") +
+                        " WHERE UserID = @UserID";
 
                     using (SqlCommand cmd = new SqlCommand(updateProfile, conn))
                     {
@@ -199,24 +188,12 @@ namespace Aidcademy
                         return;
                     }
 
-                    string checkQuery  = "SELECT PasswordHash FROM Users WHERE UserID = @UserID";
-                    SqlParameter[] checkParams = { new SqlParameter("@UserID", userID) };
-                    string storedHash = DatabaseHelper.ExecuteScalar(checkQuery, checkParams)?.ToString();
+                    // Verify current password using shared helper (BCrypt + SHA fallback)
+                    string storedHash = DatabaseHelper.ExecuteScalar(
+                        "SELECT PasswordHash FROM Users WHERE UserID = @UserID",
+                        new[] { new SqlParameter("@UserID", userID) })?.ToString();
 
-                    bool isPasswordCorrect = false;
-                    if (!string.IsNullOrEmpty(storedHash))
-                    {
-                        try
-                        {
-                            isPasswordCorrect = BCrypt.Net.BCrypt.Verify(current, storedHash);
-                        }
-                        catch (BCrypt.Net.SaltParseException)
-                        {
-                            isPasswordCorrect = (storedHash == SecurityHelper.HashPassword(current));
-                        }
-                    }
-
-                    if (!isPasswordCorrect)
+                    if (!SecurityHelper.VerifyStoredPassword(current, storedHash))
                     {
                         ShowMessage("Profile saved, but current password is incorrect.", false);
                         return;
@@ -242,7 +219,8 @@ namespace Aidcademy
             }
             catch (Exception ex)
             {
-                ShowMessage("Could not update profile. (" + ex.Message + ")", false);
+                System.Diagnostics.Debug.WriteLine("UpdateProfile error: " + ex.Message);
+                ShowMessage("Could not update profile. Please try again later.", false);
             }
         }
 

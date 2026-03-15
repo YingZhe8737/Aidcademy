@@ -2,6 +2,7 @@ using System;
 using System.Data;
 using System.Data.SqlClient;
 using System.Configuration;
+using System.Text;
 using System.Web.UI;
 using Aidcademy.Utilities;
 
@@ -29,10 +30,9 @@ namespace Aidcademy
         {
             int userID = Convert.ToInt32(Session["UserID"]);
 
-            // Display name - UserName is set by SessionHelper.SetLoginSession
-            lblMemberName.Text = SessionHelper.GetUsername().Length > 0
-                ? SessionHelper.GetUsername()
-                : Session["Name"]?.ToString() ?? "Member";
+            string name = SessionHelper.GetDisplayName();
+            lblMemberName.Text = name;
+            lblUserInitial.Text = SessionHelper.GetInitial();
 
             try
             {
@@ -40,12 +40,18 @@ namespace Aidcademy
                 {
                     conn.Open();
 
+                    // Stats: streak, points
+                    // Use SUM(QuizResults.Score) as the single source of truth for points
+                    // so it always matches the leaderboard table display
                     string queryStats = @"
                         SELECT
                             ISNULL(lb.DailyStreak, 0) AS DailyStreak,
-                            ISNULL(lb.TotalPoints, 0) AS TotalPoints
+                            ISNULL((SELECT SUM(Score) FROM QuizResults WHERE UserID = @UserID), 0) AS TotalPoints
                         FROM Leaderboard lb
                         WHERE lb.UserID = @UserID";
+
+                    int dailyStreak = 0;
+                    int totalPoints = 0;
 
                     using (SqlCommand cmd = new SqlCommand(queryStats, conn))
                     {
@@ -54,42 +60,145 @@ namespace Aidcademy
                         {
                             if (reader.Read())
                             {
-                                int totalPts = Convert.ToInt32(reader["TotalPoints"]);
-                                lblDailyStreak.Text = reader["DailyStreak"].ToString();
-                                lblTotalPoints.Text = totalPts.ToString();
-
-                                if (totalPts >= 1000)
-                                    lblBadge.Text = "<span class='badge bg-warning text-dark shadow-sm ms-2'>&#129351; Gold</span>";
-                                else if (totalPts >= 500)
-                                    lblBadge.Text = "<span class='badge bg-secondary shadow-sm ms-2'>&#129352; Silver</span>";
-                                else if (totalPts >= 100)
-                                    lblBadge.Text = "<span class='badge ms-2 shadow-sm' style='background-color:#cd7f32;'>&#129353; Bronze</span>";
+                                dailyStreak = Convert.ToInt32(reader["DailyStreak"]);
+                                totalPoints = Convert.ToInt32(reader["TotalPoints"]);
                             }
                             else
                             {
-                                lblDailyStreak.Text = "0";
-                                lblTotalPoints.Text = "0";
+                                // No Leaderboard row yet — still calculate points from QuizResults
+                                reader.Close();
+                                using (SqlCommand cmd2 = new SqlCommand("SELECT ISNULL(SUM(Score), 0) FROM QuizResults WHERE UserID = @UserID", conn))
+                                {
+                                    cmd2.Parameters.AddWithValue("@UserID", userID);
+                                    totalPoints = Convert.ToInt32(cmd2.ExecuteScalar());
+                                }
                             }
                         }
                     }
 
-                    string queryEnrolled = "SELECT COUNT(*) FROM Enrollments WHERE UserID = @UserID";
-                    using (SqlCommand cmd = new SqlCommand(queryEnrolled, conn))
+                    lblDailyStreak.Text = dailyStreak.ToString();
+                    lblTotalPoints.Text = totalPoints.ToString("N0");
+
+                    // Personal best streak — query the highest streak ever recorded
+                    // (For now, use current streak as the best since we don't track history)
+                    lblPersonalBest.Text = dailyStreak.ToString();
+
+                    // Monthly points
+                    string queryMonthly = @"
+                        SELECT ISNULL(SUM(qr.Score), 0)
+                        FROM QuizResults qr
+                        WHERE qr.UserID = @UserID
+                          AND qr.DateTaken >= DATEADD(day, -30, GETDATE())";
+                    using (SqlCommand cmd = new SqlCommand(queryMonthly, conn))
                     {
                         cmd.Parameters.AddWithValue("@UserID", userID);
-                        lblEnrolledCourses.Text = cmd.ExecuteScalar().ToString();
+                        lblMonthlyPoints.Text = Convert.ToInt32(cmd.ExecuteScalar()).ToString("N0");
                     }
 
-                    string queryCompleted = "SELECT COUNT(*) FROM Enrollments WHERE UserID = @UserID AND IsCompleted = 1";
-                    using (SqlCommand cmd = new SqlCommand(queryCompleted, conn))
+                    // Enrolled & completed counts — combined into one query
+                    int enrolled = 0, completed = 0;
+                    using (SqlCommand cmd = new SqlCommand(
+                        @"SELECT COUNT(*) AS Enrolled,
+                                 SUM(CASE WHEN IsCompleted = 1 THEN 1 ELSE 0 END) AS Completed
+                          FROM Enrollments WHERE UserID = @UserID", conn))
                     {
                         cmd.Parameters.AddWithValue("@UserID", userID);
-                        lblCompletedCourses.Text = cmd.ExecuteScalar().ToString();
+                        using (SqlDataReader rdr = cmd.ExecuteReader())
+                        {
+                            if (rdr.Read())
+                            {
+                                enrolled  = Convert.ToInt32(rdr["Enrolled"]);
+                                completed = rdr["Completed"] != DBNull.Value ? Convert.ToInt32(rdr["Completed"]) : 0;
+                            }
+                        }
+                        lblEnrolledCourses.Text  = enrolled.ToString();
+                        lblCompletedCourses.Text = completed.ToString();
                     }
+
+                    // Leaderboard rank — uses same SUM(QuizResults.Score) source as leaderboard table
+                    // so rank is consistent with the displayed leaderboard
+                    string queryRank = @"
+                        SELECT COUNT(*) + 1
+                        FROM (
+                            SELECT p2.UserID, ISNULL(SUM(qr2.Score), 0) AS Pts
+                            FROM UserProfiles p2
+                            LEFT JOIN QuizResults qr2 ON p2.UserID = qr2.UserID
+                            GROUP BY p2.UserID
+                            HAVING ISNULL(SUM(qr2.Score), 0) > 0
+                        ) ranked
+                        WHERE ranked.Pts > (
+                            SELECT ISNULL(SUM(Score), 0)
+                            FROM QuizResults WHERE UserID = @UserID
+                        )";
+                    using (SqlCommand cmd = new SqlCommand(queryRank, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@UserID", userID);
+                        int rank = Convert.ToInt32(cmd.ExecuteScalar());
+                        lblLeaderboardRank.Text = totalPoints > 0 ? rank.ToString() : "-";
+
+                        // Percentile
+                        if (totalPoints > 0)
+                        {
+                            string queryTotal = "SELECT COUNT(*) FROM UserProfiles";
+                            using (SqlCommand cmdTotal = new SqlCommand(queryTotal, conn))
+                            {
+                                int totalUsers = Convert.ToInt32(cmdTotal.ExecuteScalar());
+                                if (totalUsers > 0)
+                                {
+                                    int percentile = (int)Math.Round((1.0 - (double)(rank - 1) / totalUsers) * 100);
+                                    lblRankPercentile.Text = "Top " + Math.Max(1, Math.Min(100, percentile)) + "%";
+                                }
+                            }
+                        }
+                    }
+
+                    // Overall progress
+                    if (enrolled > 0)
+                    {
+                        string queryOverall = "SELECT ISNULL(AVG(ProgressPercentage), 0) FROM Enrollments WHERE UserID = @UserID";
+                        using (SqlCommand cmd = new SqlCommand(queryOverall, conn))
+                        {
+                            cmd.Parameters.AddWithValue("@UserID", userID);
+                            lblOverallProgress.Text = Convert.ToInt32(cmd.ExecuteScalar()).ToString();
+                        }
+                    }
+
+                    // Quizzes passed
+                    string queryQuizzes = @"
+                        SELECT
+                            (SELECT COUNT(*) FROM QuizResults WHERE UserID = @UserID AND Score > 0) AS Passed,
+                            (SELECT COUNT(DISTINCT qz.QuizID)
+                             FROM Quizzes qz
+                             INNER JOIN Lessons l ON qz.LessonID = l.LessonID
+                             INNER JOIN Enrollments e ON l.CourseID = e.CourseID AND e.UserID = @UserID) AS Total";
+                    using (SqlCommand cmd = new SqlCommand(queryQuizzes, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@UserID", userID);
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                lblQuizzesPassed.Text = reader["Passed"] + "/" + reader["Total"];
+                            }
+                        }
+                    }
+
+                    // Weekly streak days
+                    BuildStreakDays(conn, userID, dailyStreak);
 
                     // Load in-progress courses
                     string queryCourses = @"
-                        SELECT c.CourseID, c.Title AS CourseName, e.ProgressPercentage,
+                        SELECT c.CourseID,
+                               c.Title AS CourseName,
+                               ISNULL(c.Category, 'General') AS Category,
+                               ISNULL(c.Description, '') AS CourseDescription,
+                               ISNULL(NULLIF(c.ThumbnailPath, ''), 'image/Logo.jpeg') AS PhotoPath,
+                               e.ProgressPercentage,
+                               'Aidcademy' AS InstructorName,
+                            (SELECT COUNT(*) FROM Lessons l WHERE l.CourseID = c.CourseID AND l.ApprovalStatus = 'Approved') AS TotalLessons,
+                            (SELECT COUNT(*) FROM LessonProgress lp
+                             INNER JOIN Lessons l ON lp.LessonID = l.LessonID
+                             WHERE l.CourseID = c.CourseID AND lp.UserID = @UserID AND lp.Status = 'Completed') AS CompletedLessons,
                             (SELECT TOP 1 l.LessonID
                              FROM Lessons l
                              WHERE l.CourseID = c.CourseID
@@ -106,55 +215,68 @@ namespace Aidcademy
                     using (SqlCommand cmd = new SqlCommand(queryCourses, conn))
                     {
                         cmd.Parameters.AddWithValue("@UserID", userID);
-                        SqlDataAdapter da = new SqlDataAdapter(cmd);
                         DataTable dt = new DataTable();
-                        da.Fill(dt);
+                        using (SqlDataAdapter da = new SqlDataAdapter(cmd))
+                            da.Fill(dt);
                         rptEnrolledCourses.DataSource = dt;
                         rptEnrolledCourses.DataBind();
                         pnlNoCourses.Visible = dt.Rows.Count == 0;
                     }
 
-                    // Load recently completed courses
+                    // Recently completed
                     string queryRecentCompleted = @"
-                        SELECT TOP 3 c.CourseID, c.Title, e.EnrolmentDate
+                        SELECT TOP 3 c.CourseID, c.Title AS CourseName, e.EnrollmentDate
                         FROM Enrollments e
                         INNER JOIN Courses c ON e.CourseID = c.CourseID
                         WHERE e.UserID = @UserID AND e.IsCompleted = 1
-                        ORDER BY e.EnrolmentDate DESC";
+                        ORDER BY e.EnrollmentDate DESC";
 
                     using (SqlCommand cmd = new SqlCommand(queryRecentCompleted, conn))
                     {
                         cmd.Parameters.AddWithValue("@UserID", userID);
-                        SqlDataAdapter da = new SqlDataAdapter(cmd);
                         DataTable dt = new DataTable();
-                        da.Fill(dt);
+                        using (SqlDataAdapter da = new SqlDataAdapter(cmd))
+                            da.Fill(dt);
                         rptCompletedCourses.DataSource = dt;
                         rptCompletedCourses.DataBind();
                         if (dt.Rows.Count > 0)
                             pnlCompletedSection.Visible = true;
                     }
 
-                    // Load Leaderboard Data - derived from QuizResults so it works even if the Leaderboard table is empty
+                    // Leaderboard (top 10) — skip top 3 for podium
                     string queryLeaderboard = @"
                         SELECT TOP 10
                             p.UserID,
                             p.FullName,
-                            MAX(qr.DateTaken) AS LastSolved,
-                            ISNULL(SUM(CASE WHEN qr.DateTaken >= DATEADD(day, -7, GETDATE()) THEN qr.Score ELSE 0 END), 0) AS WeeklyPoints,
-                            ISNULL(SUM(qr.Score), 0) AS TotalPoints
+                            ISNULL(lb.DailyStreak, 0) AS DailyStreak,
+                            ISNULL(SUM(qr.Score), 0) AS TotalPoints,
+                            (SELECT COUNT(*) FROM Enrollments e WHERE e.UserID = p.UserID) AS CourseCount
                         FROM UserProfiles p
                         LEFT JOIN QuizResults qr ON p.UserID = qr.UserID
-                        GROUP BY p.UserID, p.FullName
+                        LEFT JOIN Leaderboard lb ON p.UserID = lb.UserID
+                        GROUP BY p.UserID, p.FullName, lb.DailyStreak
                         HAVING ISNULL(SUM(qr.Score), 0) > 0
                         ORDER BY ISNULL(SUM(qr.Score), 0) DESC";
 
                     using (SqlCommand cmd = new SqlCommand(queryLeaderboard, conn))
                     {
-                        SqlDataAdapter da = new SqlDataAdapter(cmd);
                         DataTable dt = new DataTable();
-                        da.Fill(dt);
-                        rptLeaderboard.DataSource = dt;
-                        rptLeaderboard.DataBind();
+                        using (SqlDataAdapter da = new SqlDataAdapter(cmd))
+                            da.Fill(dt);
+
+                        // Build podium for top 3
+                        BuildPodium(dt);
+
+                        // Table shows ranks 4+
+                        if (dt.Rows.Count > 3)
+                        {
+                            DataTable tableData = dt.Clone();
+                            for (int i = 3; i < dt.Rows.Count; i++)
+                                tableData.ImportRow(dt.Rows[i]);
+                            rptLeaderboard.DataSource = tableData;
+                            rptLeaderboard.DataBind();
+                        }
+
                         pnlEmptyLeaderboard.Visible = dt.Rows.Count == 0;
                     }
                 }
@@ -165,50 +287,71 @@ namespace Aidcademy
             }
         }
 
-        protected void gvLeaderboard_RowDataBound(object sender, System.Web.UI.WebControls.GridViewRowEventArgs e)
+        private void BuildStreakDays(SqlConnection conn, int userID, int dailyStreak)
         {
-            if (e.Row.RowType == System.Web.UI.WebControls.DataControlRowType.DataRow)
+            string[] dayNames = { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
+            int todayIndex = ((int)DateTime.Now.DayOfWeek + 6) % 7; // 0=Mon ... 6=Sun
+
+            var sb = new StringBuilder();
+            for (int i = 0; i < 7; i++)
             {
-                int rowUserId = Convert.ToInt32(DataBinder.Eval(e.Row.DataItem, "UserID"));
-                if (Session["UserID"] != null && rowUserId == Convert.ToInt32(Session["UserID"]))
-                {
-                    e.Row.CssClass = "table-warning fw-bold";
-                }
+                bool isActive = i <= todayIndex && dailyStreak > (todayIndex - i);
+                sb.Append("<div class='streak-day'>");
+                sb.AppendFormat("<div class='fire-icon {0}'>", isActive ? "active" : "inactive");
+                sb.Append("<i class='fas fa-fire'></i></div>");
+                sb.AppendFormat("<span class='day-label'>{0}</span>", dayNames[i]);
+                sb.Append("</div>");
             }
+            litStreakDays.Text = sb.ToString();
         }
 
-        public string GetLeaderboardRowClass(int rowIndex, object userIdObj)
+        private void BuildPodium(DataTable dt)
         {
-            string css = "lb-row";
-            if (rowIndex == 0)
-                css += " podium-gold";
-            else if (rowIndex == 1)
-                css += " podium-silver";
-            else if (rowIndex == 2)
-                css += " podium-bronze";
+            if (dt.Rows.Count == 0)
+            {
+                pnlPodium.Visible = false;
+                return;
+            }
 
-            int sessionUserId = Session["UserID"] != null ? Convert.ToInt32(Session["UserID"]) : 0;
-            int rowUserId = userIdObj != null && userIdObj != DBNull.Value ? Convert.ToInt32(userIdObj) : 0;
-            if (rowUserId == sessionUserId)
-                css += " me-row";
+            string[] avatarBgs = { "avatar-gold", "avatar-blue", "avatar-green" };
+            string[] trophies = { "&#129351;", "&#129352;", "&#129353;" };
+            // Podium order: #2 left, #1 center, #3 right
+            int[] order = dt.Rows.Count >= 3 ? new[] { 1, 0, 2 } :
+                          dt.Rows.Count == 2 ? new[] { 1, 0 } : new[] { 0 };
 
-            return css;
+            var sb = new StringBuilder();
+            foreach (int idx in order)
+            {
+                if (idx >= dt.Rows.Count) continue;
+                DataRow row = dt.Rows[idx];
+                string name = row["FullName"].ToString();
+                string initials = name.Length > 0 ? name.Substring(0, 1).ToUpper() : "?";
+                // Try to get second initial from last name
+                string[] parts = name.Split(' ');
+                if (parts.Length > 1 && parts[1].Length > 0)
+                    initials += parts[1].Substring(0, 1).ToUpper();
+
+                bool isFirst = idx == 0;
+                string itemClass = isFirst ? "podium-item first" : "podium-item";
+
+                sb.AppendFormat("<div class='{0}'>", itemClass);
+                if (isFirst)
+                    sb.Append("<div class='podium-crown'>&#128081;</div>");
+                sb.AppendFormat("<div class='podium-avatar {0}'>{1}</div>", avatarBgs[idx], initials);
+                sb.Append("<div class='podium-card'>");
+                sb.AppendFormat("<div class='podium-trophy'>{0}</div>", trophies[idx]);
+                sb.AppendFormat("<div class='podium-name'>{0}</div>", Server.HtmlEncode(name));
+                sb.AppendFormat("<div class='podium-pts'>{0:N0}</div>", Convert.ToInt32(row["TotalPoints"]));
+                sb.Append("<div class='podium-pts-label'>pts</div>");
+                sb.Append("</div></div>");
+            }
+            litPodium.Text = sb.ToString();
         }
 
-        public string GetRankClass(int rowIndex)
+        public string GetAvatarColor(int index)
         {
-            if (rowIndex == 0) return "rank-gold";
-            if (rowIndex == 1) return "rank-silver";
-            if (rowIndex == 2) return "rank-bronze";
-            return "rank-other";
-        }
-
-        public string GetRankIcon(int rowIndex)
-        {
-            if (rowIndex == 0) return "&#129351;";
-            if (rowIndex == 1) return "&#129352;";
-            if (rowIndex == 2) return "&#129353;";
-            return (rowIndex + 1).ToString();
+            string[] colors = { "avatar-purple", "avatar-orange", "avatar-pink", "avatar-teal", "avatar-blue", "avatar-green", "avatar-red" };
+            return colors[index % colors.Length];
         }
 
         protected string GetContinueUrl(object lessonId)

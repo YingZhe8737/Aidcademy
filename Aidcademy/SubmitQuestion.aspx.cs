@@ -49,7 +49,8 @@ namespace Aidcademy
             }
             catch (Exception ex)
             {
-                ShowMessage("Could not load courses. (" + ex.Message + ")", false);
+                System.Diagnostics.Debug.WriteLine("LoadCourses error: " + ex.Message);
+                ShowMessage("Could not load courses. Please try again later.", false);
             }
         }
 
@@ -118,7 +119,8 @@ namespace Aidcademy
             }
             catch (Exception ex)
             {
-                ShowMessage("Could not submit. (" + ex.Message + ")", false);
+                System.Diagnostics.Debug.WriteLine("SubmitQuestion error: " + ex.Message);
+                ShowMessage("Could not submit your question. Please try again later.", false);
             }
         }
 
