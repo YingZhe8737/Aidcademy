@@ -27,7 +27,6 @@ namespace Aidcademy
             btnMarkComplete.Visible  = (role == "Member");
 
             pnlAdminActions.Visible = (role == "Admin");
-            pnlAdminActions1.Visible = (role == "Admin");
 
             // 3. Set dynamic back button URL
             string backUrl = "LearningCourse.aspx";
