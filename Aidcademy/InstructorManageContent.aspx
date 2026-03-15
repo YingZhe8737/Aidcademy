@@ -1,231 +1,224 @@
 ﻿<%@ Page Title="Instructor Dashboard" Language="C#" MasterPageFile="~/Instructor.Master" AutoEventWireup="true" CodeBehind="InstructorManageContent.aspx.cs" Inherits="Aidcademy.InstructorManageContent" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="HeadContent" runat="server">
-    <link href="Styles/aidcademy-theme.css" rel="stylesheet" type="text/css" />
-    <link href="Styles/Instructor.css" rel="stylesheet" type="text/css" />
     <style>
-        .stat-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 24px rgba(201, 36, 43, 0.3) !important;
+        .page-header { margin-bottom: 28px; }
+        .page-header h2 { font-size: 1.65rem; font-weight: 900; color: #1a1a2e; margin-bottom: 4px; }
+        .page-header p  { font-size: 0.92rem; color: #888; font-weight: 600; margin: 0; }
+
+        .stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 16px; margin-bottom: 32px; }
+        @media(max-width:1100px){ .stats-row{ grid-template-columns:repeat(2,1fr); } }
+        @media(max-width:600px) { .stats-row{ grid-template-columns:1fr; } }
+
+        .imc-stat-card {
+            background: white; border-radius: 16px; padding: 22px 20px; border: 1px solid #ebebeb;
+            display: flex; align-items: center; gap: 16px;
+            transition: transform 0.2s, box-shadow 0.2s; position: relative; overflow: hidden;
         }
+        .imc-stat-card::before { content:''; position:absolute; top:0; left:0; width:4px; height:100%; }
+        .imc-stat-card.c-red::before    { background:#c9242b; }
+        .imc-stat-card.c-amber::before  { background:#f59e0b; }
+        .imc-stat-card.c-green::before  { background:#10b981; }
+        .imc-stat-card.c-purple::before { background:#8b5cf6; }
+        .imc-stat-card:hover { transform:translateY(-4px); box-shadow:0 12px 32px rgba(0,0,0,0.08); }
+        .imc-stat-icon { width:50px; height:50px; border-radius:13px; display:flex; align-items:center; justify-content:center; font-size:1.25rem; flex-shrink:0; }
+        .c-red    .imc-stat-icon { background:#fde8e9; color:#c9242b; }
+        .c-amber  .imc-stat-icon { background:#fef3c7; color:#d97706; }
+        .c-green  .imc-stat-icon { background:#d1fae5; color:#059669; }
+        .c-purple .imc-stat-icon { background:#ede9fe; color:#7c3aed; }
+        .imc-stat-value { font-size:1.9rem; font-weight:900; color:#1a1a2e; line-height:1; }
+        .imc-stat-label { font-size:0.78rem; font-weight:700; color:#aaa; text-transform:uppercase; letter-spacing:0.4px; margin-top:4px; }
+
+        .section-bar { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; flex-wrap:wrap; gap:12px; }
+        .section-bar-left { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+        .section-bar h5 { font-size:1.05rem; font-weight:900; color:#1a1a2e; margin:0; }
+        .filter-tabs { display:flex; gap:6px; flex-wrap:wrap; }
+        .imc-filter-tab {
+            padding:5px 14px; border-radius:20px; font-size:0.8rem; font-weight:700;
+            border:1.5px solid #e0e0e0; background:white; color:#888; cursor:pointer;
+            transition:all 0.18s; font-family:'Nunito',sans-serif;
+        }
+        .imc-filter-tab:hover { border-color:#c9242b; color:#c9242b; }
+        .imc-filter-tab.f-active-all       { background:#c9242b; border-color:#c9242b; color:white; }
+        .imc-filter-tab.f-active-draft     { background:#6b7280; border-color:#6b7280; color:white; }
+        .imc-filter-tab.f-active-pending   { background:#f59e0b; border-color:#f59e0b; color:white; }
+        .imc-filter-tab.f-active-published { background:#10b981; border-color:#10b981; color:white; }
+
+        .btn-create-drop {
+            background:#c9242b; border:none; color:white; font-family:'Nunito',sans-serif;
+            font-size:0.88rem; font-weight:800; padding:9px 18px; border-radius:10px; cursor:pointer;
+            display:flex; align-items:center; gap:7px; transition:background 0.18s,transform 0.18s;
+        }
+        .btn-create-drop:hover { background:#a01c22; transform:translateY(-1px); }
+        .create-menu {
+            display:none; position:absolute; right:0; top:calc(100% + 8px);
+            background:white; border:1px solid #ebebeb; border-radius:12px;
+            box-shadow:0 12px 32px rgba(0,0,0,0.1); min-width:220px; z-index:50; overflow:hidden;
+        }
+        .create-menu.open { display:block; }
+        .create-menu a { display:flex; align-items:center; gap:10px; padding:12px 16px; font-size:0.88rem; font-weight:700; color:#333; text-decoration:none; transition:background 0.15s; }
+        .create-menu a:hover { background:#f9f9f9; }
+        .m-icon { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:0.9rem; }
+
+        .course-header {
+            background:white; border-radius:14px; border:1px solid #ebebeb;
+            padding:18px 20px; margin-bottom:16px;
+            display:flex; align-items:center; gap:16px; position:relative; overflow:hidden;
+        }
+        .course-header::before { content:''; position:absolute; top:0; left:0; width:5px; height:100%; background:#c9242b; }
+        .course-header img { width:72px; height:72px; border-radius:12px; object-fit:cover; flex-shrink:0; border:1px solid #ebebeb; }
+        .course-header h4 { font-size:1.05rem; font-weight:900; color:#1a1a2e; margin-bottom:5px; }
+        .cat-badge { display:inline-flex; align-items:center; gap:5px; background:#fde8e9; color:#c9242b; font-size:0.75rem; font-weight:800; padding:3px 10px; border-radius:20px; }
+        .course-desc { font-size:0.85rem; color:#888; margin-top:5px; line-height:1.5; }
+
+        .lesson-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:16px; margin-bottom:32px; }
+        .imc-lesson-card { background:white; border-radius:14px; border:1px solid #ebebeb; overflow:hidden; transition:transform 0.22s,box-shadow 0.22s; display:flex; flex-direction:column; }
+        .imc-lesson-card:hover { transform:translateY(-5px); box-shadow:0 16px 40px rgba(0,0,0,0.09); }
+        .lesson-stripe { height:4px; width:100%; }
+        .stripe-draft     { background:#9ca3af; }
+        .stripe-pending   { background:#f59e0b; }
+        .stripe-published { background:#10b981; }
+        .lesson-thumb-wrap { height:150px; background:#f5f5f5; overflow:hidden; position:relative; }
+        .lesson-thumb-wrap img { width:100%; height:100%; object-fit:cover; display:block; }
+        .lesson-status-badge { position:absolute; top:10px; right:10px; font-size:0.7rem; font-weight:800; padding:3px 9px; border-radius:20px; }
+        .badge-draft     { background:#f3f4f6; color:#6b7280; }
+        .badge-pending   { background:#fef3c7; color:#92400e; }
+        .badge-published { background:#d1fae5; color:#065f46; }
+        .lesson-body { padding:14px 16px; flex:1; display:flex; flex-direction:column; }
+        .lesson-step  { font-size:0.72rem; font-weight:800; color:#bbb; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:5px; }
+        .lesson-title { font-size:0.95rem; font-weight:800; color:#1a1a2e; line-height:1.4; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+        .lesson-desc  { font-size:0.8rem; color:#aaa; line-height:1.5; margin-top:7px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; flex:1; }
+        .lesson-footer { padding:10px 14px; border-top:1px solid #f5f5f5; display:flex; gap:8px; justify-content:flex-end; }
+        .btn-card-action { display:inline-flex; align-items:center; gap:5px; padding:6px 13px; border-radius:8px; font-size:0.8rem; font-weight:700; font-family:'Nunito',sans-serif; cursor:pointer; transition:all 0.18s; border:1.5px solid; text-decoration:none; background:white; }
+        .btn-card-edit  { border-color:#3b82f6; color:#3b82f6; }
+        .btn-card-edit:hover { background:#3b82f6; color:white; }
+        .btn-card-del   { border-color:#c9242b; color:#c9242b; }
+        .btn-card-del:hover { background:#c9242b; color:white; }
     </style>
 </asp:Content>
 
 <asp:Content ID="Content2" ContentPlaceHolderID="MainContent" runat="server">
-    <div class="container mt-5 mb-5">
-        
-        <div class="card welcome-card shadow-sm p-4 mb-5">
-            <h3 class="fw-bold">Welcome to Instructor Dashboard 👋</h3>
-            <p class="text-muted mb-4">Manage your first aid learning materials and member interactions.</p>
-            <div class="row g-4 mb-5">
-                <div class="col-md-6 col-lg-3">
-                    <div class="card stat-card shadow-sm">
-                        <div class="stat-icon-box">
-                            <i class="fa-solid fa-book-open"></i>
-                        </div>
-                        <div class="stat-text">
-                            <span class="stat-label">Total Lessons</span>
-                            <span class="stat-value"><asp:Label ID="lblTotal" runat="server" Text="0"></asp:Label></span>
-                        </div>
-                    </div>
-                </div>
-            
-                <div class="col-md-6 col-lg-3">
-                    <div class="card stat-card shadow-sm">
-                        <div class="stat-icon-box">
-                            <i class="fa-solid fa-clock-rotate-left"></i>
-                        </div>
-                        <div class="stat-text">
-                            <span class="stat-label">Pending Admin</span>
-                            <span class="stat-value"><asp:Label ID="lblPending" runat="server" Text="0"></asp:Label></span>
-                        </div>
-                    </div>
-                </div>
-            
-                <div class="col-md-6 col-lg-3">
-                    <div class="card stat-card shadow-sm">
-                        <div class="stat-icon-box">
-                            <i class="fa-solid fa-clipboard-check"></i>
-                        </div>
-                        <div class="stat-text">
-                            <span class="stat-label">Published</span>
-                            <span class="stat-value"><asp:Label ID="lblPublished" runat="server" Text="0"></asp:Label></span>
-                        </div>
-                    </div>
-                </div>
-            
-                <div class="col-md-6 col-lg-3">
-                    <div class="card stat-card shadow-sm">
-                        <div class="stat-icon-box">
-                            <i class="fa-solid fa-comments"></i> </div>
-                        <div class="stat-text">
-                            <span class="stat-label">Unanswered Queries</span>
-                            <span class="stat-value"><asp:Label ID="lblQueries" runat="server" Text="0"></asp:Label></span>
-                        </div>
-                    </div>
-                </div>
 
-            </div>
-        </div>
-
-        <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4 mt-5">
-            <div class="d-flex align-items-center gap-3 flex-wrap">
-                <h5 class="fw-bold text-danger m-0"><i class="fa-solid fa-folder-tree me-2"></i>Course Curriculum</h5>
-                <div class="d-flex gap-2" id="lessonFilterTabs">
-                    <button type="button" onclick="filterLessons('All')" class="btn btn-sm btn-danger fw-bold filter-tab active-tab" id="tab-All">All</button>
-                    <button type="button" onclick="filterLessons('Draft')" class="btn btn-sm btn-outline-secondary fw-bold filter-tab" id="tab-Draft">Draft</button>
-                    <button type="button" onclick="filterLessons('Pending Admin')" class="btn btn-sm btn-outline-warning fw-bold filter-tab" id="tab-Pending">Pending</button>
-                    <button type="button" onclick="filterLessons('Published')" class="btn btn-sm btn-outline-success fw-bold filter-tab" id="tab-Published">Published</button>
-                </div>
-            </div>
-
-            <div class="dropdown">
-                <button class="btn btn-danger fw-bold dropdown-toggle shadow-sm" type="button" data-bs-toggle="dropdown">
-                    <i class="fa-solid fa-plus me-1"></i> Create
-                </button>
-                <ul class="dropdown-menu dropdown-menu-end shadow">
-                    <li><a class="dropdown-item fw-bold text-dark py-2" href="InstructorUploadLesson.aspx"><i class="fa-solid fa-file-lines text-danger me-2"></i> New Lesson / Course</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item fw-bold text-dark py-2" href="InstructorUploadQuiz.aspx"><i class="fa-solid fa-clipboard-question text-warning me-2"></i> Manage Quizzes</a></li>
-                </ul>
-            </div>
-        </div>
-
-        <asp:Repeater ID="rptCourses" runat="server" OnItemDataBound="rptCourses_ItemDataBound">
-            <ItemTemplate>
-                <div class="category-group mb-5">
-                    
-                    <div class="card border-0 shadow-sm mb-4 mt-3 position-relative overflow-hidden rounded-4">
-                        <div class="position-absolute top-0 start-0 h-100 bg-danger" style="width: 8px; z-index: 5;"></div>
-                        
-                        <div class="card-body p-4 d-flex align-items-center bg-white ms-2">
-                            <img src='<%# Eval("CourseThumbnailPath") != DBNull.Value && !string.IsNullOrEmpty(Eval("CourseThumbnailPath").ToString()) ? ResolveUrl(Eval("CourseThumbnailPath").ToString()) : "Images/default-course.png" %>' class="rounded-3 shadow-sm me-4" style="width: 100px; height: 100px; object-fit: cover; border: 1px solid #dee2e6;" />
-                            <div>
-                                <h3 class="fw-bold text-dark mb-2">
-                                    <%# Eval("CourseTitle") %> 
-                                    <span class="badge bg-danger bg-opacity-10 text-danger border border-danger fs-6 ms-2 align-middle px-2 py-1"><i class="fa-solid fa-tag me-1"></i><%# Eval("Category") %></span>
-                                </h3>
-                                <p class="text-muted mb-0" style="font-size: 1rem; max-width: 900px;"><%# Eval("CourseDescription") %></p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row g-4">
-                        <asp:Repeater ID="rptLessons" runat="server">
-                            <ItemTemplate>
-                                <div class="col-md-4 col-lg-3 d-flex align-items-stretch">
-                                    
-                                    <div class='card lesson-card shadow-sm w-100 overflow-hidden border-0 border-start border-4 <%# Convert.ToString(Eval("ApprovalStatus")) == "Draft" ? "border-secondary" : (Convert.ToString(Eval("ApprovalStatus")) == "Pending Admin" ? "border-warning" : "border-success") %>'>
-                                        
-                                        <div class="bg-light position-relative" style="height: 180px;">
-                                            <img src='<%# Eval("LessonThumbnailPath") != DBNull.Value && !string.IsNullOrEmpty(Eval("LessonThumbnailPath").ToString()) ? ResolveUrl(Eval("LessonThumbnailPath").ToString()) : "Images/default-lesson.png" %>' class="w-100 h-100 border-bottom" style="object-fit: cover;" alt="Lesson Thumbnail" />
-                                        </div>
-
-                                        <div class="card-body p-4 d-flex flex-column bg-white">
-                                            <div class="d-flex justify-content-between align-items-start mb-3">
-                                                <span class="badge bg-light text-dark border px-2 py-1 fw-bold">
-                                                    <i class="fa-solid fa-list-ol me-1"></i>Step <%# Eval("SequenceOrder") %>
-                                                </span>
-                                                <span class='badge shadow-sm <%# Convert.ToString(Eval("ApprovalStatus")) == "Draft" ? "bg-secondary" : (Convert.ToString(Eval("ApprovalStatus")) == "Pending Admin" ? "bg-warning text-dark" : "bg-success") %>'>
-                                                    <%# Eval("ApprovalStatus") %>
-                                                </span>
-                                            </div>
-
-                                            <h5 class="fw-bold text-dark mb-2 lh-base" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 48px;">
-                                                <%# Eval("LessonTitle") %>
-                                            </h5>
-                                            
-                                            <p class="text-muted small mb-0 flex-grow-1" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;"><%# Eval("LessonDescription") %></p>
-                                        </div>
-
-                                        <div class="card-footer bg-light border-top p-3 d-flex justify-content-end gap-2 mt-auto">
-                                            <asp:LinkButton ID="btnEdit" runat="server" CssClass="btn btn-sm btn-outline-primary fw-bold px-3" 
-                                                CommandArgument='<%# Eval("LessonID") %>' OnClick="btnEditLesson_Click" ToolTip="Edit Lesson">
-                                                <i class="fa-solid fa-pen me-1"></i> Edit
-                                            </asp:LinkButton>
-                                            
-                                            <asp:LinkButton ID="btnDel" runat="server" CssClass="btn btn-sm btn-outline-danger fw-bold px-3" 
-                                                CommandArgument='<%# Eval("LessonID") %>' OnClick="btnDeleteLesson_Click"
-                                                data-lesson-title='<%# Eval("LessonTitle") %>'
-                                                OnClientClick="return confirmLessonDelete(this);" ToolTip="Delete Lesson">
-                                                <i class="fa-solid fa-trash"></i>
-                                            </asp:LinkButton>
-                                        </div>
-                                    </div>
-
-                                </div>
-                            </ItemTemplate>
-                        </asp:Repeater>
-                    </div>
-                </div>
-            </ItemTemplate>
-        </asp:Repeater>
-        
+    <div class="page-header">
+        <h2>Instructor Dashboard 👋</h2>
+        <p>Manage your first aid learning materials and member interactions.</p>
     </div>
 
-    <script>
-        function confirmLessonDelete(btn) {
-            var lessonName = btn.getAttribute('data-lesson-title');
-            var input = prompt("To delete this lesson, type its name exactly: " + lessonName.trim());
-            if (input === null) return false;
+    <div class="stats-row">
+        <div class="imc-stat-card c-red">
+            <div class="imc-stat-icon"><i class="fa-solid fa-book-open"></i></div>
+            <div><div class="imc-stat-value"><asp:Label ID="lblTotal" runat="server" Text="0"></asp:Label></div><div class="imc-stat-label">Total Lessons</div></div>
+        </div>
+        <div class="imc-stat-card c-amber">
+            <div class="imc-stat-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+            <div><div class="imc-stat-value"><asp:Label ID="lblPending" runat="server" Text="0"></asp:Label></div><div class="imc-stat-label">Pending Approval</div></div>
+        </div>
+        <div class="imc-stat-card c-green">
+            <div class="imc-stat-icon"><i class="fa-solid fa-clipboard-check"></i></div>
+            <div><div class="imc-stat-value"><asp:Label ID="lblPublished" runat="server" Text="0"></asp:Label></div><div class="imc-stat-label">Published</div></div>
+        </div>
+        <div class="imc-stat-card c-purple">
+            <div class="imc-stat-icon"><i class="fa-solid fa-comments"></i></div>
+            <div><div class="imc-stat-value"><asp:Label ID="lblQueries" runat="server" Text="0"></asp:Label></div><div class="imc-stat-label">Open Q&amp;A</div></div>
+        </div>
+    </div>
 
-            if (input !== lessonName.trim()) {
-                alert("Delete Cancelled: The lesson name you entered did not match.");
-                return false;
-            }
-            return input === lessonName.trim();
-        }
+    <div class="section-bar">
+        <div class="section-bar-left">
+            <h5><i class="fa-solid fa-folder-tree" style="color:#c9242b;margin-right:8px;"></i>Course Curriculum</h5>
+            <div class="filter-tabs">
+                <button type="button" class="imc-filter-tab f-active-all" id="tab-All"       onclick="filterLessons('All')">All</button>
+                <button type="button" class="imc-filter-tab"              id="tab-Draft"     onclick="filterLessons('Draft')">Draft</button>
+                <button type="button" class="imc-filter-tab"              id="tab-Pending"   onclick="filterLessons('Pending Admin')">Pending</button>
+                <button type="button" class="imc-filter-tab"              id="tab-Published" onclick="filterLessons('Published')">Published</button>
+            </div>
+        </div>
+        <div style="position:relative;">
+            <button type="button" class="btn-create-drop" onclick="toggleCreateMenu()">
+                <i class="fa-solid fa-plus"></i> Create <i class="fa-solid fa-chevron-down" style="font-size:0.7rem;"></i>
+            </button>
+            <div class="create-menu" id="createMenu">
+                <a href="InstructorUploadLesson.aspx"><div class="m-icon" style="background:#fde8e9;color:#c9242b;"><i class="fa-solid fa-file-lines"></i></div>New Lesson / Course</a>
+                <hr style="margin:0;border-color:#f0f0f0;" />
+                <a href="InstructorUploadQuiz.aspx"><div class="m-icon" style="background:#fef3c7;color:#d97706;"><i class="fa-solid fa-clipboard-question"></i></div>Manage Quizzes</a>
+            </div>
+        </div>
+    </div>
 
-        function filterLessons(status) {
-            // Update active tab button styles
-            document.querySelectorAll('.filter-tab').forEach(function (btn) {
-                btn.classList.remove('btn-danger', 'btn-secondary', 'btn-warning', 'btn-success', 'active-tab');
-                btn.classList.add(
-                    btn.id === 'tab-Draft' ? 'btn-outline-secondary' :
-                        btn.id === 'tab-Pending' ? 'btn-outline-warning' :
-                            btn.id === 'tab-Published' ? 'btn-outline-success' :
-                                'btn-outline-secondary'
-                );
-            });
+    <asp:Repeater ID="rptCourses" runat="server" OnItemDataBound="rptCourses_ItemDataBound">
+        <ItemTemplate>
+            <div class="category-group">
+                <div class="course-header">
+                    <img src='<%# Eval("CourseThumbnailPath") != DBNull.Value && !string.IsNullOrEmpty(Eval("CourseThumbnailPath").ToString()) ? ResolveUrl(Eval("CourseThumbnailPath").ToString()) : "Images/default-course.png" %>' alt="Course" />
+                    <div>
+                        <h4><%# Eval("CourseTitle") %> <span class="cat-badge"><i class="fa-solid fa-tag"></i><%# Eval("Category") %></span></h4>
+                        <div class="course-desc"><%# Eval("CourseDescription") %></div>
+                    </div>
+                </div>
+                <div class="lesson-grid">
+                    <asp:Repeater ID="rptLessons" runat="server">
+                        <ItemTemplate>
+                            <div class="imc-lesson-card">
+                                <div class='lesson-stripe <%# Convert.ToString(Eval("ApprovalStatus")) == "Draft" ? "stripe-draft" : (Convert.ToString(Eval("ApprovalStatus")) == "Pending Admin" ? "stripe-pending" : "stripe-published") %>'></div>
+                                <div class="lesson-thumb-wrap">
+                                    <img src='<%# Eval("LessonThumbnailPath") != DBNull.Value && !string.IsNullOrEmpty(Eval("LessonThumbnailPath").ToString()) ? ResolveUrl(Eval("LessonThumbnailPath").ToString()) : "Images/default-lesson.png" %>' alt="Lesson" />
+                                    <span class='lesson-status-badge <%# Convert.ToString(Eval("ApprovalStatus")) == "Draft" ? "badge-draft" : (Convert.ToString(Eval("ApprovalStatus")) == "Pending Admin" ? "badge-pending" : "badge-published") %>'><%# Eval("ApprovalStatus") %></span>
+                                </div>
+                                <div class="lesson-body">
+                                    <div class="lesson-step">Step <%# Eval("SequenceOrder") %></div>
+                                    <div class="lesson-title"><%# Eval("LessonTitle") %></div>
+                                    <div class="lesson-desc"><%# Eval("LessonDescription") %></div>
+                                </div>
+                                <div class="lesson-footer">
+                                    <asp:LinkButton ID="btnEdit" runat="server" CssClass="btn-card-action btn-card-edit" CommandArgument='<%# Eval("LessonID") %>' OnClick="btnEditLesson_Click" ToolTip="Edit Lesson"><i class="fa-solid fa-pen"></i> Edit</asp:LinkButton>
+                                    <asp:LinkButton ID="btnDel"  runat="server" CssClass="btn-card-action btn-card-del"  CommandArgument='<%# Eval("LessonID") %>' OnClick="btnDeleteLesson_Click" data-lesson-title='<%# Eval("LessonTitle") %>' OnClientClick="return confirmLessonDelete(this);" ToolTip="Delete Lesson"><i class="fa-solid fa-trash"></i></asp:LinkButton>
+                                </div>
+                            </div>
+                        </ItemTemplate>
+                    </asp:Repeater>
+                </div>
+            </div>
+        </ItemTemplate>
+    </asp:Repeater>
 
-            var activeBtn = status === 'All' ? document.getElementById('tab-All') :
-            status === 'Draft' ? document.getElementById('tab-Draft') :
-            status === 'Pending Admin' ? document.getElementById('tab-Pending') :
-            document.getElementById('tab-Published');
+</asp:Content>
 
-            if (activeBtn) {
-                activeBtn.classList.remove('btn-outline-secondary', 'btn-outline-warning', 'btn-outline-success');
-            activeBtn.classList.add(
-            status === 'Draft' ? 'btn-secondary' :
-            status === 'Pending Admin' ? 'btn-warning' :
-            status === 'Published' ? 'btn-success' :
-            'btn-danger'
-            );
-            activeBtn.classList.add('active-tab');
-        }
+<asp:Content ID="Content3" ContentPlaceHolderID="ScriptContent" runat="server">
+<script>
+    function toggleCreateMenu() {
+        document.getElementById('createMenu').classList.toggle('open');
+    }
+    document.addEventListener('click', function (e) {
+        var btn = document.querySelector('.btn-create-drop');
+        var menu = document.getElementById('createMenu');
+        if (menu && btn && !btn.parentElement.contains(e.target)) menu.classList.remove('open');
+    });
 
-            // Show/hide lesson cards
-            document.querySelectorAll('.lesson-card').forEach(function (card) {
-            if (status === 'All') {
-                card.closest('.col-md-4').style.display = '';
-            } else {
-                // Read the badge text inside the card to match status
-                var badge = card.querySelector('.card-body .badge:last-child');
-            if (badge && badge.textContent.trim() === status) {
-                card.closest('.col-md-4').style.display = '';
-                } else {
-                card.closest('.col-md-4').style.display = 'none';
-                }
-            }
+    function filterLessons(status) {
+        var cls = { 'All': 'f-active-all', 'Draft': 'f-active-draft', 'Pending Admin': 'f-active-pending', 'Published': 'f-active-published' };
+        var ids = { 'All': 'tab-All', 'Draft': 'tab-Draft', 'Pending Admin': 'tab-Pending', 'Published': 'tab-Published' };
+        document.querySelectorAll('.imc-filter-tab').forEach(function (b) { b.className = 'imc-filter-tab'; });
+        var el = document.getElementById(ids[status]);
+        if (el) el.classList.add(cls[status]);
+        document.querySelectorAll('.imc-lesson-card').forEach(function (card) {
+            var col = card.parentElement;
+            if (status === 'All') { col.style.display = ''; return; }
+            var badge = card.querySelector('.lesson-status-badge');
+            col.style.display = (badge && badge.textContent.trim() === status) ? '' : 'none';
         });
-
-            // Hide entire course row if all its lessons are hidden
-            document.querySelectorAll('.category-group').forEach(function (group) {
-            var visibleCards = group.querySelectorAll('.col-md-4[style=""], .col-md-4:not([style])');
-            var hiddenCards = group.querySelectorAll('.col-md-4[style="display: none;"]');
-            var allCards = group.querySelectorAll('.col-md-4');
-            group.style.display = (hiddenCards.length === allCards.length) ? 'none' : '';
+        document.querySelectorAll('.category-group').forEach(function (group) {
+            var all = group.querySelectorAll('.imc-lesson-card');
+            var hidden = Array.from(all).filter(function (c) { return c.parentElement.style.display === 'none'; });
+            group.style.display = (status !== 'All' && hidden.length === all.length) ? 'none' : '';
         });
     }
-    </script>
+
+    function confirmLessonDelete(btn) {
+        var name = btn.getAttribute('data-lesson-title');
+        var input = prompt('To delete this lesson, type its name exactly:\n' + name.trim());
+        if (input === null) return false;
+        if (input !== name.trim()) { alert('Delete Cancelled: The name did not match.'); return false; }
+        return true;
+    }
+</script>
 </asp:Content>

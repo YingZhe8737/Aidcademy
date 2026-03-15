@@ -1,4 +1,4 @@
-<%@ Page Language="C#" AutoEventWireup="true" MasterPageFile="~/Member.Master" CodeBehind="MemberProfile.aspx.cs" Inherits="Aidcademy.MemberProfile" %>
+<%@ Page Language="C#" AutoEventWireup="true" MasterPageFile="~/Member.Master" CodeBehind="Profile.aspx.cs" Inherits="Aidcademy.MemberProfile" %>
 
 <asp:Content ID="Content1" ContentPlaceHolderID="TitleContent" runat="server">My Profile - Aidcademy</asp:Content>
 

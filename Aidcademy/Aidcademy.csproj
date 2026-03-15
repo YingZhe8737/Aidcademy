@@ -126,6 +126,7 @@
     <Content Include="AccountModification.aspx" />
     <Content Include="FeedbackForm.aspx" />
     <Content Include="Logout.aspx" />
+    <Content Include="Admin.Master" />
     <None Include="Scripts\jquery-3.7.0.intellisense.js" />
     <Content Include="Scripts\jquery-3.7.0.js" />
     <Content Include="Scripts\jquery-3.7.0.min.js" />
@@ -168,7 +169,6 @@
     <Content Include="RespondQuestions.aspx" />
     <Content Include="AdminDashboard.aspx" />
     <Content Include="Site.Master" />
-    <Content Include="Site.Mobile.Master" />
     <Content Include="Styles\CustomAdmin.css" />
     <Content Include="Styles\Instructor.css" />
     <Content Include="Styles\MainPage.css" />
@@ -193,7 +193,7 @@
     <Content Include="LearningProgress.aspx" />
     <Content Include="Login_signup.aspx" />
     <Content Include="MemberDashboard.aspx" />
-    <Content Include="MemberProfile.aspx" />
+    <Content Include="Profile.aspx" />
     <Content Include="SubmitQuestion.aspx" />
     <Content Include="GoogleCallback.aspx" />
     <Content Include="VerifyOtp.aspx" />
@@ -246,6 +246,13 @@
     </Compile>
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
+    </Compile>
+    <Compile Include="Admin.Master.cs">
+      <DependentUpon>Admin.Master</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Admin.Master.designer.cs">
+      <DependentUpon>Admin.Master</DependentUpon>
     </Compile>
     <Compile Include="Instructor.Master.cs">
       <DependentUpon>Instructor.Master</DependentUpon>
@@ -352,12 +359,12 @@
     <Compile Include="InstructorUploadQuiz.aspx.designer.cs">
       <DependentUpon>InstructorUploadQuiz.aspx</DependentUpon>
     </Compile>
-    <Compile Include="MemberProfile.aspx.cs">
-      <DependentUpon>MemberProfile.aspx</DependentUpon>
+    <Compile Include="Profile.aspx.cs">
+      <DependentUpon>Profile.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="MemberProfile.aspx.designer.cs">
-      <DependentUpon>MemberProfile.aspx</DependentUpon>
+    <Compile Include="Profile.aspx.designer.cs">
+      <DependentUpon>Profile.aspx</DependentUpon>
     </Compile>
     <Compile Include="RespondQuestions.aspx.cs">
       <DependentUpon>RespondQuestions.aspx</DependentUpon>
@@ -372,13 +379,6 @@
     </Compile>
     <Compile Include="Site.Master.designer.cs">
       <DependentUpon>Site.Master</DependentUpon>
-    </Compile>
-    <Compile Include="Site.Mobile.Master.cs">
-      <DependentUpon>Site.Mobile.Master</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Site.Mobile.Master.designer.cs">
-      <DependentUpon>Site.Mobile.Master</DependentUpon>
     </Compile>
     <Compile Include="SystemReport.aspx.cs">
       <DependentUpon>SystemReport.aspx</DependentUpon>

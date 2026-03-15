@@ -1,80 +1,103 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="AccountModification.aspx.cs" Inherits="Aidcademy.WebForm2" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="AccountModification.aspx.cs" Inherits="Aidcademy.WebForm2" MasterPageFile="~/Admin.Master" %>
 
-<!DOCTYPE html>
+<asp:Content ID="Content1" ContentPlaceHolderID="TitleContent" runat="server">Create Account — Aidcademy</asp:Content>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head runat="server">
-    <title></title>
-    <link rel="stylesheet" href="~/Styles/CustomAdmin.css" />
+<asp:Content ID="Content2" ContentPlaceHolderID="HeadContent" runat="server">
+    <style>
+        .page-header { margin-bottom:28px; }
+        .page-header h2 { font-size:1.65rem; font-weight:900; color:#1a1a2e; margin-bottom:4px; }
+        .page-header p  { font-size:0.92rem; color:#888; font-weight:600; margin:0; }
 
-</head>
-<body>
-    <form id="form1" runat="server">
-        <div class="signup-container">
-            <div class="signup-card">
+        .form-card {
+            background:white; border-radius:20px; border:1px solid #ebebeb;
+            padding:36px 40px; max-width:560px;
+            box-shadow:0 4px 24px rgba(0,0,0,0.04);
+        }
+        .form-card h3 { font-size:1.2rem; font-weight:900; color:#1a1a2e; margin-bottom:6px; }
+        .form-card .subtitle { font-size:0.88rem; color:#aaa; font-weight:600; margin-bottom:28px; }
 
-                <h1>Create New account</h1>
-                <p class="subtitle">Create account for another new admin or new instructor</p>
+        .form-group { margin-bottom:18px; }
+        .form-group label { display:block; font-size:0.8rem; font-weight:800; color:#888; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px; }
+        .form-input {
+            width:100%; padding:10px 14px; border-radius:10px;
+            border:1.5px solid #e0e0e0; font-family:'Nunito',sans-serif;
+            font-size:0.9rem; font-weight:600; color:#333;
+            transition:border-color 0.18s; outline:none; box-sizing:border-box;
+        }
+        .form-input:focus { border-color:#c9242b; }
+        select.form-input { background:white; }
 
-                <div class="form-group">
-                    <label>Full Name</label>
-                    <asp:TextBox ID="txtFullName" runat="server" CssClass="form-input" 
-                        placeholder="Your full name"></asp:TextBox>
-                </div>
+        .btn-create-acc {
+            width:100%; padding:13px; background:#c9242b; border:none; color:white;
+            font-family:'Nunito',sans-serif; font-size:1rem; font-weight:800;
+            border-radius:12px; cursor:pointer; transition:background 0.18s,transform 0.18s;
+            margin-top:6px;
+        }
+        .btn-create-acc:hover { background:#a01c22; transform:translateY(-1px); }
 
-                <div class="form-group">
-                    <label>Username</label>
-                    <asp:TextBox ID="txtUsername" runat="server" CssClass="form-input" 
-                        placeholder="Choose a username"></asp:TextBox>
-                </div>
+        .success-message { display:block; margin-top:14px; padding:12px 16px; background:#d1fae5; color:#065f46; border-radius:10px; font-size:0.88rem; font-weight:700; }
+        .error-message   { display:block; margin-top:14px; padding:12px 16px; background:#fde8e9; color:#9f1239; border-radius:10px; font-size:0.88rem; font-weight:700; }
+    </style>
+</asp:Content>
 
-                <div class="form-group">
-                    <label>Email</label>
-                    <asp:TextBox ID="txtEmail" runat="server" CssClass="form-input" 
-                        TextMode="Email" placeholder="your.email@example.com"></asp:TextBox>
-                </div>
+<asp:Content ID="Content3" ContentPlaceHolderID="MainContent" runat="server">
 
-                <div class="form-group">
-                    <label>Role</label>
-                    <asp:DropDownList ID="ddlRole" runat="server" CssClass="form-input">
-                        <asp:ListItem Text="Select Role" Value="" />
-                        <asp:ListItem Text="Admin" Value="Admin" />
-                        <asp:ListItem Text="Instructor" Value="Instructor" />
-                        <asp:ListItem Text="Member" Value="Member" />
-                    </asp:DropDownList>
-                </div>
+    <div class="page-header">
+        <h2><i class="fa-solid fa-user-plus" style="color:#c9242b;margin-right:8px;"></i>Create Account</h2>
+        <p>Create a new account for an admin, instructor, or member.</p>
+    </div>
 
-                <div class="form-group">
-                    <label>Password</label>
-                    <asp:TextBox ID="txtPassword" runat="server" CssClass="form-input"
-                        TextMode="Password" placeholder="Create a strong password"></asp:TextBox>
-                </div>
+    <div class="form-card">
+        <h3>New Account</h3>
+        <p class="subtitle">Fill in the details below to create a new platform account.</p>
 
-                <div class="form-group">
-                    <label>Confirm Password</label>
-                    <asp:TextBox ID="txtConfirmPassword" runat="server" CssClass="form-input"
-                        TextMode="Password" placeholder="Please Re-enter your password"></asp:TextBox>
-                </div>
-
-                <asp:Button ID="btnCreate" runat="server" Text="Create Account"
-                    CssClass="btn-create" OnClick="btnCreate_Click" />
-                <asp:Label ID="lblMessage" runat="server" CssClass="form-input" EnableViewState="false"></asp:Label>
-
-                <script>
-                    window.onload = function () {
-                        var msg = document.getElementById('<%= lblMessage.ClientID %>');
-                        if (msg && msg.innerText.trim() !== '') {
-                            setTimeout(function () {
-                                msg.style.transition = 'opacity 0.5s ease';
-                                msg.style.opacity = '0';
-                                setTimeout(function () { msg.style.display = 'none'; }, 500);
-                            }, 3000);
-                        }
-                    };
-                </script>
-
-            </div>
+        <div class="form-group">
+            <label>Full Name</label>
+            <asp:TextBox ID="txtFullName" runat="server" CssClass="form-input" placeholder="Enter full name" />
         </div>
-    </form>
-</body>
-</html>
+        <div class="form-group">
+            <label>Username</label>
+            <asp:TextBox ID="txtUsername" runat="server" CssClass="form-input" placeholder="Choose a username" />
+        </div>
+        <div class="form-group">
+            <label>Email</label>
+            <asp:TextBox ID="txtEmail" runat="server" CssClass="form-input" TextMode="Email" placeholder="email@example.com" />
+        </div>
+        <div class="form-group">
+            <label>Role</label>
+            <asp:DropDownList ID="ddlRole" runat="server" CssClass="form-input">
+                <asp:ListItem Text="Select Role" Value="" />
+                <asp:ListItem Text="Admin"       Value="Admin" />
+                <asp:ListItem Text="Instructor"  Value="Instructor" />
+                <asp:ListItem Text="Member"      Value="Member" />
+            </asp:DropDownList>
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <asp:TextBox ID="txtPassword" runat="server" CssClass="form-input" TextMode="Password" placeholder="Create a strong password" />
+        </div>
+        <div class="form-group">
+            <label>Confirm Password</label>
+            <asp:TextBox ID="txtConfirmPassword" runat="server" CssClass="form-input" TextMode="Password" placeholder="Re-enter your password" />
+        </div>
+
+        <asp:Button ID="btnCreate" runat="server" Text="Create Account" CssClass="btn-create-acc" OnClick="btnCreate_Click" />
+        <asp:Label ID="lblMessage" runat="server" EnableViewState="false"></asp:Label>
+    </div>
+
+</asp:Content>
+
+<asp:Content ID="Content4" ContentPlaceHolderID="ScriptContent" runat="server">
+<script>
+    window.onload = function () {
+        var msg = document.getElementById('<%= lblMessage.ClientID %>');
+        if (msg && msg.innerText.trim() !== '') {
+            setTimeout(function () {
+                msg.style.transition = 'opacity 0.5s ease';
+                msg.style.opacity = '0';
+                setTimeout(function () { msg.style.display = 'none'; }, 500);
+            }, 3000);
+        }
+    };
+</script>
+</asp:Content>
