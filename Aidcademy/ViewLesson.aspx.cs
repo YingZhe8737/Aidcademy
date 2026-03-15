@@ -119,6 +119,9 @@ namespace Aidcademy
                     }
                 }
 
+                // 1b. Load prev/next navigation + set ViewState["CourseID"]
+                LoadLessonNavigation(lessonId, conn);
+
                 // 2. Load ALL Quiz Questions
                 string quizQuery = @"SELECT qq.* FROM QuizQuestions qq INNER JOIN Quizzes q ON qq.QuizID = q.QuizID WHERE q.LessonID = @LessonID";
                 using (SqlCommand cmd = new SqlCommand(quizQuery, conn))
@@ -196,7 +199,6 @@ namespace Aidcademy
             int userId = Convert.ToInt32(Session["UserID"]);
             int quizId = Convert.ToInt32(hfQuizID.Value);
             int newStreak = 1;
-            int pointsToAdd = 0;
             DateTime lastActivity;
             using (SqlConnection conn = new SqlConnection(connString))
             {
@@ -259,19 +261,9 @@ namespace Aidcademy
                     lblQuizScore.Text = $"You scored {score} out of {totalQuestions}. (Retry earned {earnedXP} XP. Highest saved: {highestSaved} XP)";
                 }
 
+                // Fetch current streak (single query — no duplicate)
                 int currentStreak = 0;
                 string getStreakQuery = "SELECT ISNULL(DailyStreak, 0) FROM Leaderboard WHERE UserID = @UserID";
-                using (SqlCommand cmd = new SqlCommand(getStreakQuery, conn))
-                {
-                    cmd.Parameters.AddWithValue("@UserID", userId);
-                    object res = cmd.ExecuteScalar();
-                    if (res != null && res != DBNull.Value)
-                    {
-                        currentStreak = Convert.ToInt32(res);
-                    }
-                }
-
-                // Calculate new streak
                 using (SqlCommand cmd = new SqlCommand(getStreakQuery, conn))
                 {
                     cmd.Parameters.AddWithValue("@UserID", userId);
@@ -311,7 +303,7 @@ namespace Aidcademy
                 using (SqlCommand cmd = new SqlCommand(upsertQuery, conn))
                 {
                     cmd.Parameters.AddWithValue("@UserID", userId);
-                    cmd.Parameters.AddWithValue("@Points", pointsToAdd);
+                    cmd.Parameters.AddWithValue("@Points", earnedXP);
                     cmd.Parameters.AddWithValue("@Streak", newStreak);
                     cmd.ExecuteNonQuery();
                 }
@@ -367,33 +359,25 @@ namespace Aidcademy
 
 
         // ── Shared status updater ─────────────────────────────────────────────
+        // Combined into a single UPDATE to reduce round-trips
         protected void UpdateStatus(int lessonId, string newStatus, string comment = null)
         {
+            string sql = string.IsNullOrEmpty(comment)
+                ? "UPDATE Lessons SET ApprovalStatus = @Status WHERE LessonID = @LessonID"
+                : "UPDATE Lessons SET ApprovalStatus = @Status, StatusComment = @Comment WHERE LessonID = @LessonID";
+
             using (SqlConnection conn = new SqlConnection(connString))
             {
                 conn.Open();
-
-                // Update the lesson approval status
-                using (SqlCommand cmd = new SqlCommand(
-                    "UPDATE Lessons SET ApprovalStatus = @Status WHERE LessonID = @LessonID", conn))
+                using (SqlCommand cmd = new SqlCommand(sql, conn))
                 {
                     cmd.Parameters.AddWithValue("@Status", newStatus);
                     cmd.Parameters.AddWithValue("@LessonID", lessonId);
+                    if (!string.IsNullOrEmpty(comment))
+                        cmd.Parameters.AddWithValue("@Comment", comment);
                     cmd.ExecuteNonQuery();
                 }
-
-
-                if (!string.IsNullOrEmpty(comment))
-                {
-                    using (SqlCommand cmd = new SqlCommand(
-                        "UPDATE Lessons SET StatusComment = @Comment WHERE LessonID = @LessonID", conn))
-                    {
-                        cmd.Parameters.AddWithValue("@Comment", comment);
-                        cmd.Parameters.AddWithValue("@LessonID", lessonId);
-                        cmd.ExecuteNonQuery();
-                    }
-                }
-            } 
+            }
         }
 
         private void BindSidebar(int currentLessonId)
@@ -637,7 +621,8 @@ namespace Aidcademy
 
                     UPDATE Enrollments
                     SET ProgressPercentage = @Pct,
-                        IsCompleted = CASE WHEN @Pct = 100 THEN 1 ELSE 0 END
+                        IsCompleted = CASE WHEN @Pct = 100 THEN 1 ELSE 0 END,
+                        CompletionDate = CASE WHEN @Pct = 100 THEN GETDATE() ELSE NULL END
                     WHERE CourseID = @CourseID AND UserID = @UserID;
                 ";
 
@@ -648,6 +633,13 @@ namespace Aidcademy
                     cmd.ExecuteNonQuery();
                 }
             }
+
+            // Give feedback and disable button
+            btnMarkComplete.Text = "✓ Completed";
+            btnMarkComplete.Enabled = false;
+            btnMarkComplete.CssClass = "btn btn-secondary rounded-pill fw-bold px-4 shadow-sm";
+            ScriptManager.RegisterStartupScript(this, GetType(), "markDone",
+                "alert('Lesson marked as complete!');", true);
         }
     }
 }

@@ -36,28 +36,9 @@ namespace Aidcademy
             get { return isMember; }
         }
 
-        protected string GetMemberName()
-        {
-            string name = SessionHelper.GetUsername();
-            if (!string.IsNullOrWhiteSpace(name))
-            {
-                return name;
-            }
-
-            name = Session["Name"]?.ToString();
-            if (!string.IsNullOrWhiteSpace(name))
-            {
-                return name;
-            }
-
-            return "Member";
-        }
-
-        protected string GetMemberInitial()
-        {
-            string name = GetMemberName().Trim();
-            return name.Length > 0 ? name.Substring(0, 1).ToUpperInvariant() : "M";
-        }
+        // Now uses shared SessionHelper.GetDisplayName() / GetInitial()
+        protected string GetMemberName()  { return SessionHelper.GetDisplayName(); }
+        protected string GetMemberInitial() { return SessionHelper.GetInitial(); }
 
         private void LoadCourseTitle()
         {

@@ -108,13 +108,7 @@ namespace Aidcademy
 
                 // Use the shared session helper so all session keys match the rest of the app
                 SessionHelper.SetLoginSession(userId, role, fullName, googleEmail);
-
-                if (role == "Admin")
-                    Response.Redirect("~/AdminDashboard.aspx");
-                else if (role == "Instructor")
-                    Response.Redirect("~/InstructorManageContent.aspx");
-                else
-                    Response.Redirect("~/MemberDashboard.aspx");
+                SessionHelper.RedirectByRole(role);
             }
             catch (System.Threading.ThreadAbortException)
             {

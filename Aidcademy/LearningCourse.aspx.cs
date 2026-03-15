@@ -28,28 +28,9 @@ namespace Aidcademy
             get { return isMember; }
         }
 
-        protected string GetMemberName()
-        {
-            string name = SessionHelper.GetUsername();
-            if (!string.IsNullOrWhiteSpace(name))
-            {
-                return name;
-            }
-
-            name = Session["Name"]?.ToString();
-            if (!string.IsNullOrWhiteSpace(name))
-            {
-                return name;
-            }
-
-            return "Member";
-        }
-
-        protected string GetMemberInitial()
-        {
-            string name = GetMemberName().Trim();
-            return name.Length > 0 ? name.Substring(0, 1).ToUpperInvariant() : "M";
-        }
+        // Now uses shared SessionHelper.GetDisplayName() / GetInitial()
+        protected string GetMemberName()  { return SessionHelper.GetDisplayName(); }
+        protected string GetMemberInitial() { return SessionHelper.GetInitial(); }
 
         private void LoadCourses()
         {
@@ -139,7 +120,8 @@ namespace Aidcademy
             }
             catch (Exception ex)
             {
-                ShowMessage("Could not load courses. (" + ex.Message + ")", false);
+                System.Diagnostics.Debug.WriteLine("LoadCourses error: " + ex.Message);
+                ShowMessage("Could not load courses. Please try again later.", false);
             }
         }
 
@@ -182,7 +164,8 @@ namespace Aidcademy
             }
             catch (Exception ex)
             {
-                ShowMessage("Could not enrol. (" + ex.Message + ")", false);
+                System.Diagnostics.Debug.WriteLine("Enroll error: " + ex.Message);
+                ShowMessage("Could not enrol. Please try again later.", false);
             }
         }
 

@@ -46,27 +46,12 @@ namespace Aidcademy
                     return;
                 }
 
-                // Verify current password
-                string checkQuery = "SELECT PasswordHash FROM Users WHERE UserID = @UserID";
-                SqlParameter[] checkParams = { new SqlParameter("@UserID", userID) };
+                // Verify current password using shared helper (BCrypt + SHA fallback)
+                string storedHash = DatabaseHelper.ExecuteScalar(
+                    "SELECT PasswordHash FROM Users WHERE UserID = @UserID",
+                    new[] { new SqlParameter("@UserID", userID) })?.ToString();
 
-                string storedHash = DatabaseHelper.ExecuteScalar(checkQuery, checkParams)?.ToString();
-
-                bool isPasswordCorrect = false;
-                if (!string.IsNullOrEmpty(storedHash))
-                {
-                    try
-                    {
-                        isPasswordCorrect = BCrypt.Net.BCrypt.Verify(currentPassword, storedHash);
-                    }
-                    catch (BCrypt.Net.SaltParseException)
-                    {
-                        // Fallback to SHA if user hasn't migrated yet
-                        isPasswordCorrect = (storedHash == SecurityHelper.HashPassword(currentPassword));
-                    }
-                }
-
-                if (!isPasswordCorrect)
+                if (!SecurityHelper.VerifyStoredPassword(currentPassword, storedHash))
                 {
                     ShowMessage("Your current password is incorrect.", false);
                     return;
@@ -87,7 +72,8 @@ namespace Aidcademy
             }
             catch (Exception ex)
             {
-                ShowMessage("An error occurred. Please try again. (" + ex.Message + ")", false);
+                System.Diagnostics.Debug.WriteLine("ChangePassword error: " + ex.Message);
+                ShowMessage("An error occurred. Please try again later.", false);
             }
         }
 

@@ -127,6 +127,24 @@ namespace Aidcademy.Utilities
             return HashPassword(password).Equals(hash, StringComparison.OrdinalIgnoreCase);
         }
 
+        /// <summary>
+        /// Verify a plaintext password against a stored hash.
+        /// Tries BCrypt first; falls back to SHA-256 for legacy hashes.
+        /// </summary>
+        public static bool VerifyStoredPassword(string plainPassword, string storedHash)
+        {
+            if (string.IsNullOrEmpty(storedHash)) return false;
+            try
+            {
+                return BCrypt.Net.BCrypt.Verify(plainPassword, storedHash);
+            }
+            catch (BCrypt.Net.SaltParseException)
+            {
+                // Legacy SHA-256 hash — fallback
+                return VerifyPassword(plainPassword, storedHash);
+            }
+        }
+
         // Generate a random token for password reset (legacy, kept for compatibility)
         public static string GenerateResetToken()
         {
@@ -566,6 +584,43 @@ namespace Aidcademy.Utilities
             catch { }
 
             return "";
+        }
+
+        /// <summary>
+        /// Redirect to the correct dashboard based on role.
+        /// </summary>
+        public static void RedirectByRole(string role)
+        {
+            var ctx = HttpContext.Current;
+            if (role == "Admin")
+                ctx.Response.Redirect("~/AdminDashboard.aspx");
+            else if (role == "Instructor")
+                ctx.Response.Redirect("~/InstructorManageContent.aspx");
+            else
+                ctx.Response.Redirect("~/MemberDashboard.aspx");
+        }
+
+        /// <summary>
+        /// Get a display name for the logged-in user (checks multiple session keys).
+        /// </summary>
+        public static string GetDisplayName()
+        {
+            string name = GetUsername();
+            if (!string.IsNullOrWhiteSpace(name)) return name;
+
+            name = HttpContext.Current.Session["Name"]?.ToString();
+            if (!string.IsNullOrWhiteSpace(name)) return name;
+
+            return "Member";
+        }
+
+        /// <summary>
+        /// Get the first letter of the user's display name (for avatar circles).
+        /// </summary>
+        public static string GetInitial()
+        {
+            string name = GetDisplayName().Trim();
+            return name.Length > 0 ? name.Substring(0, 1).ToUpperInvariant() : "M";
         }
 
         // Legacy alias - kept so existing callers compile without change

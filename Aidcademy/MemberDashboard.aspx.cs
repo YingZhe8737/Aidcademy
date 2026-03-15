@@ -30,11 +30,9 @@ namespace Aidcademy
         {
             int userID = Convert.ToInt32(Session["UserID"]);
 
-            string name = SessionHelper.GetUsername().Length > 0
-                ? SessionHelper.GetUsername()
-                : Session["Name"]?.ToString() ?? "Member";
+            string name = SessionHelper.GetDisplayName();
             lblMemberName.Text = name;
-            lblUserInitial.Text = name.Length > 0 ? name.Substring(0, 1).ToUpper() : "?";
+            lblUserInitial.Text = SessionHelper.GetInitial();
 
             try
             {
@@ -43,10 +41,12 @@ namespace Aidcademy
                     conn.Open();
 
                     // Stats: streak, points
+                    // Use SUM(QuizResults.Score) as the single source of truth for points
+                    // so it always matches the leaderboard table display
                     string queryStats = @"
                         SELECT
                             ISNULL(lb.DailyStreak, 0) AS DailyStreak,
-                            ISNULL(lb.TotalPoints, 0) AS TotalPoints
+                            ISNULL((SELECT SUM(Score) FROM QuizResults WHERE UserID = @UserID), 0) AS TotalPoints
                         FROM Leaderboard lb
                         WHERE lb.UserID = @UserID";
 
@@ -63,14 +63,25 @@ namespace Aidcademy
                                 dailyStreak = Convert.ToInt32(reader["DailyStreak"]);
                                 totalPoints = Convert.ToInt32(reader["TotalPoints"]);
                             }
+                            else
+                            {
+                                // No Leaderboard row yet — still calculate points from QuizResults
+                                reader.Close();
+                                using (SqlCommand cmd2 = new SqlCommand("SELECT ISNULL(SUM(Score), 0) FROM QuizResults WHERE UserID = @UserID", conn))
+                                {
+                                    cmd2.Parameters.AddWithValue("@UserID", userID);
+                                    totalPoints = Convert.ToInt32(cmd2.ExecuteScalar());
+                                }
+                            }
                         }
                     }
 
                     lblDailyStreak.Text = dailyStreak.ToString();
                     lblTotalPoints.Text = totalPoints.ToString("N0");
 
-                    // Personal best streak (use current streak as fallback)
-                    lblPersonalBest.Text = Math.Max(dailyStreak, dailyStreak).ToString();
+                    // Personal best streak — query the highest streak ever recorded
+                    // (For now, use current streak as the best since we don't track history)
+                    lblPersonalBest.Text = dailyStreak.ToString();
 
                     // Monthly points
                     string queryMonthly = @"
@@ -84,22 +95,28 @@ namespace Aidcademy
                         lblMonthlyPoints.Text = Convert.ToInt32(cmd.ExecuteScalar()).ToString("N0");
                     }
 
-                    // Enrolled & completed counts
+                    // Enrolled & completed counts — combined into one query
                     int enrolled = 0, completed = 0;
-                    using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM Enrollments WHERE UserID = @UserID", conn))
+                    using (SqlCommand cmd = new SqlCommand(
+                        @"SELECT COUNT(*) AS Enrolled,
+                                 SUM(CASE WHEN IsCompleted = 1 THEN 1 ELSE 0 END) AS Completed
+                          FROM Enrollments WHERE UserID = @UserID", conn))
                     {
                         cmd.Parameters.AddWithValue("@UserID", userID);
-                        enrolled = Convert.ToInt32(cmd.ExecuteScalar());
-                        lblEnrolledCourses.Text = enrolled.ToString();
-                    }
-                    using (SqlCommand cmd = new SqlCommand("SELECT COUNT(*) FROM Enrollments WHERE UserID = @UserID AND IsCompleted = 1", conn))
-                    {
-                        cmd.Parameters.AddWithValue("@UserID", userID);
-                        completed = Convert.ToInt32(cmd.ExecuteScalar());
+                        using (SqlDataReader rdr = cmd.ExecuteReader())
+                        {
+                            if (rdr.Read())
+                            {
+                                enrolled  = Convert.ToInt32(rdr["Enrolled"]);
+                                completed = rdr["Completed"] != DBNull.Value ? Convert.ToInt32(rdr["Completed"]) : 0;
+                            }
+                        }
+                        lblEnrolledCourses.Text  = enrolled.ToString();
                         lblCompletedCourses.Text = completed.ToString();
                     }
 
-                    // Leaderboard rank
+                    // Leaderboard rank — uses same SUM(QuizResults.Score) source as leaderboard table
+                    // so rank is consistent with the displayed leaderboard
                     string queryRank = @"
                         SELECT COUNT(*) + 1
                         FROM (
@@ -109,10 +126,13 @@ namespace Aidcademy
                             GROUP BY p2.UserID
                             HAVING ISNULL(SUM(qr2.Score), 0) > 0
                         ) ranked
-                        WHERE ranked.Pts > @TotalPoints";
+                        WHERE ranked.Pts > (
+                            SELECT ISNULL(SUM(Score), 0)
+                            FROM QuizResults WHERE UserID = @UserID
+                        )";
                     using (SqlCommand cmd = new SqlCommand(queryRank, conn))
                     {
-                        cmd.Parameters.AddWithValue("@TotalPoints", totalPoints);
+                        cmd.Parameters.AddWithValue("@UserID", userID);
                         int rank = Convert.ToInt32(cmd.ExecuteScalar());
                         lblLeaderboardRank.Text = totalPoints > 0 ? rank.ToString() : "-";
 
@@ -195,9 +215,9 @@ namespace Aidcademy
                     using (SqlCommand cmd = new SqlCommand(queryCourses, conn))
                     {
                         cmd.Parameters.AddWithValue("@UserID", userID);
-                        SqlDataAdapter da = new SqlDataAdapter(cmd);
                         DataTable dt = new DataTable();
-                        da.Fill(dt);
+                        using (SqlDataAdapter da = new SqlDataAdapter(cmd))
+                            da.Fill(dt);
                         rptEnrolledCourses.DataSource = dt;
                         rptEnrolledCourses.DataBind();
                         pnlNoCourses.Visible = dt.Rows.Count == 0;
@@ -214,9 +234,9 @@ namespace Aidcademy
                     using (SqlCommand cmd = new SqlCommand(queryRecentCompleted, conn))
                     {
                         cmd.Parameters.AddWithValue("@UserID", userID);
-                        SqlDataAdapter da = new SqlDataAdapter(cmd);
                         DataTable dt = new DataTable();
-                        da.Fill(dt);
+                        using (SqlDataAdapter da = new SqlDataAdapter(cmd))
+                            da.Fill(dt);
                         rptCompletedCourses.DataSource = dt;
                         rptCompletedCourses.DataBind();
                         if (dt.Rows.Count > 0)
@@ -240,9 +260,9 @@ namespace Aidcademy
 
                     using (SqlCommand cmd = new SqlCommand(queryLeaderboard, conn))
                     {
-                        SqlDataAdapter da = new SqlDataAdapter(cmd);
                         DataTable dt = new DataTable();
-                        da.Fill(dt);
+                        using (SqlDataAdapter da = new SqlDataAdapter(cmd))
+                            da.Fill(dt);
 
                         // Build podium for top 3
                         BuildPodium(dt);
@@ -305,7 +325,6 @@ namespace Aidcademy
                 if (idx >= dt.Rows.Count) continue;
                 DataRow row = dt.Rows[idx];
                 string name = row["FullName"].ToString();
-                string initial = name.Length > 0 ? name.Substring(0, 1).ToUpper() : "?";
                 string initials = name.Length > 0 ? name.Substring(0, 1).ToUpper() : "?";
                 // Try to get second initial from last name
                 string[] parts = name.Split(' ');
