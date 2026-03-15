@@ -3,6 +3,7 @@ using System.Data.SqlClient;
 using System.Web.UI;
 using BCrypt.Net;
 using Aidcademy.Utilities;
+using System.Configuration;
 
 namespace Aidcademy
 {
@@ -282,6 +283,32 @@ namespace Aidcademy
 
         private void RedirectByRole(string role)
         {
+            string sessionID = Session.SessionID;
+
+            using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["AidcademyDB"].ConnectionString))
+            {
+                conn.Open();
+
+                if (role == "Admin" || role == "Instructor")
+                {
+                    string deleteQuery = "DELETE FROM SiteTraffic WHERE SessionID = @SessionID";
+                    using (SqlCommand cmd = new SqlCommand(deleteQuery, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@SessionID", sessionID);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                else
+                {
+                    string updateQuery = "UPDATE SiteTraffic SET IsRegisteredUser = 1 WHERE SessionID = @SessionID";
+                    using (SqlCommand cmd = new SqlCommand(updateQuery, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@SessionID", sessionID);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+
             if (role == "Admin")
                 Response.Redirect("~/AdminDashboard.aspx");
             else if (role == "Instructor")
@@ -289,6 +316,8 @@ namespace Aidcademy
             else
                 Response.Redirect("~/MemberDashboard.aspx");
         }
+
+
 
         private bool ValidatePassword(string password)
         {

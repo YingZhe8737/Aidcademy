@@ -11,23 +11,18 @@
 <body>
     <form id="form1" runat="server">
         <!-- Navigation bar at the very top -->
-    <div class="admin-nav">
-
-        <div class="nav-welcome">
-          <h2> <i class="fa-solid fa-truck-medical me-2"></i> AIDCADEMY </h2>  
-        </div>
-
-        <div = "navbar-nav flex-row">
+        <div class="admin-nav">
+            <div class="nav-logo">
+                <i class="fa-solid fa-truck-medical"></i> AIDCADEMY
+            </div>
             <ul class="navbar-nav">
-                <li class="nav-item"><a class="nav-link fw-bold" href="AdminDashboard.aspx">Dashboard</a></li>
+                <li class="nav-item"><a class="nav-link active" href="AdminDashboard.aspx">Dashboard</a></li>
                 <li class="nav-item"><a class="nav-link" href="SystemReport.aspx">System Report</a></li>
                 <li class="nav-item"><a class="nav-link" href="UserManagement.aspx">User Management</a></li>
                 <li class="nav-item"><a class="nav-link" href="ContentManagement.aspx">Content Management</a></li>
-                <li class="nav-item"><a class="nav-link" href="mainpage.aspx">Logout</a></li>
+                <li class="nav-item"><a class="nav-link" href="Logout.aspx">Logout</a></li>
             </ul>
         </div>
-
-    </div>
 
 
     <div class="user-management-container">

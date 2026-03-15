@@ -16,11 +16,9 @@
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <UseIISExpress>true</UseIISExpress>
     <Use64BitIISExpress />
-    <IISExpressSSLPort>44327</IISExpressSSLPort>
-    <IISExpressAnonymousAuthentication>
-    </IISExpressAnonymousAuthentication>
-    <IISExpressWindowsAuthentication>
-    </IISExpressWindowsAuthentication>
+    <IISExpressSSLPort>44310</IISExpressSSLPort>
+    <IISExpressAnonymousAuthentication>enabled</IISExpressAnonymousAuthentication>
+    <IISExpressWindowsAuthentication>disabled</IISExpressWindowsAuthentication>
     <IISExpressUseClassicPipelineMode />
     <UseGlobalApplicationHostFile />
     <NuGetPackageImportStamp>
@@ -113,11 +111,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="About.aspx" />
-    <Content Include="App_Data\AidcademyDB.mdf" />
-    <Content Include="App_Data\AidcademyDB_log.ldf">
-      <DependentUpon>AidcademyDB.mdf</DependentUpon>
-    </Content>
     <Content Include="ContentManagement.aspx" />
+    <Content Include="InstructorCourseSelector.ascx" />
     <Content Include="MainPage.aspx" />
     <Content Include="Scripts\bootstrap.bundle.js" />
     <Content Include="Scripts\bootstrap.bundle.min.js" />
@@ -129,6 +124,8 @@
     <Content Include="Instructor.Master" />
     <Content Include="Member.Master" />
     <Content Include="AccountModification.aspx" />
+    <Content Include="FeedbackForm.aspx" />
+    <Content Include="Logout.aspx" />
     <None Include="Scripts\jquery-3.7.0.intellisense.js" />
     <Content Include="Scripts\jquery-3.7.0.js" />
     <Content Include="Scripts\jquery-3.7.0.min.js" />
@@ -270,6 +267,13 @@
     </Compile>
     <Compile Include="ForgotPassword.aspx.designer.cs">
       <DependentUpon>ForgotPassword.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="InstructorCourseSelector.ascx.cs">
+      <DependentUpon>InstructorCourseSelector.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="InstructorCourseSelector.ascx.designer.cs">
+      <DependentUpon>InstructorCourseSelector.ascx</DependentUpon>
     </Compile>
     <Compile Include="InstructorEditContent.aspx.cs">
       <DependentUpon>InstructorEditContent.aspx</DependentUpon>
@@ -438,8 +442,23 @@
     <Compile Include="AccountModification.aspx.designer.cs">
       <DependentUpon>AccountModification.aspx</DependentUpon>
     </Compile>
+    <Compile Include="FeedbackForm.aspx.cs">
+      <DependentUpon>FeedbackForm.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="FeedbackForm.aspx.designer.cs">
+      <DependentUpon>FeedbackForm.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Logout.aspx.cs">
+      <DependentUpon>Logout.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Logout.aspx.designer.cs">
+      <DependentUpon>Logout.aspx</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="App_Data\" />
     <Folder Include="image\" />
   </ItemGroup>
   <ItemGroup>

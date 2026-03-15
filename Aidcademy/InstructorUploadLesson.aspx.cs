@@ -21,14 +21,12 @@ namespace Aidcademy
 
             if (!IsPostBack)
             {
-                int currentInstructorId = Convert.ToInt32(Session["UserID"]);
-                BindCoursesDropdown(currentInstructorId);
-                BindGlobalCategories();
+                ctrlCourseSelector.InstructorId = Convert.ToInt32(Session["UserID"]);
+                ctrlCourseSelector.LoadCourses();
 
-                if (ddlCourses.Items.Count > 1)
+                if (!string.IsNullOrEmpty(ctrlCourseSelector.SelectedCourseId))
                 {
-                    ddlCourses.SelectedIndex = 1; 
-                    CalculateNextStep(); 
+                    CalculateNextStep();
                 }
                 else
                 {
@@ -37,34 +35,28 @@ namespace Aidcademy
             }
         }
 
-        private string SaveThumbnail(FileUpload fu)
+        // Fires when instructor picks a different course from the dropdown
+        protected void ctrlCourseSelector_CourseChanged(object sender, EventArgs e)
         {
-            if (fu.HasFile)
-            {
-                string ext = Path.GetExtension(fu.FileName).ToLower();
-                if (ext == ".jpg" || ext == ".jpeg" || ext == ".png")
-                {
-                    string fileName = Guid.NewGuid().ToString() + ext;
-                    string relativePath = "~/Uploads/Thumbnails/" + fileName;
-                    string physicalPath = Server.MapPath("~/Uploads/Thumbnails/");
-                    if (!Directory.Exists(physicalPath)) Directory.CreateDirectory(physicalPath);
-                    fu.SaveAs(Server.MapPath(relativePath));
-                    return relativePath;
-                }
-            }
-            return null;
+            CalculateNextStep();
+        }
+
+        // Fires after a course is deleted — nothing to clear on this page since no lesson is loaded
+        protected void ctrlCourseSelector_CourseDeleted(object sender, EventArgs e)
+        {
+            txtSequenceOrder.Text = "1";
         }
 
         private void CalculateNextStep()
         {
-            if (!string.IsNullOrEmpty(ddlCourses.SelectedValue))
+            if (!string.IsNullOrEmpty(ctrlCourseSelector.SelectedCourseId))
             {
                 using (SqlConnection conn = new SqlConnection(connString))
                 {
                     string query = "SELECT ISNULL(MAX(SequenceOrder), 0) + 1 FROM Lessons WHERE CourseID = @CourseID";
                     using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
-                        cmd.Parameters.AddWithValue("@CourseID", ddlCourses.SelectedValue);
+                        cmd.Parameters.AddWithValue("@CourseID", ctrlCourseSelector.SelectedCourseId);
                         conn.Open();
                         txtSequenceOrder.Text = cmd.ExecuteScalar().ToString();
                     }
@@ -76,27 +68,17 @@ namespace Aidcademy
             }
         }
 
-        protected void ddlCourses_SelectedIndexChanged(object sender, EventArgs e)
+        private string SaveLessonThumbnail(FileUpload fu)
         {
-            CalculateNextStep();
-        }
-
-        private void BindCoursesDropdown(int instructorId)
-        {
-            using (SqlConnection conn = new SqlConnection(connString))
-            {
-                string query = "SELECT CourseID, Title FROM Courses WHERE UserID = @InstructorID";
-                using (SqlCommand cmd = new SqlCommand(query, conn))
-                {
-                    cmd.Parameters.AddWithValue("@InstructorID", instructorId);
-                    conn.Open();
-                    ddlCourses.DataSource = cmd.ExecuteReader();
-                    ddlCourses.DataTextField = "Title";
-                    ddlCourses.DataValueField = "CourseID";
-                    ddlCourses.DataBind();
-                }
-            }
-            ddlCourses.Items.Insert(0, new ListItem("-- Choose a Course --", ""));
+            if (!fu.HasFile) return null;
+            string ext = Path.GetExtension(fu.FileName).ToLower();
+            if (ext != ".jpg" && ext != ".jpeg" && ext != ".png") return null;
+            string fileName = Guid.NewGuid().ToString() + ext;
+            string relativePath = "~/Uploads/Thumbnails/" + fileName;
+            string physicalPath = Server.MapPath("~/Uploads/Thumbnails/");
+            if (!System.IO.Directory.Exists(physicalPath)) System.IO.Directory.CreateDirectory(physicalPath);
+            fu.SaveAs(Server.MapPath(relativePath));
+            return relativePath;
         }
 
         protected void btnSaveDraft_Click(object sender, EventArgs e)
@@ -104,7 +86,6 @@ namespace Aidcademy
             ProcessSubmission("Draft");
         }
 
-        // Changed this name to match the HTML!
         protected void btnPublishAdmin_Click(object sender, EventArgs e)
         {
             ProcessSubmission("Pending Admin");
@@ -112,10 +93,9 @@ namespace Aidcademy
 
         private void ProcessSubmission(string status)
         {
-            bool isNewCourse = hfIsNewCourse.Value == "1";
-
-            if ((!isNewCourse && string.IsNullOrEmpty(ddlCourses.SelectedValue)) ||
-                (isNewCourse && (string.IsNullOrEmpty(txtNewCourseTitle.Text) || string.IsNullOrEmpty(ddlNewCourseCategory.SelectedValue))) ||
+            // Validate required fields
+            if ((!ctrlCourseSelector.IsNewCourse && string.IsNullOrEmpty(ctrlCourseSelector.SelectedCourseId)) ||
+                (ctrlCourseSelector.IsNewCourse && (string.IsNullOrEmpty(ctrlCourseSelector.NewCourseTitle) || string.IsNullOrEmpty(ctrlCourseSelector.NewCourseCategory))) ||
                 string.IsNullOrEmpty(txtLessonTitle.Text) ||
                 string.IsNullOrEmpty(txtSequenceOrder.Text) ||
                 string.IsNullOrEmpty(hfContentBody.Value))
@@ -125,10 +105,10 @@ namespace Aidcademy
                 return;
             }
 
-            int currentInstructorId = Session["UserID"] != null ? Convert.ToInt32(Session["UserID"]) : 1;
+            int currentInstructorId = Convert.ToInt32(Session["UserID"]);
             int finalCourseId = 0;
             int finalLessonId = 0;
-            bool isSuccess = false; // NEW: A flag to track if the transaction worked
+            bool isSuccess = false;
 
             using (SqlConnection conn = new SqlConnection(connString))
             {
@@ -137,10 +117,9 @@ namespace Aidcademy
 
                 try
                 {
-                    if (isNewCourse)
+                    if (ctrlCourseSelector.IsNewCourse)
                     {
-                        string finalCategory = ddlNewCourseCategory.SelectedValue == "Other" ? txtCustomCategory.Text.Trim() : ddlNewCourseCategory.SelectedValue;
-                        string courseThumb = SaveThumbnail(fuNewCourseThumbnail);
+                        string courseThumb = ctrlCourseSelector.SaveNewCourseThumbnail();
 
                         string courseQuery = @"INSERT INTO Courses (UserID, Title, Description, Category, ThumbnailPath) 
                                                VALUES (@UserID, @Title, @Description, @Category, @ThumbnailPath);
@@ -149,19 +128,20 @@ namespace Aidcademy
                         using (SqlCommand cmd = new SqlCommand(courseQuery, conn, transaction))
                         {
                             cmd.Parameters.AddWithValue("@UserID", currentInstructorId);
-                            cmd.Parameters.AddWithValue("@Title", txtNewCourseTitle.Text.Trim());
-                            cmd.Parameters.AddWithValue("@Description", txtNewCourseDescription.Text.Trim());
-                            cmd.Parameters.AddWithValue("@Category", finalCategory);
+                            cmd.Parameters.AddWithValue("@Title", ctrlCourseSelector.NewCourseTitle);
+                            cmd.Parameters.AddWithValue("@Description", ctrlCourseSelector.NewCourseDescription);
+                            cmd.Parameters.AddWithValue("@Category", ctrlCourseSelector.NewCourseCategory);
                             cmd.Parameters.AddWithValue("@ThumbnailPath", (object)courseThumb ?? DBNull.Value);
                             finalCourseId = Convert.ToInt32(cmd.ExecuteScalar());
                         }
                     }
                     else
                     {
-                        finalCourseId = Convert.ToInt32(ddlCourses.SelectedValue);
+                        finalCourseId = Convert.ToInt32(ctrlCourseSelector.SelectedCourseId);
                     }
 
-                    string lessonThumb = SaveThumbnail(fuLessonThumbnail);
+                    string lessonThumb = SaveLessonThumbnail(fuLessonThumbnail);
+
                     string lessonQuery = @"INSERT INTO Lessons (CourseID, Title, Description, ContentBody, SequenceOrder, ApprovalStatus, ThumbnailPath) 
                                            VALUES (@CourseID, @Title, @Description, @ContentBody, @SequenceOrder, @ApprovalStatus, @ThumbnailPath);
                                            SELECT SCOPE_IDENTITY();";
@@ -172,14 +152,12 @@ namespace Aidcademy
                         cmd.Parameters.AddWithValue("@Title", txtLessonTitle.Text.Trim());
                         cmd.Parameters.AddWithValue("@Description", txtLessonDescription.Text.Trim());
                         cmd.Parameters.AddWithValue("@ContentBody", hfContentBody.Value.Trim());
-                        cmd.Parameters.AddWithValue("@SequenceOrder", Convert.ToInt32(txtSequenceOrder.Text));
+                        cmd.Parameters.AddWithValue("@SequenceOrder", txtSequenceOrder.Text.Trim());
                         cmd.Parameters.AddWithValue("@ApprovalStatus", status);
                         cmd.Parameters.AddWithValue("@ThumbnailPath", (object)lessonThumb ?? DBNull.Value);
-
                         finalLessonId = Convert.ToInt32(cmd.ExecuteScalar());
                     }
 
-                    // Save the Simulation if the instructor created one!
                     if (!string.IsNullOrEmpty(hfSimulationType.Value) && !string.IsNullOrEmpty(hfSimulationData.Value))
                     {
                         string simQuery = "INSERT INTO LessonSimulations (LessonID, SimulationType, SimulationData) VALUES (@LID, @Type, @Data)";
@@ -191,8 +169,9 @@ namespace Aidcademy
                             simCmd.ExecuteNonQuery();
                         }
                     }
+
                     transaction.Commit();
-                    isSuccess = true; // The transaction finished perfectly!
+                    isSuccess = true;
                 }
                 catch (Exception ex)
                 {
@@ -202,139 +181,9 @@ namespace Aidcademy
                 }
             }
 
-            // REDIRECT SAFELY OUTSIDE THE TRY-CATCH BLOCK
             if (isSuccess)
             {
                 Response.Redirect("InstructorEditContent.aspx?LessonID=" + finalLessonId);
-            }
-        }
-
-        protected void btnEditCoursePrompt_Click(object sender, EventArgs e)
-        {
-            if (string.IsNullOrEmpty(ddlCourses.SelectedValue)) return;
-
-            // Fetch current course details and display them in the edit boxes
-            using (SqlConnection conn = new SqlConnection(connString))
-            {
-                SqlCommand cmd = new SqlCommand("SELECT Title, Category, Description FROM Courses WHERE CourseID = @CourseID", conn);
-                cmd.Parameters.AddWithValue("@CourseID", ddlCourses.SelectedValue);
-                conn.Open();
-                using (SqlDataReader reader = cmd.ExecuteReader())
-                {
-                    if (reader.Read())
-                    {
-                        txtEditCourseTitle.Text = reader["Title"].ToString();
-                        txtEditCourseCategory.Text = reader["Category"].ToString();
-                        txtEditCourseDescription.Text = reader["Description"].ToString();
-                        pnlEditCourse.Visible = true; // Reveal the panel
-                    }
-                }
-            }
-        }
-
-        protected void btnCancelCourseEdit_Click(object sender, EventArgs e)
-        {
-            pnlEditCourse.Visible = false; // Hide the panel
-        }
-
-        protected void btnSaveCourseEdit_Click(object sender, EventArgs e)
-        {
-            if (string.IsNullOrEmpty(ddlCourses.SelectedValue) || string.IsNullOrEmpty(txtEditCourseTitle.Text)) return;
-
-            // Update the database with the new name/category
-            string newThumbPath = SaveThumbnail(fuEditCourseThumbnail);
-            using (SqlConnection conn = new SqlConnection(connString))
-            {
-                string updateQ = "UPDATE Courses SET Title = @Title, Category = @Category, Description = @Desc ";
-                if (newThumbPath != null) updateQ += ", ThumbnailPath = @Thumb ";
-                updateQ += " WHERE CourseID = @CourseID";
-
-                SqlCommand cmd = new SqlCommand(updateQ, conn);
-                cmd.Parameters.AddWithValue("@Title", txtEditCourseTitle.Text.Trim());
-                cmd.Parameters.AddWithValue("@Category", txtEditCourseCategory.Text.Trim());
-                cmd.Parameters.AddWithValue("@Desc", txtEditCourseDescription.Text.Trim());
-                if (newThumbPath != null) cmd.Parameters.AddWithValue("@Thumb", newThumbPath);
-                cmd.Parameters.AddWithValue("@CourseID", ddlCourses.SelectedValue);
-
-                conn.Open();
-                cmd.ExecuteNonQuery();
-            }
-
-            pnlEditCourse.Visible = false;
-            BindCoursesDropdown(1); // Refresh the dropdown
-
-            lblMessage.Text = "Course details updated successfully!";
-            lblMessage.CssClass = "d-block mb-3 fw-bold text-success";
-        }
-
-        protected void btnDeleteCourse_Click(object sender, EventArgs e)
-        {
-            if (string.IsNullOrEmpty(ddlCourses.SelectedValue)) return;
-            int courseId = Convert.ToInt32(ddlCourses.SelectedValue);
-
-            using (SqlConnection conn = new SqlConnection(connString))
-            {
-                conn.Open();
-                SqlTransaction tx = conn.BeginTransaction();
-                try
-                {
-                    // 1. Delete Quiz Questions attached to the lessons in this course
-                    string q1 = "DELETE FROM QuizQuestions WHERE QuizID IN (SELECT QuizID FROM Quizzes WHERE LessonID IN (SELECT LessonID FROM Lessons WHERE CourseID = @CourseID))";
-                    using (SqlCommand cmd = new SqlCommand(q1, conn, tx)) { cmd.Parameters.AddWithValue("@CourseID", courseId); cmd.ExecuteNonQuery(); }
-
-                    // 2. Delete Quizzes attached to the lessons
-                    string q2 = "DELETE FROM Quizzes WHERE LessonID IN (SELECT LessonID FROM Lessons WHERE CourseID = @CourseID)";
-                    using (SqlCommand cmd = new SqlCommand(q2, conn, tx)) { cmd.Parameters.AddWithValue("@CourseID", courseId); cmd.ExecuteNonQuery(); }
-
-                    // 3. Delete the Lessons
-                    string q3 = "DELETE FROM Lessons WHERE CourseID = @CourseID";
-                    using (SqlCommand cmd = new SqlCommand(q3, conn, tx)) { cmd.Parameters.AddWithValue("@CourseID", courseId); cmd.ExecuteNonQuery(); }
-
-                    // 4. Finally, delete the Course itself
-                    string q4 = "DELETE FROM Courses WHERE CourseID = @CourseID";
-                    using (SqlCommand cmd = new SqlCommand(q4, conn, tx)) { cmd.Parameters.AddWithValue("@CourseID", courseId); cmd.ExecuteNonQuery(); }
-
-                    tx.Commit();
-                    lblMessage.Text = "Course and all related lessons deleted successfully.";
-                    lblMessage.CssClass = "d-block mb-3 fw-bold text-success";
-
-                    BindCoursesDropdown(1);
-                    pnlEditCourse.Visible = false;
-                }
-                catch (Exception ex)
-                {
-                    tx.Rollback();
-                    lblMessage.Text = "Error deleting course: " + ex.Message;
-                    lblMessage.CssClass = "d-block mb-3 fw-bold text-danger";
-                }
-            }
-        }
-        
-        private void BindGlobalCategories()
-        {
-            using (SqlConnection conn = new SqlConnection(connString))
-            {
-                // Notice there is NO "WHERE UserID = @InstructorID" here! 
-                // This grabs every unique category ever created across the whole platform.
-                string query = "SELECT DISTINCT Category FROM Courses WHERE Category IS NOT NULL AND Category != ''";
-
-                using (SqlCommand cmd = new SqlCommand(query, conn))
-                {
-                    conn.Open();
-                    using (SqlDataReader reader = cmd.ExecuteReader())
-                    {
-                        ddlNewCourseCategory.Items.Clear();
-                        ddlNewCourseCategory.Items.Add(new ListItem("Category", ""));
-
-                        while (reader.Read())
-                        {
-                            string cat = reader["Category"].ToString();
-                            ddlNewCourseCategory.Items.Add(new ListItem(cat, cat));
-                        }
-
-                        ddlNewCourseCategory.Items.Add(new ListItem("Other...", "Other"));
-                    }
-                }
             }
         }
     }

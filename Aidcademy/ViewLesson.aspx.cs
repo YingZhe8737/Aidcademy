@@ -26,6 +26,8 @@ namespace Aidcademy
             // Only members can mark lessons complete.
             btnMarkComplete.Visible  = (role == "Member");
 
+            pnlAdminActions.Visible = (role == "Admin");
+
             // 3. Set dynamic back button URL
             string backUrl = "LearningCourse.aspx";
             if (role == "Member")     backUrl = "MemberDashboard.aspx";
@@ -191,7 +193,7 @@ namespace Aidcademy
                 }
             }
 
-            int userId = Session["UserID"] != null ? Convert.ToInt32(Session["UserID"]) : 1;
+            int userId = Convert.ToInt32(Session["UserID"]);
             int quizId = Convert.ToInt32(hfQuizID.Value);
             int newStreak = 1;
             int pointsToAdd = 0;

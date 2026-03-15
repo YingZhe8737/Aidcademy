@@ -27,16 +27,14 @@ namespace Aidcademy
         protected void btnCreate_Click(object sender, EventArgs e)
         {
 
-              string fullName = txtFullName.Text.Trim();
+            string fullName = txtFullName.Text.Trim();
             string username = txtUsername.Text.Trim();
             string email = txtEmail.Text.Trim();
             string password = txtPassword.Text.Trim();
             string confirm = txtConfirmPassword.Text.Trim();
             string role = ddlRole.SelectedValue;
 
-            // ===============================
-            // Validation
-            // ===============================
+            //validation
             if (string.IsNullOrEmpty(fullName) ||
                 string.IsNullOrEmpty(username) ||
                 string.IsNullOrEmpty(email) ||
