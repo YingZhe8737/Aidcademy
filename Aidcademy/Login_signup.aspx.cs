@@ -115,15 +115,6 @@ namespace Aidcademy
 
                                 reader.Close();
 
-                                // TEMP OTP BYPASS START (set Web.config appSettings SkipOtpVerification=true)
-                                if (IsOtpBypassEnabled())
-                                {
-                                    SessionHelper.SetLoginSession(sessionUserId, sessionRole, sessionName, sessionEmail);
-                                    RedirectByRole(sessionRole);
-                                    return;
-                                }
-                                // TEMP OTP BYPASS END
-
                                 // Generate & save OTP
                                 string otp = Aidcademy.Utilities.OtpHelper.SaveOtp(sessionUserId, "Login");
 
@@ -246,15 +237,6 @@ namespace Aidcademy
                                 profCmd.ExecuteNonQuery();
                             }
 
-                            // TEMP OTP BYPASS START (set Web.config appSettings SkipOtpVerification=true)
-                            if (IsOtpBypassEnabled())
-                            {
-                                SessionHelper.SetLoginSession(newUserId, "Member", fullName, email);
-                                RedirectByRole("Member");
-                                return;
-                            }
-                            // TEMP OTP BYPASS END
-
                             string otp = Aidcademy.Utilities.OtpHelper.SaveOtp(newUserId, "Login");
 
                             // Send OTP email
@@ -322,13 +304,6 @@ namespace Aidcademy
             pnlMessage.Visible  = true;
             lblMessage.Text     = message;
             lblMessage.CssClass = isSuccess ? "message success" : "message error";
-        }
-
-        private bool IsOtpBypassEnabled()
-        {
-            string raw = System.Configuration.ConfigurationManager.AppSettings["SkipOtpVerification"];
-            bool enabled;
-            return bool.TryParse(raw, out enabled) && enabled;
         }
 
         // ClearSignupForm() removed — was unused (redirect happens after signup)

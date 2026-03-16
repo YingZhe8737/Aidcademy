@@ -69,6 +69,7 @@ namespace Aidcademy
                 DatabaseHelper.ExecuteNonQuery(updateQuery, updateParams);
                 ShowMessage("Password changed successfully!", true);
                 ClearForm();
+                RedirectToLoginAfterSuccess();
             }
             catch (Exception ex)
             {
@@ -89,6 +90,18 @@ namespace Aidcademy
             lblMessage.Text = message;
             pnlMessage.Visible = true;
             pnlMessage.CssClass = isSuccess ? "message success" : "message error";
+        }
+
+        private void RedirectToLoginAfterSuccess()
+        {
+            Session.Clear();
+            Session.Abandon();
+
+            ClientScript.RegisterStartupScript(
+                GetType(),
+                "redirectToLogin",
+                "setTimeout(function(){ window.location='Login_signup.aspx'; }, 1800);",
+                true);
         }
     }
 }
