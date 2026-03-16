@@ -62,7 +62,7 @@
                             <span class="badge bg-light text-dark border me-2"><i class="fa-solid fa-book-medical text-danger me-1"></i><%# Eval("CourseTitle") %></span>
                             
                             <small class="fw-bold">
-                                <a href='MemberProfile.aspx?UserID=<%# Eval("UserID") %>' class="text-secondary text-decoration-none border-bottom border-secondary pb-1">
+                                <a href='Profile.aspx?UserID=<%# Eval("UserID") %>' class="text-secondary text-decoration-none border-bottom border-secondary pb-1">
                                     <i class="fa-solid fa-user me-1"></i><%# Eval("MemberUsername") %>
                                 </a>
                             </small>

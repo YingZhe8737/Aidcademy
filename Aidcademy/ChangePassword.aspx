@@ -184,7 +184,7 @@
                 OnClick="btnChangePassword_Click" ValidationGroup="ChangePassword" />
 
             <div class="back-link">
-                <asp:HyperLink runat="server" NavigateUrl="~/MemberProfile.aspx">&larr; Back to Profile</asp:HyperLink>
+                <asp:HyperLink runat="server" NavigateUrl="~/Profile.aspx">&larr; Back to Profile</asp:HyperLink>
             </div>
         </div>
     </form>

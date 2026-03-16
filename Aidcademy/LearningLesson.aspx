@@ -61,7 +61,7 @@
                 <a href="SubmitQuestion.aspx">
                     <i class="fas fa-comments"></i><span class="member-nav-label">Q&amp;A</span>
                 </a>
-                <a href="MemberProfile.aspx">
+                <a href="Profile.aspx">
                     <i class="fas fa-user"></i><span class="member-nav-label">Profile</span>
                 </a>
             </nav>

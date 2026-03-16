@@ -126,7 +126,7 @@
                     <a class='<%= IsActivePage("SubmitQuestion.aspx") ? "active-side" : "" %>' href="SubmitQuestion.aspx">
                         <i class="fas fa-comments"></i><span class="member-nav-label">Q&amp;A</span>
                     </a>
-                    <a class='<%= IsActivePage("MemberProfile.aspx") ? "active-side" : "" %>' href="MemberProfile.aspx">
+                    <a class='<%= IsActivePage("Profile.aspx") ? "active-side" : "" %>' href="Profile.aspx">
                         <i class="fas fa-user"></i><span class="member-nav-label">Profile</span>
                     </a>
                 </nav>
