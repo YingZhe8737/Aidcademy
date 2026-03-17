@@ -1,14 +1,14 @@
 body.member-page,
 body.member-shell-page {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #ffffff !important;
+    font-family: 'Nunito', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #FFFBF1 !important;
     min-height: 100vh;
     margin: 0;
 }
 
 .member-shell-topbar {
-    background: linear-gradient(90deg, #d81f2a 0%, #b6121f 100%);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    background: #c9242b;
+    box-shadow: 0 2px 16px rgba(201, 36, 43, 0.35);
     position: fixed;
     top: 0;
     left: 0;
@@ -71,8 +71,9 @@ body.member-shell-page {
 
 .member-shell-sidebar {
     width: 270px;
-    background: linear-gradient(180deg, #020d2b 0%, #000718 100%);
-    color: #d1d5db;
+    background: white;
+    border-right: 1px solid #ebebeb;
+    color: #555;
     padding: 24px 18px;
     position: fixed;
     top: 74px;
@@ -88,7 +89,7 @@ body.member-shell-page {
     align-items: center;
     gap: 12px;
     padding: 10px 8px 18px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid #f0f0f0;
     margin-bottom: 18px;
 }
 
@@ -106,7 +107,7 @@ body.member-shell-page {
 
 .member-shell-sidebar .profile-info h6 {
     margin: 0;
-    color: #fff;
+    color: #222;
     font-size: 0.98rem;
 }
 
@@ -124,7 +125,7 @@ body.member-shell-page {
 
 .member-shell-nav a {
     text-decoration: none;
-    color: #cbd5e1;
+    color: #555;
     padding: 11px 12px;
     border-radius: 12px;
     display: flex;
@@ -135,14 +136,13 @@ body.member-shell-page {
 }
 
 .member-shell-nav a:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: #fff;
+    background: #f5f5f5;
+    color: #222;
 }
 
 .member-shell-nav a.active-side {
-    background: #ef233c;
-    color: #fff;
-    box-shadow: 0 4px 14px rgba(239, 35, 60, 0.35);
+    background: #fde8e9;
+    color: #c9242b;
 }
 
 .member-shell-main {
@@ -158,19 +158,21 @@ body.member-shell-page {
     right: -18px;
     width: 36px;
     height: 36px;
-    border: 0;
+    border: 1.5px solid #e0e0e0;
     border-radius: 50%;
     background: #fff;
-    color: #111827;
-    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.18);
+    color: #888;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: transform 0.2s ease;
+    transition: all 0.2s ease;
 }
 
 .member-shell-toggle:hover {
-    transform: scale(1.04);
+    border-color: #c9242b;
+    color: #c9242b;
+    background: #fde8e9;
 }
 
 .member-nav-label {

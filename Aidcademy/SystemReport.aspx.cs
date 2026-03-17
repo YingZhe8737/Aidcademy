@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 using Aidcademy.Utilities;
 using Aidcademy.App_Code_Logic;
 
@@ -35,11 +31,15 @@ namespace Aidcademy
             gvTraffic.DataSource = adminCS.GetTraffic(search, startDate, endDate);
             gvTraffic.DataBind();
 
-            lblTotalMembers.Text =
-                adminCS.GetTotalMembersFiltered(search, startDate, endDate).ToString();
+            int members = adminCS.GetTotalMembersFiltered(search, startDate, endDate);
+            int visitors = adminCS.GetTotalVisitorsFiltered(search, startDate, endDate);
 
-            lblTotalVisitors.Text =
-                adminCS.GetTotalVisitorsFiltered(search, startDate, endDate).ToString();
+            lblTotalMembers.Text = members.ToString();
+            lblTotalVisitors.Text = visitors.ToString();
+
+            // Pass values to the Chart.js hidden fields
+            hfChartMembers.Value = members.ToString();
+            hfChartVisitors.Value = visitors.ToString();
         }
 
         protected void Filter_Changed(object sender, EventArgs e)

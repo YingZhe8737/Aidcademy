@@ -10,16 +10,13 @@ namespace Aidcademy
 {
     public partial class ContentManagement : System.Web.UI.Page
     {
-        // ── DB connection string from Web.config ──────────────────────────────
         string connString = ConfigurationManager.ConnectionStrings["AidcademyDB"].ConnectionString;
 
-        // ── Stores the active filter across postbacks via ViewState ───────────
-        private string ActiveFilter
+        public string ActiveFilter
         {
             get { return ViewState["ActiveFilter"] as string ?? "All"; }
             set { ViewState["ActiveFilter"] = value; }
         }
-
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -28,34 +25,53 @@ namespace Aidcademy
                 Response.Redirect("~/Login_signup.aspx");
                 return;
             }
-
             if (!IsPostBack)
             {
-                BindDashboardStats();   // fill the 4 stat cards
-                BindCourses();          // fill the course + lesson repeaters
+                BindDashboardStats();
+                BindCourses();
             }
         }
 
+        // PreRender fires AFTER all event handlers (including btnFilter_Click),
+        // so ActiveFilter already has the newly selected value at this point.
+        protected void Page_PreRender(object sender, EventArgs e)
+        {
+            SetActiveFilterTab();
+        }
 
+        private void SetActiveFilterTab()
+        {
+            btnAll.CssClass = "filter-tab-btn";
+            btnPending.CssClass = "filter-tab-btn";
+            btnPublished.CssClass = "filter-tab-btn";
+            btnRejected.CssClass = "filter-tab-btn";
+
+            switch (ActiveFilter)
+            {
+                case "Pending Admin": btnPending.CssClass += " tab-active-pending"; break;
+                case "Published": btnPublished.CssClass += " tab-active-published"; break;
+                case "Rejected": btnRejected.CssClass += " tab-active-rejected"; break;
+                default: btnAll.CssClass += " tab-active-all"; break;
+            }
+        }
 
         protected string GetStatusBadgeClassSimple(string status)
         {
             switch (status)
             {
                 case "Pending Admin": return "Pending";
-                case "Published": return "Published";
+                case "Published": case "Approved": return "Published";
                 case "Rejected": return "Rejected";
                 default: return "Draft";
             }
         }
 
-  
         protected string GetStatusCssClass(string status)
         {
             switch (status)
             {
                 case "Pending Admin": return "status-Pending";
-                case "Published": return "status-Published";
+                case "Published": case "Approved": return "status-Published";
                 case "Rejected": return "status-Rejected";
                 default: return "status-Draft";
             }
@@ -72,28 +88,16 @@ namespace Aidcademy
             }
         }
 
-
         private void BindDashboardStats()
         {
             using (SqlConnection conn = new SqlConnection(connString))
             {
                 conn.Open();
-
-                // Total lessons across all courses
-                lblTotal.Text = ScalarQuery(conn,
-                    "SELECT COUNT(*) FROM Lessons");
-
-                // Lessons waiting for admin review
-                lblPending.Text = ScalarQuery(conn,
-                    "SELECT COUNT(*) FROM Lessons WHERE ApprovalStatus = 'Pending Admin'");
-
-                // Lessons already approved and visible to members
-                lblPublished.Text = ScalarQuery(conn,
-                    "SELECT COUNT(*) FROM Lessons WHERE ApprovalStatus = 'Approved'");
-
-                // Lessons sent back to the instructor
-                lblRejected.Text = ScalarQuery(conn,
-                    "SELECT COUNT(*) FROM Lessons WHERE ApprovalStatus = 'Rejected'");
+                lblTotal.Text = ScalarQuery(conn, "SELECT COUNT(*) FROM Lessons");
+                lblPending.Text = ScalarQuery(conn, "SELECT COUNT(*) FROM Lessons WHERE ApprovalStatus = 'Pending Admin'");
+                // Count both "Published" and "Approved" as equivalent published states
+                lblPublished.Text = ScalarQuery(conn, "SELECT COUNT(*) FROM Lessons WHERE ApprovalStatus IN ('Published', 'Approved')");
+                lblRejected.Text = ScalarQuery(conn, "SELECT COUNT(*) FROM Lessons WHERE ApprovalStatus = 'Rejected'");
             }
         }
 
@@ -103,20 +107,17 @@ namespace Aidcademy
                 return cmd.ExecuteScalar().ToString();
         }
 
-
         private void BindCourses()
         {
             using (SqlConnection conn = new SqlConnection(connString))
             {
-                // Join Users so we can show the instructor's name on each course heading
-                string query = @"
-                    SELECT  c.CourseID,
-                            c.Title                         AS CourseTitle,
-                            ISNULL(c.Category, 'General')   AS Category,
-                            ISNULL(u.Username, 'Unknown')   AS InstructorName
-                    FROM    Courses c
-                    LEFT JOIN Users u ON c.UserID = u.UserID
-                    ORDER BY c.CourseID DESC";
+                string query = @"SELECT c.CourseID,
+                                        c.Title                       AS CourseTitle,
+                                        ISNULL(c.Category, 'General') AS Category,
+                                        ISNULL(u.Username, 'Unknown') AS InstructorName
+                                 FROM   Courses c
+                                 LEFT JOIN Users u ON c.UserID = u.UserID
+                                 ORDER BY c.CourseID DESC";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 using (SqlDataAdapter sda = new SqlDataAdapter(cmd))
@@ -129,10 +130,8 @@ namespace Aidcademy
             }
         }
 
-
         protected void rptCourses_ItemDataBound(object sender, RepeaterItemEventArgs e)
         {
-
             if (e.Item.ItemType != ListItemType.Item &&
                 e.Item.ItemType != ListItemType.AlternatingItem) return;
 
@@ -141,27 +140,31 @@ namespace Aidcademy
 
             using (SqlConnection conn = new SqlConnection(connString))
             {
+                // Handle both "Published" and "Approved" when filtering for Published tab
+                string filterClause = "";
+                if (ActiveFilter != "All")
+                {
+                    if (ActiveFilter == "Published")
+                        filterClause = " AND l.ApprovalStatus IN ('Published', 'Approved')";
+                    else
+                        filterClause = " AND l.ApprovalStatus = @StatusFilter";
+                }
 
-                string filterClause = (ActiveFilter == "All")
-                    ? ""
-                    : " AND l.ApprovalStatus = @StatusFilter";
-
-
-                string query = $@"
-                    SELECT  l.LessonID,
-                            l.Title,
-                            l.SequenceOrder,
-                            ISNULL(l.ApprovalStatus, 'Draft') AS ApprovalStatus
-                    FROM    Lessons l
-                    WHERE   l.CourseID = @CourseID
-                    {filterClause}
-                    ORDER BY l.SequenceOrder ASC";
+                // Column aliased as ThumbnailPath — matches Eval("ThumbnailPath") in .aspx
+                string query = $@"SELECT l.LessonID,
+                                         l.Title,
+                                         l.SequenceOrder,
+                                         ISNULL(l.ApprovalStatus, 'Draft') AS ApprovalStatus,
+                                         l.ThumbnailPath
+                                  FROM   Lessons l
+                                  WHERE  l.CourseID = @CourseID
+                                  {filterClause}
+                                  ORDER BY l.SequenceOrder ASC";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
                     cmd.Parameters.AddWithValue("@CourseID", courseId);
-
-                    if (ActiveFilter != "All")
+                    if (ActiveFilter != "All" && ActiveFilter != "Published")
                         cmd.Parameters.AddWithValue("@StatusFilter", ActiveFilter);
 
                     using (SqlDataAdapter sda = new SqlDataAdapter(cmd))
@@ -175,11 +178,8 @@ namespace Aidcademy
             }
         }
 
-
         protected void btnFilter_Click(object sender, EventArgs e)
         {
-            // CommandArgument is set in the .aspx:
-            //   "All" | "Pending Admin" | "Published" | "Rejected"
             ActiveFilter = ((LinkButton)sender).CommandArgument;
             BindDashboardStats();
             BindCourses();
@@ -187,8 +187,6 @@ namespace Aidcademy
 
         protected void btnViewLesson_Click(object sender, EventArgs e)
         {
-            // Redirects to a detail/approval page, passing the LessonID.
-            // TODO: replace "AdminLessonDetail.aspx" with your actual page name.
             int lessonId = Convert.ToInt32(((LinkButton)sender).CommandArgument);
             Response.Redirect("ViewLesson.aspx?LessonID=" + lessonId);
         }

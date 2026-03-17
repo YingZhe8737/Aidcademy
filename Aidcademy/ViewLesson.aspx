@@ -6,13 +6,18 @@
     <title>View Lesson - Aidcademy</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
     <link href="Styles/aidcademy-theme.css" rel="stylesheet" type="text/css" />
-    <link href="Instructor.css" rel="stylesheet" type="text/css" />
+    <link href="Styles/Instructor.css" rel="stylesheet" type="text/css" />
     <style>
-        body { background-color: #FFFBF1 !important; }
+        body { background-color: #FFFBF1 !important; font-family: 'Nunito', 'Segoe UI', sans-serif !important; }
 
         /* NAVBAR & DYNAMIC SIDEBAR CSS */
         .top-navbar { background-color: #c9242b; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        /* Brand — exact MainPage.aspx */
+        .navbar-brand-custom { display:flex; align-items:center; gap:10px; text-decoration:none; }
+        .navbar-brand-custom img { height:38px; width:38px; border-radius:50%; object-fit:cover; border:2px solid rgba(255,255,255,0.45); }
+        .navbar-brand-custom span { font-size:1.25rem; font-weight:900; color:white; letter-spacing:1px; font-family:'Nunito',sans-serif; }
         #wrapper { overflow-x: hidden; }
         #sidebar-wrapper {
             min-height: calc(100vh - 60px);
@@ -143,29 +148,38 @@
         
         <nav class="navbar navbar-expand-lg navbar-dark top-navbar sticky-top">
             <div class="container-fluid px-4">
-                <a class="navbar-brand fw-bold fs-4 m-0" href="MainPage.aspx">
-                    <i class="fa-solid fa-house-medical me-2 text-white"></i>Aidcademy
+                <a class="navbar-brand-custom" href="MainPage.aspx">
+                    <img src="image/aidcademylogo.png" alt="Aidcademy Logo" />
+                    <span>AIDCADEMY</span>
                 </a>
                 
-                <div class="d-flex align-items-center">
+                <div class="d-flex align-items-center gap-2">
                     
                     <asp:Panel ID="pnlNavVisitor" runat="server" Visible="false">
-                        <a href="Login_signup.aspx" class="btn btn-light fw-bold text-danger btn-sm rounded-pill px-3 shadow-sm">Login / Sign Up</a>
+                        <a href="Login_signup.aspx" class="btn btn-light fw-bold text-danger btn-sm rounded-pill px-3 shadow-sm" style="font-family:'Nunito',sans-serif;">Login / Sign Up</a>
                     </asp:Panel>
                     
                     <asp:Panel ID="pnlNavMember" runat="server" Visible="false">
-                        <a href="MemberDashboard.aspx" class="text-light fw-bold text-decoration-none me-3"><i class="fa-solid fa-gauge me-1"></i> My Dashboard</a>
+                        <a href="MemberDashboard.aspx" class="text-light fw-bold text-decoration-none" style="font-family:'Nunito',sans-serif;font-size:0.88rem;padding:7px 14px;border-radius:8px;background:rgba(255,255,255,0.12);">
+                            <i class="fa-solid fa-chart-line me-1"></i> Dashboard
+                        </a>
                     </asp:Panel>
 
                     <asp:Panel ID="pnlNavInstructor" runat="server" Visible="false">
-                        <a href="InstructorManageContent.aspx" class="text-light fw-bold text-decoration-none me-3"><i class="fa-solid fa-chalkboard-user me-1"></i> Instructor Panel</a>
+                        <a href="InstructorManageContent.aspx" class="text-light fw-bold text-decoration-none" style="font-family:'Nunito',sans-serif;font-size:0.88rem;padding:7px 14px;border-radius:8px;background:rgba(255,255,255,0.12);">
+                            <i class="fa-solid fa-chart-line me-1"></i> Dashboard
+                        </a>
                     </asp:Panel>
 
                     <asp:Panel ID="pnlNavAdmin" runat="server" Visible="false">
-                        <a href="AdminDashboard.aspx" class="text-light fw-bold text-decoration-none me-3"><i class="fa-solid fa-shield-halved me-1"></i> Admin Console</a>
+                        <a href="AdminDashboard.aspx" class="text-light fw-bold text-decoration-none" style="font-family:'Nunito',sans-serif;font-size:0.88rem;padding:7px 14px;border-radius:8px;background:rgba(255,255,255,0.12);">
+                            <i class="fa-solid fa-gauge-high me-1"></i> Dashboard
+                        </a>
                     </asp:Panel>
 
-                    <span class="text-light fw-bold border-start border-light ps-3 ms-2 opacity-75"><i class="fa-solid fa-book-open-reader me-2"></i>Lesson Viewer</span>
+                    <span class="text-light fw-bold border-start border-light ps-3 ms-1 opacity-75" style="font-family:'Nunito',sans-serif;font-size:0.88rem;">
+                        <i class="fa-solid fa-book-open-reader me-2"></i>Lesson Viewer
+                    </span>
                 </div>
             </div>
         </nav>

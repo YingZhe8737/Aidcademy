@@ -15,15 +15,24 @@ namespace Aidcademy
         {
             if (!SessionHelper.IsUserLoggedIn() || !SessionHelper.IsInstructor())
             {
-                
+
                 Response.Redirect("~/Login_signup.aspx");
                 return;
             }
 
+            // FIX: Save the current selection BEFORE DataBind clears it, restore it after.
+            // DataBind() in LoadCourses resets ddlCourses.SelectedValue every time it runs.
+            string savedCourseId = IsPostBack ? ctrlCourseSelector.SelectedCourseId : null;
+
+            ctrlCourseSelector.InstructorId = Convert.ToInt32(Session["UserID"]);
+            ctrlCourseSelector.LoadCourses();
+
+            // Restore the selection the user had before the postback
+            if (IsPostBack && !string.IsNullOrEmpty(savedCourseId))
+                ctrlCourseSelector.SetSelectedCourse(savedCourseId);
+
             if (!IsPostBack)
             {
-                ctrlCourseSelector.InstructorId = Convert.ToInt32(Session["UserID"]);
-                ctrlCourseSelector.LoadCourses();
                 if (Request.QueryString["LessonID"] != null)
                 {
                     int lessonId = Convert.ToInt32(Request.QueryString["LessonID"]);

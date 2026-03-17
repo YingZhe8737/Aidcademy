@@ -293,7 +293,18 @@ namespace Aidcademy.App_Code_Logic
             }
         }
 
-
+        public string GetUserRole(int userId)
+        {
+            string query = "SELECT Role FROM Users WHERE UserID = @UserID";
+            using (SqlConnection conn = new SqlConnection(connStr))
+            using (SqlCommand cmd = new SqlCommand(query, conn))
+            {
+                cmd.Parameters.AddWithValue("@UserID", userId);
+                conn.Open();
+                object result = cmd.ExecuteScalar();
+                return result != null ? result.ToString() : "";
+            }
+        }
 
     }
 }

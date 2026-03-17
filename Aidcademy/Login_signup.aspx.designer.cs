@@ -9,8 +9,11 @@
 
 namespace Aidcademy
 {
+
+
     public partial class Login_signup
     {
+
         /// <summary>
         /// form1 control.
         /// </summary>

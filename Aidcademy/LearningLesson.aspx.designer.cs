@@ -24,33 +24,39 @@ namespace Aidcademy
         protected global::System.Web.UI.HtmlControls.HtmlForm form1;
 
         /// <summary>
-        /// pnlMemberNav control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Panel pnlMemberNav;
-
-        /// <summary>
         /// btnLogout control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.LinkButton btnLogout;
-
-        /// <summary>
-        /// pnlVisitorNav control.
-        /// </summary>
-        protected global::System.Web.UI.WebControls.Panel pnlVisitorNav;
 
         /// <summary>
         /// lblCourseTitle control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Label lblCourseTitle;
 
         /// <summary>
         /// pnlNoLessons control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Panel pnlNoLessons;
 
         /// <summary>
         /// rptLessons control.
         /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
         protected global::System.Web.UI.WebControls.Repeater rptLessons;
     }
 }

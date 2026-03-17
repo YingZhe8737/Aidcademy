@@ -10,7 +10,6 @@
 
         .stats-row { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:28px; }
         @media(max-width:1100px){ .stats-row{grid-template-columns:repeat(2,1fr);} }
-
         .um-stat {
             background:white; border-radius:16px; padding:22px 20px; border:1px solid #ebebeb;
             display:flex; align-items:center; gap:16px; position:relative; overflow:hidden;
@@ -31,34 +30,37 @@
         .um-stat-label { font-size:0.78rem; font-weight:700; color:#aaa; text-transform:uppercase; letter-spacing:0.4px; margin-top:4px; }
 
         .filter-card { background:white; border-radius:14px; border:1px solid #ebebeb; padding:18px 22px; margin-bottom:22px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
-        .filter-card .form-control, .filter-card .form-select {
-            font-family:'Nunito',sans-serif; font-size:0.88rem; font-weight:600;
-            border:1.5px solid #e0e0e0; border-radius:9px; padding:8px 14px;
-        }
+        .filter-card .form-control, .filter-card .form-select { font-family:'Nunito',sans-serif; font-size:0.88rem; font-weight:600; border:1.5px solid #e0e0e0; border-radius:9px; padding:8px 14px; }
         .filter-card .form-control:focus, .filter-card .form-select:focus { border-color:#c9242b; box-shadow:none; outline:none; }
         .filter-card .form-control { min-width:260px; }
-        .btn-mod {
-            display:inline-flex; align-items:center; gap:7px;
-            background:#c9242b; color:white; border:none; font-family:'Nunito',sans-serif;
-            font-size:0.85rem; font-weight:700; padding:9px 18px; border-radius:10px;
-            cursor:pointer; text-decoration:none; transition:background 0.18s; white-space:nowrap;
-        }
+        .btn-mod { display:inline-flex; align-items:center; gap:7px; background:#c9242b; color:white; border:none; font-family:'Nunito',sans-serif; font-size:0.85rem; font-weight:700; padding:9px 18px; border-radius:10px; cursor:pointer; text-decoration:none; transition:background 0.18s; white-space:nowrap; }
         .btn-mod:hover { background:#a01c22; color:white; }
 
         .table-card { background:white; border-radius:16px; border:1px solid #ebebeb; overflow:hidden; }
         .table-card-head { padding:16px 22px; border-bottom:1px solid #f5f5f5; font-size:0.95rem; font-weight:900; color:#1a1a2e; }
-
         .user-table { width:100%; border-collapse:collapse; font-size:0.88rem; }
         .user-table th { padding:12px 16px; background:#f9f9f9; font-size:0.75rem; font-weight:800; color:#888; text-transform:uppercase; letter-spacing:0.5px; border-bottom:1px solid #f0f0f0; text-align:left; }
-        .user-table td { padding:13px 16px; border-bottom:1px solid #f5f5f5; color:#333; font-weight:600; }
+        .user-table td { padding:13px 16px; border-bottom:1px solid #f5f5f5; color:#333; font-weight:600; vertical-align:middle; }
         .user-table tr:last-child td { border-bottom:none; }
         .user-table tr:hover td { background:#fafafa; }
 
-        .btn-status {
-            padding:5px 13px; border-radius:8px; font-size:0.78rem; font-weight:700;
-            font-family:'Nunito',sans-serif; cursor:pointer; border:1.5px solid #c9242b;
-            color:#c9242b; background:white; transition:all 0.18s;
-        }
+        /* Status badges */
+        .status-badge { display:inline-flex; align-items:center; gap:5px; padding:4px 11px; border-radius:20px; font-size:0.75rem; font-weight:800; }
+        .status-active      { background:#d1fae5; color:#065f46; }
+        .status-suspended   { background:#fef3c7; color:#92400e; }
+        .status-deactivated { background:#f3f4f6; color:#6b7280; }
+        .status-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+        .status-active      .status-dot { background:#10b981; }
+        .status-suspended   .status-dot { background:#f59e0b; }
+        .status-deactivated .status-dot { background:#9ca3af; }
+
+        /* Role badges */
+        .role-badge { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:20px; font-size:0.75rem; font-weight:800; }
+        .role-admin      { background:#ede9fe; color:#5b21b6; }
+        .role-instructor { background:#dbeafe; color:#1e40af; }
+        .role-member     { background:#fde8e9; color:#9f1239; }
+
+        .btn-status { padding:5px 13px; border-radius:8px; font-size:0.78rem; font-weight:700; font-family:'Nunito',sans-serif; cursor:pointer; border:1.5px solid #c9242b; color:#c9242b; background:white; transition:all 0.18s; }
         .btn-status:hover { background:#c9242b; color:white; }
     </style>
 </asp:Content>
@@ -70,7 +72,6 @@
         <p>View, filter, and manage all platform users.</p>
     </div>
 
-    <!-- STAT CARDS -->
     <div class="stats-row">
         <div class="um-stat c-red">
             <div class="um-stat-icon"><i class="fa-solid fa-users"></i></div>
@@ -90,7 +91,6 @@
         </div>
     </div>
 
-    <!-- FILTERS -->
     <div class="filter-card">
         <asp:TextBox ID="txtSearch" runat="server" CssClass="form-control" placeholder="Search by username or email…" AutoPostBack="true" OnTextChanged="Filter_Changed" />
         <asp:DropDownList ID="ddlRole" runat="server" CssClass="form-select" AutoPostBack="true" OnSelectedIndexChanged="Filter_Changed" style="width:160px;">
@@ -108,7 +108,6 @@
         <a href="AccountModification.aspx" class="btn-mod"><i class="fa-solid fa-user-plus"></i> Create Account</a>
     </div>
 
-    <!-- TABLE -->
     <div class="table-card">
         <div class="table-card-head"><i class="fa-solid fa-table-list" style="color:#c9242b;margin-right:8px;"></i>All Users</div>
         <asp:GridView ID="gvUsers" runat="server" AutoGenerateColumns="False" CssClass="user-table"
@@ -117,8 +116,22 @@
                 <asp:BoundField DataField="UserID"      HeaderText="ID" />
                 <asp:BoundField DataField="Username"    HeaderText="Username" />
                 <asp:BoundField DataField="Email"       HeaderText="Email" />
-                <asp:BoundField DataField="Role"        HeaderText="Role" />
-                <asp:BoundField DataField="Status"      HeaderText="Status" />
+                <asp:TemplateField HeaderText="Role">
+                    <ItemTemplate>
+                        <span class='role-badge role-<%# Eval("Role").ToString().ToLower() %>'>
+                            <i class='fa-solid <%# Eval("Role").ToString() == "Admin" ? "fa-shield-halved" : Eval("Role").ToString() == "Instructor" ? "fa-chalkboard-user" : "fa-user" %>'></i>
+                            <%# Eval("Role") %>
+                        </span>
+                    </ItemTemplate>
+                </asp:TemplateField>
+                <asp:TemplateField HeaderText="Status">
+                    <ItemTemplate>
+                        <span class='status-badge status-<%# Eval("Status").ToString().ToLower() %>'>
+                            <span class="status-dot"></span>
+                            <%# Eval("Status") %>
+                        </span>
+                    </ItemTemplate>
+                </asp:TemplateField>
                 <asp:BoundField DataField="CreatedDate" HeaderText="Created" DataFormatString="{0:dd/MM/yyyy}" />
                 <asp:TemplateField HeaderText="Actions">
                     <ItemTemplate>

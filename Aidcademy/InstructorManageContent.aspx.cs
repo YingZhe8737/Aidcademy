@@ -19,7 +19,6 @@ namespace Aidcademy
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            // Auth is handled by Instructor.Master — no need to repeat it here.
             if (!IsPostBack)
             {
                 BindCourses();
@@ -34,21 +33,28 @@ namespace Aidcademy
                 conn.Open();
 
                 using (SqlCommand cmd = new SqlCommand(
-                    "SELECT COUNT(*) FROM Lessons l INNER JOIN Courses c ON l.CourseID = c.CourseID WHERE c.UserID = @ID", conn))
+                    @"SELECT COUNT(*) FROM Lessons l
+                      INNER JOIN Courses c ON l.CourseID = c.CourseID
+                      WHERE c.UserID = @ID", conn))
                 {
                     cmd.Parameters.AddWithValue("@ID", currentInstructorId);
                     lblTotal.Text = cmd.ExecuteScalar().ToString();
                 }
 
                 using (SqlCommand cmd = new SqlCommand(
-                    "SELECT COUNT(*) FROM Lessons l INNER JOIN Courses c ON l.CourseID = c.CourseID WHERE c.UserID = @ID AND l.ApprovalStatus = 'Pending Admin'", conn))
+                    @"SELECT COUNT(*) FROM Lessons l
+                      INNER JOIN Courses c ON l.CourseID = c.CourseID
+                      WHERE c.UserID = @ID AND l.ApprovalStatus = 'Pending Admin'", conn))
                 {
                     cmd.Parameters.AddWithValue("@ID", currentInstructorId);
                     lblPending.Text = cmd.ExecuteScalar().ToString();
                 }
 
+                // Count both "Published" and "Approved" as published
                 using (SqlCommand cmd = new SqlCommand(
-                    "SELECT COUNT(*) FROM Lessons l INNER JOIN Courses c ON l.CourseID = c.CourseID WHERE c.UserID = @ID AND l.ApprovalStatus = 'Published'", conn))
+                    @"SELECT COUNT(*) FROM Lessons l
+                      INNER JOIN Courses c ON l.CourseID = c.CourseID
+                      WHERE c.UserID = @ID AND l.ApprovalStatus IN ('Published','Approved')", conn))
                 {
                     cmd.Parameters.AddWithValue("@ID", currentInstructorId);
                     lblPublished.Text = cmd.ExecuteScalar().ToString();
@@ -57,7 +63,9 @@ namespace Aidcademy
                 try
                 {
                     using (SqlCommand cmd = new SqlCommand(
-                        "SELECT COUNT(*) FROM CourseQuestions cq INNER JOIN Courses c ON cq.CourseID = c.CourseID WHERE c.UserID = @ID AND cq.Status = 'Open'", conn))
+                        @"SELECT COUNT(*) FROM CourseQuestions cq
+                          INNER JOIN Courses c ON cq.CourseID = c.CourseID
+                          WHERE c.UserID = @ID AND cq.Status = 'Open'", conn))
                     {
                         cmd.Parameters.AddWithValue("@ID", currentInstructorId);
                         lblQueries.Text = cmd.ExecuteScalar().ToString();
@@ -71,14 +79,15 @@ namespace Aidcademy
         {
             using (SqlConnection conn = new SqlConnection(connString))
             {
-                string query = @"SELECT CourseID, 
-                                        Title AS CourseTitle, 
-                                        ISNULL(Category, 'General') AS Category, 
-                                        Description AS CourseDescription, 
-                                        ThumbnailPath AS CourseThumbnailPath 
-                                 FROM Courses 
-                                 WHERE UserID = @InstructorID 
-                                 ORDER BY CourseID DESC";
+                string query = @"SELECT c.CourseID,
+                                        c.Title          AS CourseTitle,
+                                        ISNULL(c.Category,'General') AS Category,
+                                        c.Description    AS CourseDescription,
+                                        c.ThumbnailPath  AS CourseThumbnailPath,
+                                        (SELECT COUNT(*) FROM Enrollments e WHERE e.CourseID = c.CourseID) AS EnrolledCount
+                                 FROM Courses c
+                                 WHERE c.UserID = @InstructorID
+                                 ORDER BY c.CourseID DESC";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
@@ -103,16 +112,40 @@ namespace Aidcademy
 
                 using (SqlConnection conn = new SqlConnection(connString))
                 {
-                    string query = @"SELECT l.LessonID, 
-                                            l.Title AS LessonTitle, 
-                                            l.SequenceOrder, 
-                                            ISNULL(l.ApprovalStatus, 'Draft') AS ApprovalStatus,
-                                            l.Description AS LessonDescription,
-                                            l.ThumbnailPath AS LessonThumbnailPath
-                                     FROM Lessons l 
-                                     INNER JOIN Courses c ON l.CourseID = c.CourseID 
-                                     WHERE l.CourseID = @CourseID
-                                     ORDER BY l.SequenceOrder ASC";
+                    // Count lesson completions — defensive: checks whether IsCompleted column exists
+                    // Falls back to simple COUNT(*) from LessonProgress if column is missing
+                    string completedExpr;
+                    try
+                    {
+                        using (SqlCommand chk = new SqlCommand(
+                            "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME='LessonProgress' AND COLUMN_NAME='IsCompleted'", conn))
+                        {
+                            conn.Open();
+                            int exists = (int)chk.ExecuteScalar();
+                            completedExpr = exists > 0
+                                ? "(SELECT COUNT(DISTINCT lp.UserID) FROM LessonProgress lp WHERE lp.LessonID = l.LessonID AND lp.IsCompleted = 1)"
+                                : "(SELECT COUNT(DISTINCT lp.UserID) FROM LessonProgress lp WHERE lp.LessonID = l.LessonID)";
+                        }
+                    }
+                    catch
+                    {
+                        completedExpr = "0";
+                        if (conn.State != ConnectionState.Open) conn.Open();
+                    }
+
+                    if (conn.State != ConnectionState.Open) conn.Open();
+
+                    string query = $@"SELECT l.LessonID,
+                                             l.Title        AS LessonTitle,
+                                             l.SequenceOrder,
+                                             ISNULL(l.ApprovalStatus,'Draft') AS ApprovalStatus,
+                                             l.Description  AS LessonDescription,
+                                             l.ThumbnailPath AS LessonThumbnailPath,
+                                             {completedExpr} AS CompletedCount
+                                      FROM Lessons l
+                                      INNER JOIN Courses c ON l.CourseID = c.CourseID
+                                      WHERE l.CourseID = @CourseID
+                                      ORDER BY l.SequenceOrder ASC";
 
                     using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
@@ -143,12 +176,17 @@ namespace Aidcademy
             using (SqlConnection conn = new SqlConnection(connString))
             {
                 conn.Open();
-                using (SqlCommand cmd = new SqlCommand("DELETE FROM QuizQuestions WHERE QuizID IN (SELECT QuizID FROM Quizzes WHERE LessonID = @LID)", conn))
-                { cmd.Parameters.AddWithValue("@LID", lessonId); cmd.ExecuteNonQuery(); }
-                using (SqlCommand cmd = new SqlCommand("DELETE FROM Quizzes WHERE LessonID = @LID", conn))
-                { cmd.Parameters.AddWithValue("@LID", lessonId); cmd.ExecuteNonQuery(); }
-                using (SqlCommand cmd = new SqlCommand("DELETE FROM Lessons WHERE LessonID = @LID", conn))
-                { cmd.Parameters.AddWithValue("@LID", lessonId); cmd.ExecuteNonQuery(); }
+                foreach (string sql in new[] {
+                    "DELETE FROM QuizQuestions WHERE QuizID IN (SELECT QuizID FROM Quizzes WHERE LessonID=@LID)",
+                    "DELETE FROM Quizzes WHERE LessonID=@LID",
+                    "DELETE FROM LessonSimulations WHERE LessonID=@LID",
+                    "DELETE FROM LessonProgress WHERE LessonID=@LID",
+                    "DELETE FROM Lessons WHERE LessonID=@LID"
+                })
+                {
+                    using (SqlCommand cmd = new SqlCommand(sql, conn))
+                    { cmd.Parameters.AddWithValue("@LID", lessonId); cmd.ExecuteNonQuery(); }
+                }
             }
             BindCourses();
             BindDashboardStats();

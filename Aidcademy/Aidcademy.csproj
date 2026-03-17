@@ -16,11 +16,9 @@
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <UseIISExpress>true</UseIISExpress>
     <Use64BitIISExpress />
-    <IISExpressSSLPort>44327</IISExpressSSLPort>
-    <IISExpressAnonymousAuthentication>
-    </IISExpressAnonymousAuthentication>
-    <IISExpressWindowsAuthentication>
-    </IISExpressWindowsAuthentication>
+    <IISExpressSSLPort>44310</IISExpressSSLPort>
+    <IISExpressAnonymousAuthentication>enabled</IISExpressAnonymousAuthentication>
+    <IISExpressWindowsAuthentication>disabled</IISExpressWindowsAuthentication>
     <IISExpressUseClassicPipelineMode />
     <UseGlobalApplicationHostFile />
     <NuGetPackageImportStamp>
@@ -116,6 +114,7 @@
     <Content Include="ContentManagement.aspx" />
     <Content Include="InstructorCourseSelector.ascx" />
     <Content Include="MainPage.aspx" />
+    <Content Include="ReviewManagement.aspx" />
     <Content Include="Scripts\bootstrap.bundle.js" />
     <Content Include="Scripts\bootstrap.bundle.min.js" />
     <Content Include="Scripts\bootstrap.esm.js" />
@@ -376,6 +375,13 @@
     <Compile Include="RespondQuestions.aspx.designer.cs">
       <DependentUpon>RespondQuestions.aspx</DependentUpon>
     </Compile>
+    <Compile Include="ReviewManagement.aspx.cs">
+      <DependentUpon>ReviewManagement.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ReviewManagement.aspx.designer.cs">
+      <DependentUpon>ReviewManagement.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Site.Master.cs">
       <DependentUpon>Site.Master</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -461,6 +467,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Aidcademy_Data\" />
     <Folder Include="App_Data\" />
     <Folder Include="image\" />
   </ItemGroup>

@@ -15,6 +15,24 @@ namespace Aidcademy
     {
 
         /// <summary>
+        /// hfChartMembers control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfChartMembers;
+
+        /// <summary>
+        /// hfChartVisitors control.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated field.
+        /// To modify move field declaration from designer file to code-behind file.
+        /// </remarks>
+        protected global::System.Web.UI.WebControls.HiddenField hfChartVisitors;
+
+        /// <summary>
         /// lblTotalMembers control.
         /// </summary>
         /// <remarks>

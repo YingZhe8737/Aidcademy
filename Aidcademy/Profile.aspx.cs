@@ -11,65 +11,146 @@ namespace Aidcademy
     {
         private readonly string connectionString = ConfigurationManager.ConnectionStrings["AidcademyDB"].ConnectionString;
         private int userID;
+        private bool isViewingOther = false;
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            if (!SessionHelper.IsUserLoggedIn() || !SessionHelper.IsMember())
+            if (!SessionHelper.IsUserLoggedIn())
             {
                 Response.Redirect("~/Login_signup.aspx");
                 return;
             }
 
-            userID = Convert.ToInt32(Session["UserID"]);
+            int currentUserId = Convert.ToInt32(Session["UserID"]);
+
+            // Check if a different UserID is being requested (e.g. from quiz page link)
+            if (Request.QueryString["UserID"] != null)
+            {
+                int requestedId = Convert.ToInt32(Request.QueryString["UserID"]);
+                string role = Session["Role"] != null ? Session["Role"].ToString() : "Member";
+
+                // Only Instructors and Admins can view other users' profiles
+                if (requestedId != currentUserId && (role == "Instructor" || role == "Admin"))
+                {
+                    userID = requestedId;
+                    isViewingOther = true;
+                }
+                else
+                {
+                    userID = currentUserId;
+                }
+            }
+            else
+            {
+                userID = currentUserId;
+            }
 
             if (!IsPostBack)
-                LoadProfile();
+            {
+                if (isViewingOther)
+                    LoadReadOnlyProfile();
+                else
+                    LoadOwnProfile();
+            }
         }
 
-        private void LoadProfile()
+        // ── Read-only view of another user ──────────────────────────────────
+        private void LoadReadOnlyProfile()
         {
+            pnlViewOnlyBanner.Visible = true;
+            pnlReadOnly.Visible = true;
+            pnlEdit.Visible = false;
+
             try
             {
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 {
-                    string query = @"
-                        SELECT u.Username, u.Email,
-                               p.FullName, p.PhoneNumber, p.ProfilePhoto, p.Bio
-                        FROM Users u
-                        LEFT JOIN UserProfiles p ON u.UserID = p.UserID
-                        WHERE u.UserID = @UserID";
+                    string query = @"SELECT u.Username, u.Email, u.Role,
+                                            ISNULL(p.FullName, u.Username) AS FullName,
+                                            p.PhoneNumber, p.ProfilePhoto, p.Bio
+                                     FROM Users u
+                                     LEFT JOIN UserProfiles p ON u.UserID = p.UserID
+                                     WHERE u.UserID = @UserID";
 
                     using (SqlCommand cmd = new SqlCommand(query, conn))
                     {
                         cmd.Parameters.AddWithValue("@UserID", userID);
                         conn.Open();
-
                         using (SqlDataReader reader = cmd.ExecuteReader())
                         {
                             if (reader.Read())
                             {
+                                string fullName = reader["FullName"].ToString();
+                                string role = reader["Role"].ToString();
+                                string photo = reader["ProfilePhoto"] != DBNull.Value
+                                                  ? reader["ProfilePhoto"].ToString() : "";
+
+                                lblProfileName.Text = string.IsNullOrEmpty(fullName) ? reader["Username"].ToString() : fullName;
+                                lblProfileRole.Text = role + " Account";
+                                lblROUsername.Text = reader["Username"].ToString();
+                                lblROEmail.Text = reader["Email"].ToString();
+                                lblROFullName.Text = fullName;
+                                lblROPhone.Text = reader["PhoneNumber"] != DBNull.Value ? reader["PhoneNumber"].ToString() : "—";
+                                lblROBio.Text = reader["Bio"] != DBNull.Value && !string.IsNullOrEmpty(reader["Bio"].ToString())
+                                                       ? reader["Bio"].ToString() : "No bio provided.";
+
+                                imgProfile.ImageUrl = !string.IsNullOrEmpty(photo)
+                                                       ? "~/Uploads/ProfilePhotos/" + photo
+                                                       : "~/images/default-avatar.png";
+                            }
+                            else
+                            {
+                                Response.Redirect("~/Login_signup.aspx");
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("LoadReadOnlyProfile error: " + ex.Message);
+                ShowMessage("Could not load this profile.", false);
+            }
+        }
+
+        // ── Editable own profile ─────────────────────────────────────────────
+        private void LoadOwnProfile()
+        {
+            pnlViewOnlyBanner.Visible = false;
+            pnlReadOnly.Visible = false;
+            pnlEdit.Visible = true;
+
+            try
+            {
+                using (SqlConnection conn = new SqlConnection(connectionString))
+                {
+                    string query = @"SELECT u.Username, u.Email, u.Role,
+                                            p.FullName, p.PhoneNumber, p.ProfilePhoto, p.Bio
+                                     FROM Users u
+                                     LEFT JOIN UserProfiles p ON u.UserID = p.UserID
+                                     WHERE u.UserID = @UserID";
+
+                    using (SqlCommand cmd = new SqlCommand(query, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@UserID", userID);
+                        conn.Open();
+                        using (SqlDataReader reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                string fullName = reader["FullName"] != DBNull.Value ? reader["FullName"].ToString() : "";
+                                string photo = reader["ProfilePhoto"] != DBNull.Value ? reader["ProfilePhoto"].ToString() : "";
+
+                                lblProfileName.Text = string.IsNullOrEmpty(fullName) ? reader["Username"].ToString() : fullName;
+                                lblProfileRole.Text = reader["Role"].ToString() + " Account";
                                 txtUsername.Text = reader["Username"].ToString();
                                 txtEmail.Text = reader["Email"].ToString();
 
-                                // Split full name into first and last for the UI fields
-                                string fullName = reader["FullName"] != DBNull.Value
-                                                  ? reader["FullName"].ToString()
-                                                  : "";
-                                string[] nameParts = fullName.Split(new[] { ' ' }, 2);
-                                txtFirstName.Text = nameParts.Length > 0 ? nameParts[0] : "";
-                                txtLastName.Text = nameParts.Length > 1 ? nameParts[1] : "";
-
-                                txtPhone.Text = reader["PhoneNumber"] != DBNull.Value
-                                                ? reader["PhoneNumber"].ToString()
-                                                : "";
-
-                                txtBio.Text = reader["Bio"] != DBNull.Value
-                                                ? reader["Bio"].ToString()
-                                                : "";
-
-                                string photo = reader["ProfilePhoto"] != DBNull.Value
-                                               ? reader["ProfilePhoto"].ToString()
-                                               : "";
+                                string[] parts = fullName.Split(new[] { ' ' }, 2);
+                                txtFirstName.Text = parts.Length > 0 ? parts[0] : "";
+                                txtLastName.Text = parts.Length > 1 ? parts[1] : "";
+                                txtPhone.Text = reader["PhoneNumber"] != DBNull.Value ? reader["PhoneNumber"].ToString() : "";
+                                txtBio.Text = reader["Bio"] != DBNull.Value ? reader["Bio"].ToString() : "";
 
                                 if (!string.IsNullOrEmpty(photo))
                                 {
@@ -88,20 +169,22 @@ namespace Aidcademy
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine("LoadProfile error: " + ex.Message);
+                System.Diagnostics.Debug.WriteLine("LoadOwnProfile error: " + ex.Message);
                 ShowMessage("Could not load your profile. Please try again later.", false);
             }
         }
 
         protected void btnUpdateProfile_Click(object sender, EventArgs e)
         {
+            if (isViewingOther) return; // Safety — cannot save someone else's profile
+
             try
             {
                 string photoFileName = null;
 
                 if (fuProfilePhoto != null && fuProfilePhoto.HasFile)
                 {
-                    string ext = System.IO.Path.GetExtension(fuProfilePhoto.FileName).ToLower();
+                    string ext = Path.GetExtension(fuProfilePhoto.FileName).ToLower();
                     if (ext != ".jpg" && ext != ".jpeg" && ext != ".png" && ext != ".gif")
                     {
                         ShowMessage("Please upload a valid image file (JPG, PNG, GIF).", false);
@@ -112,14 +195,10 @@ namespace Aidcademy
                         ShowMessage("Profile photo must be smaller than 2 MB.", false);
                         return;
                     }
-
                     string folder = Server.MapPath("~/Uploads/ProfilePhotos/");
-                    if (!Directory.Exists(folder))
-                        Directory.CreateDirectory(folder);
-
+                    if (!Directory.Exists(folder)) Directory.CreateDirectory(folder);
                     photoFileName = userID + "_" + DateTime.Now.Ticks + ext;
                     fuProfilePhoto.SaveAs(Path.Combine(folder, photoFileName));
-
                     imgProfile.ImageUrl = "~/Uploads/ProfilePhotos/" + photoFileName;
                     imgProfilePreview.ImageUrl = "~/Uploads/ProfilePhotos/" + photoFileName;
                 }
@@ -129,91 +208,61 @@ namespace Aidcademy
                 using (SqlConnection conn = new SqlConnection(connectionString))
                 {
                     conn.Open();
-
-                    // Update email in Users table
-                    string updateUser = "UPDATE Users SET Email = @Email WHERE UserID = @UserID";
-                    using (SqlCommand cmd = new SqlCommand(updateUser, conn))
+                    using (SqlCommand cmd = new SqlCommand("UPDATE Users SET Email = @Email WHERE UserID = @UserID", conn))
                     {
                         cmd.Parameters.AddWithValue("@Email", txtEmail.Text.Trim());
                         cmd.Parameters.AddWithValue("@UserID", userID);
                         cmd.ExecuteNonQuery();
                     }
-
-                    // Update profile — single query handles both with/without photo
-                    string updateProfile = @"UPDATE UserProfiles SET
-                                                FullName     = @FullName,
-                                                PhoneNumber  = @PhoneNumber,
-                                                Bio          = @Bio" +
-                        (photoFileName != null ? ", ProfilePhoto = @ProfilePhoto" : "") +
-                        " WHERE UserID = @UserID";
-
+                    string updateProfile = @"UPDATE UserProfiles SET FullName=@FN, PhoneNumber=@PH, Bio=@Bio" +
+                        (photoFileName != null ? ", ProfilePhoto=@PP" : "") + " WHERE UserID=@UserID";
                     using (SqlCommand cmd = new SqlCommand(updateProfile, conn))
                     {
-                        cmd.Parameters.AddWithValue("@FullName", fullName);
-                        cmd.Parameters.AddWithValue("@PhoneNumber", txtPhone.Text.Trim());
+                        cmd.Parameters.AddWithValue("@FN", fullName);
+                        cmd.Parameters.AddWithValue("@PH", txtPhone.Text.Trim());
                         cmd.Parameters.AddWithValue("@Bio", txtBio.Text.Trim());
                         cmd.Parameters.AddWithValue("@UserID", userID);
-                        if (photoFileName != null)
-                            cmd.Parameters.AddWithValue("@ProfilePhoto", photoFileName);
-
+                        if (photoFileName != null) cmd.Parameters.AddWithValue("@PP", photoFileName);
                         int rows = cmd.ExecuteNonQuery();
-                        if (rows > 0)
-                            Session["UserName"] = fullName;
+                        if (rows > 0) Session["UserName"] = fullName;
                     }
                 }
 
-                // --- Password change (only if any password field is filled) ---
                 string current = txtCurrentPassword.Text.Trim();
-                string newPwd  = txtNewPassword.Text.Trim();
+                string newPwd = txtNewPassword.Text.Trim();
                 string confirm = txtConfirmNewPassword.Text.Trim();
 
                 if (!string.IsNullOrEmpty(current) || !string.IsNullOrEmpty(newPwd) || !string.IsNullOrEmpty(confirm))
                 {
                     if (string.IsNullOrEmpty(current) || string.IsNullOrEmpty(newPwd) || string.IsNullOrEmpty(confirm))
-                    {
-                        ShowMessage("Profile saved. Please fill in all three password fields to change your password.", false);
-                        return;
-                    }
-
+                    { ShowMessage("Profile saved. Fill in all three password fields to change your password.", false); return; }
                     if (newPwd != confirm)
-                    {
-                        ShowMessage("Profile saved, but new passwords do not match.", false);
-                        return;
-                    }
+                    { ShowMessage("Profile saved, but new passwords do not match.", false); return; }
 
                     string errMsg;
                     if (!SecurityHelper.IsPasswordValid(newPwd, out errMsg))
-                    {
-                        ShowMessage("Profile saved, but password not changed: " + errMsg, false);
-                        return;
-                    }
+                    { ShowMessage("Profile saved, but password not changed: " + errMsg, false); return; }
 
-                    // Verify current password using shared helper (BCrypt + SHA fallback)
                     string storedHash = DatabaseHelper.ExecuteScalar(
                         "SELECT PasswordHash FROM Users WHERE UserID = @UserID",
                         new[] { new SqlParameter("@UserID", userID) })?.ToString();
 
                     if (!SecurityHelper.VerifyStoredPassword(current, storedHash))
-                    {
-                        ShowMessage("Profile saved, but current password is incorrect.", false);
-                        return;
-                    }
+                    { ShowMessage("Profile saved, but current password is incorrect.", false); return; }
 
-                    string newHash     = BCrypt.Net.BCrypt.HashPassword(newPwd);
-                    string updatePwdQ  = "UPDATE Users SET PasswordHash = @PasswordHash WHERE UserID = @UserID";
-                    SqlParameter[] pwdParams =
-                    {
-                        new SqlParameter("@PasswordHash", newHash),
-                        new SqlParameter("@UserID", userID)
-                    };
-                    DatabaseHelper.ExecuteNonQuery(updatePwdQ, pwdParams);
+                    string newHash = BCrypt.Net.BCrypt.HashPassword(newPwd);
+                    DatabaseHelper.ExecuteNonQuery(
+                        "UPDATE Users SET PasswordHash=@PH WHERE UserID=@UID",
+                        new[] { new SqlParameter("@PH", newHash), new SqlParameter("@UID", userID) });
 
-                    txtCurrentPassword.Text    = "";
-                    txtNewPassword.Text        = "";
-                    txtConfirmNewPassword.Text = "";
+                    txtCurrentPassword.Text = txtNewPassword.Text = txtConfirmNewPassword.Text = "";
                     ShowMessage("Profile and password updated successfully!", true);
                     return;
                 }
+
+                // Refresh the name in the header
+                lblProfileName.Text = string.IsNullOrEmpty(fullName)
+                    ? txtUsername.Text : fullName;
 
                 ShowMessage("Your profile has been updated successfully!", true);
             }
@@ -224,13 +273,17 @@ namespace Aidcademy
             }
         }
 
+        protected void btnLogout_Click(object sender, EventArgs e)
+        {
+            SessionHelper.SignOut();
+            Response.Redirect("~/Login_signup.aspx");
+        }
+
         private void ShowMessage(string message, bool isSuccess)
         {
             pnlMessage.Visible = true;
             lblMessage.Text = message;
             pnlMessage.CssClass = isSuccess ? "message success" : "message error";
         }
-
-        // btnLogout_Click is now handled by Member.Master
     }
 }
