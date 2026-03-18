@@ -319,7 +319,7 @@ namespace Aidcademy
                 return;
             }
 
-            string[] avatarBgs = { "avatar-gold", "avatar-blue", "avatar-green" };
+            string[] avatarBgs = { "avatar-gold", "avatar-silver", "avatar-brown" };
             string[] trophies = { "&#129351;", "&#129352;", "&#129353;" };
             // Podium order: #2 left, #1 center, #3 right
             int[] order = dt.Rows.Count >= 3 ? new[] { 1, 0, 2 } :
@@ -338,7 +338,8 @@ namespace Aidcademy
                     initials += parts[1].Substring(0, 1).ToUpper();
 
                 bool isFirst = idx == 0;
-                string itemClass = isFirst ? "podium-item first" : "podium-item";
+                string[] itemClasses = { "podium-item first", "podium-item second", "podium-item third" };
+                string itemClass = itemClasses[idx];
 
                 sb.AppendFormat("<div class='{0}'>", itemClass);
                 if (isFirst)

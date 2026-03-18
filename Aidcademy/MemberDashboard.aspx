@@ -571,17 +571,17 @@
             box-shadow: 0 4px 16px rgba(0,0,0,0.15);
         }
 
-            .podium-avatar.gold {
-                background: linear-gradient(135deg,#f59e0b,#d97706);
-            }
+        .podium-avatar.avatar-gold {
+            background: linear-gradient(135deg,#f59e0b,#d97706);
+        }
 
-            .podium-avatar.silver {
-                background: linear-gradient(135deg,#9ca3af,#6b7280);
-            }
+        .podium-avatar.avatar-silver {
+            background: linear-gradient(135deg,#9ca3af,#6b7280);
+        }
 
-            .podium-avatar.bronze {
-                background: linear-gradient(135deg,#f97316,#c2410c);
-            }
+        .podium-avatar.avatar-brown {
+            background: linear-gradient(135deg,#a97c50,#7c5230);
+        }
 
         .podium-name {
             font-size: 0.76rem;
@@ -623,6 +623,20 @@
                 height: 50px;
                 background: linear-gradient(180deg,#fff7ed,#fed7aa);
             }
+
+        .podium-item.second .podium-card {
+            background: linear-gradient(145deg,#f3f4f6,#e5e7eb);
+            border-color: #9ca3af;
+        }
+        .podium-item.second .podium-name { color: #4b5563; }
+        .podium-item.second .podium-pts  { color: #6b7280; }
+
+        .podium-item.third .podium-card {
+            background: linear-gradient(145deg,#c8a07a,#a97c50);
+            border-color: #a97c50;
+        }
+        .podium-item.third .podium-name { color: #5c3a1e; }
+        .podium-item.third .podium-pts  { color: #7c5230; }
 
         .podium-medal {
             font-size: 1.5rem;
@@ -845,8 +859,7 @@
                                         <%# Eval("InstructorName") != DBNull.Value && !string.IsNullOrEmpty(Eval("InstructorName").ToString()) ? Eval("InstructorName") : "Aidcademy" %>
                                     </div>
                                     <div class="progress-row">
-                                        <span class="progress-text"><%# Eval("CompletedLessons") %>/<%# Eval("TotalLessons") %></span>
-                                        <div class="progress-track">
+                                        <span class="progress-text"><%# Eval("CompletedLessons") %>/<%# Eval("TotalLessons") %></span><div class="progress-track">
                                             <div class="progress-fill" data-progress='<%# Eval("ProgressPercentage", "{0:F0}") %>' style="width: 0;"></div>
                                         </div>
                                         <span class="progress-pct"><%# Eval("ProgressPercentage", "{0:F0}") %>%</span>
