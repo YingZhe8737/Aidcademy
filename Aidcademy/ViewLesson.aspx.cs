@@ -293,12 +293,12 @@ namespace Aidcademy
                 string upsertQuery = @"
                                     IF EXISTS (SELECT 1 FROM Leaderboard WHERE UserID = @UserID)
                                         UPDATE Leaderboard
-                                        SET TotalPoints = TotalPoints + @Points,
+                                        SET TotalPoints = (SELECT ISNULL(SUM(Score), 0) FROM QuizResults WHERE UserID = @UserID),
                                             DailyStreak = @Streak
                                         WHERE UserID = @UserID
                                     ELSE
                                         INSERT INTO Leaderboard (UserID, TotalPoints, DailyStreak)
-                                        VALUES (@UserID, @Points, @Streak)";
+                                        VALUES (@UserID, (SELECT ISNULL(SUM(Score), 0) FROM QuizResults WHERE UserID = @UserID), @Streak)";
 
                 using (SqlCommand cmd = new SqlCommand(upsertQuery, conn))
                 {

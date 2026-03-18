@@ -16,9 +16,11 @@
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <UseIISExpress>true</UseIISExpress>
     <Use64BitIISExpress />
-    <IISExpressSSLPort>44310</IISExpressSSLPort>
-    <IISExpressAnonymousAuthentication>enabled</IISExpressAnonymousAuthentication>
-    <IISExpressWindowsAuthentication>disabled</IISExpressWindowsAuthentication>
+    <IISExpressSSLPort>44327</IISExpressSSLPort>
+    <IISExpressAnonymousAuthentication>
+    </IISExpressAnonymousAuthentication>
+    <IISExpressWindowsAuthentication>
+    </IISExpressWindowsAuthentication>
     <IISExpressUseClassicPipelineMode />
     <UseGlobalApplicationHostFile />
     <NuGetPackageImportStamp>
@@ -111,6 +113,10 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="About.aspx" />
+    <Content Include="App_Data\AidcademyDB.mdf" />
+    <Content Include="App_Data\AidcademyDB_log.ldf">
+      <DependentUpon>AidcademyDB.mdf</DependentUpon>
+    </Content>
     <Content Include="ContentManagement.aspx" />
     <Content Include="InstructorCourseSelector.ascx" />
     <Content Include="MainPage.aspx" />
@@ -468,7 +474,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Aidcademy_Data\" />
-    <Folder Include="App_Data\" />
     <Folder Include="image\" />
   </ItemGroup>
   <ItemGroup>

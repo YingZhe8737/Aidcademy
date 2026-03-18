@@ -254,6 +254,7 @@ namespace Aidcademy
                         FROM UserProfiles p
                         LEFT JOIN QuizResults qr ON p.UserID = qr.UserID
                         LEFT JOIN Leaderboard lb ON p.UserID = lb.UserID
+                        WHERE p.FullName IS NOT NULL AND LTRIM(RTRIM(p.FullName)) <> ''
                         GROUP BY p.UserID, p.FullName, lb.DailyStreak
                         HAVING ISNULL(SUM(qr.Score), 0) > 0
                         ORDER BY ISNULL(SUM(qr.Score), 0) DESC";
