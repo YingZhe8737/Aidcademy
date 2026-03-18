@@ -152,7 +152,7 @@
         <ItemTemplate>
             <div class="category-group">
                 <div class="course-header">
-                    <img src='<%# Eval("CourseThumbnailPath") != DBNull.Value && !string.IsNullOrEmpty(Eval("CourseThumbnailPath").ToString()) ? ResolveUrl(Eval("CourseThumbnailPath").ToString()) : "Images/default-course.png" %>' alt="Course" />
+                    <img src='<%# Eval("CourseThumbnailPath") != DBNull.Value && !string.IsNullOrEmpty(Eval("CourseThumbnailPath").ToString()) ? ResolveUrl(Eval("CourseThumbnailPath").ToString()) : "image/default-course.png" %>' alt="Course" />
                     <div class="course-header-info">
                         <h4><%# Eval("CourseTitle") %> <span class="cat-badge"><i class="fa-solid fa-tag"></i><%# Eval("Category") %></span></h4>
                         <div class="course-desc"><%# Eval("CourseDescription") %></div>
@@ -171,7 +171,7 @@
                                 <%-- Color stripe: Draft=gray, Pending=amber, Rejected=red, Approved/Published=green --%>
                                 <div class='lesson-stripe <%# Convert.ToString(Eval("ApprovalStatus")) == "Draft" ? "stripe-draft" : Convert.ToString(Eval("ApprovalStatus")) == "Pending Admin" ? "stripe-pending" : Convert.ToString(Eval("ApprovalStatus")) == "Rejected" ? "stripe-rejected" : "stripe-published" %>'></div>
                                 <div class="lesson-thumb-wrap">
-                                    <img src='<%# Eval("LessonThumbnailPath") != DBNull.Value && !string.IsNullOrEmpty(Eval("LessonThumbnailPath").ToString()) ? ResolveUrl(Eval("LessonThumbnailPath").ToString()) : "Images/default-lesson.png" %>' alt="Lesson" />
+                                    <img src='<%# Eval("LessonThumbnailPath") != DBNull.Value && !string.IsNullOrEmpty(Eval("LessonThumbnailPath").ToString()) ? ResolveUrl(Eval("LessonThumbnailPath").ToString()) : "image/default-lesson.png" %>' alt="Lesson" />
                                     <%-- Status badge — normalise "Approved" → "Published" in display --%>
                                     <span class='lesson-status-badge <%# Convert.ToString(Eval("ApprovalStatus")) == "Draft" ? "badge-draft" : Convert.ToString(Eval("ApprovalStatus")) == "Pending Admin" ? "badge-pending" : Convert.ToString(Eval("ApprovalStatus")) == "Rejected" ? "badge-rejected" : "badge-published" %>'>
                                         <i class='fa-solid <%# Convert.ToString(Eval("ApprovalStatus")) == "Pending Admin" ? "fa-clock" : (Convert.ToString(Eval("ApprovalStatus")) == "Published" || Convert.ToString(Eval("ApprovalStatus")) == "Approved") ? "fa-check-circle" : Convert.ToString(Eval("ApprovalStatus")) == "Rejected" ? "fa-circle-xmark" : "fa-pencil" %>'></i>

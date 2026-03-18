@@ -107,11 +107,11 @@ namespace Aidcademy
                         {
                             if (rdr.Read())
                             {
-                                enrolled  = Convert.ToInt32(rdr["Enrolled"]);
+                                enrolled = Convert.ToInt32(rdr["Enrolled"]);
                                 completed = rdr["Completed"] != DBNull.Value ? Convert.ToInt32(rdr["Completed"]) : 0;
                             }
                         }
-                        lblEnrolledCourses.Text  = enrolled.ToString();
+                        lblEnrolledCourses.Text = enrolled.ToString();
                         lblCompletedCourses.Text = completed.ToString();
                     }
 
