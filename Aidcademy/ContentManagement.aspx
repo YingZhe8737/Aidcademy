@@ -121,7 +121,7 @@
                             <div class='lesson-card <%# GetStatusCssClass(Eval("ApprovalStatus").ToString()) %>'>
                                 <div class="lesson-thumb">
                                     <asp:Image runat="server"
-                                        ImageUrl='<%# (Eval("ThumbnailPath") != DBNull.Value && !string.IsNullOrEmpty(Eval("ThumbnailPath").ToString())) ? ResolveUrl(Eval("ThumbnailPath").ToString()) : "~/Images/default-lesson.png" %>'
+                                        ImageUrl='<%# (Eval("ThumbnailPath") != DBNull.Value && !string.IsNullOrEmpty(Eval("ThumbnailPath").ToString())) ? ResolveUrl(Eval("ThumbnailPath").ToString()) : "~/image/default-lesson.png" %>'
                                         AlternateText="Lesson"
                                         style="width:100%;height:100%;object-fit:cover;display:block;" />
                                 </div>

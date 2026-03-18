@@ -12,7 +12,7 @@ namespace Aidcademy
     {
         string connString = ConfigurationManager.ConnectionStrings["AidcademyDB"].ConnectionString;
 
-        public string ActiveFilter
+        private string ActiveFilter
         {
             get { return ViewState["ActiveFilter"] as string ?? "All"; }
             set { ViewState["ActiveFilter"] = value; }
@@ -29,29 +29,6 @@ namespace Aidcademy
             {
                 BindDashboardStats();
                 BindCourses();
-            }
-        }
-
-        // PreRender fires AFTER all event handlers (including btnFilter_Click),
-        // so ActiveFilter already has the newly selected value at this point.
-        protected void Page_PreRender(object sender, EventArgs e)
-        {
-            SetActiveFilterTab();
-        }
-
-        private void SetActiveFilterTab()
-        {
-            btnAll.CssClass = "filter-tab-btn";
-            btnPending.CssClass = "filter-tab-btn";
-            btnPublished.CssClass = "filter-tab-btn";
-            btnRejected.CssClass = "filter-tab-btn";
-
-            switch (ActiveFilter)
-            {
-                case "Pending Admin": btnPending.CssClass += " tab-active-pending"; break;
-                case "Published": btnPublished.CssClass += " tab-active-published"; break;
-                case "Rejected": btnRejected.CssClass += " tab-active-rejected"; break;
-                default: btnAll.CssClass += " tab-active-all"; break;
             }
         }
 
@@ -111,12 +88,19 @@ namespace Aidcademy
         {
             using (SqlConnection conn = new SqlConnection(connString))
             {
+                // Only show courses that have at least one non-Draft lesson
+                // (if ALL lessons are Draft the course is invisible to admin)
                 string query = @"SELECT c.CourseID,
                                         c.Title                       AS CourseTitle,
                                         ISNULL(c.Category, 'General') AS Category,
                                         ISNULL(u.Username, 'Unknown') AS InstructorName
                                  FROM   Courses c
                                  LEFT JOIN Users u ON c.UserID = u.UserID
+                                 WHERE  EXISTS (
+                                     SELECT 1 FROM Lessons l
+                                     WHERE  l.CourseID = c.CourseID
+                                       AND  l.ApprovalStatus <> 'Draft'
+                                 )
                                  ORDER BY c.CourseID DESC";
 
                 using (SqlCommand cmd = new SqlCommand(query, conn))
@@ -140,14 +124,21 @@ namespace Aidcademy
 
             using (SqlConnection conn = new SqlConnection(connString))
             {
-                // Handle both "Published" and "Approved" when filtering for Published tab
-                string filterClause = "";
-                if (ActiveFilter != "All")
+                // Admin never sees Draft lessons.
+                // "All" shows everything except Draft.
+                // Other filters narrow to the specific status.
+                string filterClause;
+                if (ActiveFilter == "All")
                 {
-                    if (ActiveFilter == "Published")
-                        filterClause = " AND l.ApprovalStatus IN ('Published', 'Approved')";
-                    else
-                        filterClause = " AND l.ApprovalStatus = @StatusFilter";
+                    filterClause = " AND l.ApprovalStatus <> 'Draft'";
+                }
+                else if (ActiveFilter == "Published")
+                {
+                    filterClause = " AND l.ApprovalStatus IN ('Published', 'Approved')";
+                }
+                else
+                {
+                    filterClause = " AND l.ApprovalStatus = @StatusFilter";
                 }
 
                 // Column aliased as ThumbnailPath — matches Eval("ThumbnailPath") in .aspx

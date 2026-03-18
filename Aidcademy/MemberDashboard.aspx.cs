@@ -107,11 +107,11 @@ namespace Aidcademy
                         {
                             if (rdr.Read())
                             {
-                                enrolled  = Convert.ToInt32(rdr["Enrolled"]);
+                                enrolled = Convert.ToInt32(rdr["Enrolled"]);
                                 completed = rdr["Completed"] != DBNull.Value ? Convert.ToInt32(rdr["Completed"]) : 0;
                             }
                         }
-                        lblEnrolledCourses.Text  = enrolled.ToString();
+                        lblEnrolledCourses.Text = enrolled.ToString();
                         lblCompletedCourses.Text = completed.ToString();
                     }
 
@@ -244,18 +244,23 @@ namespace Aidcademy
                     }
 
                     // Leaderboard (top 10) — skip top 3 for podium
+                    // Base on Users (not UserProfiles) so users without a profile row
+                    // still appear. Filter Role='Member' so admins/instructors are excluded.
+                    // GROUP BY u.UserID only — avoids NULL-merge bug on lb.DailyStreak.
                     string queryLeaderboard = @"
-                        SELECT TOP 10
-                            p.UserID,
-                            p.FullName,
-                            ISNULL(lb.DailyStreak, 0) AS DailyStreak,
-                            ISNULL(SUM(qr.Score), 0) AS TotalPoints,
-                            (SELECT COUNT(*) FROM Enrollments e WHERE e.UserID = p.UserID) AS CourseCount
-                        FROM UserProfiles p
-                        LEFT JOIN QuizResults qr ON p.UserID = qr.UserID
-                        LEFT JOIN Leaderboard lb ON p.UserID = lb.UserID
-                        WHERE p.FullName IS NOT NULL AND LTRIM(RTRIM(p.FullName)) <> ''
-                        GROUP BY p.UserID, p.FullName, lb.DailyStreak
+                        SELECT
+                            u.UserID,
+                            ISNULL(p.FullName, u.Username)    AS FullName,
+                            ISNULL(MAX(lb.DailyStreak), 0)    AS DailyStreak,
+                            ISNULL(SUM(qr.Score), 0)          AS TotalPoints,
+                            (SELECT COUNT(*) FROM Enrollments e WHERE e.UserID = u.UserID) AS CourseCount
+                        FROM Users u
+                        LEFT JOIN UserProfiles p  ON p.UserID  = u.UserID
+                        LEFT JOIN QuizResults  qr ON qr.UserID = u.UserID
+                        LEFT JOIN Leaderboard  lb ON lb.UserID = u.UserID
+                        WHERE u.Role = 'Member'
+                          AND u.Status = 'Active'
+                        GROUP BY u.UserID, p.FullName, u.Username
                         HAVING ISNULL(SUM(qr.Score), 0) > 0
                         ORDER BY ISNULL(SUM(qr.Score), 0) DESC";
 

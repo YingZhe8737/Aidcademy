@@ -14,7 +14,6 @@ namespace Aidcademy
         {
             if (!IsPostBack)
             {
-                // Must have a pending user to verify
                 if (Purpose == "Login" && Session["PendingUserID"] == null)
                 {
                     Response.Redirect("~/Login_signup.aspx");
@@ -26,14 +25,12 @@ namespace Aidcademy
                     return;
                 }
 
-                // Adjust subtitle based on purpose
                 if (Purpose == "ForgotPassword")
                     lblSubtitle.Text = "We've sent a <strong>6-digit verification code</strong> to your email. " +
                                        "Enter it below to reset your password. The code expires in <strong>10 minutes</strong>.";
             }
         }
 
-        // Verify OTP button
         protected void btnVerify_Click(object sender, EventArgs e)
         {
             string code = txtOtp.Value?.Trim() ?? "";
@@ -58,12 +55,11 @@ namespace Aidcademy
             }
         }
 
-        // Resend OTP button
         protected void btnResend_Click(object sender, EventArgs e)
         {
             try
             {
-                int    userID;
+                int userID;
                 string email;
 
                 if (Purpose == "Login")
@@ -74,9 +70,9 @@ namespace Aidcademy
                         return;
                     }
                     userID = Convert.ToInt32(Session["PendingUserID"]);
-                    email  = Session["PendingEmail"]?.ToString() ?? "";
+                    email = Session["PendingEmail"]?.ToString() ?? "";
                 }
-                else // ForgotPassword
+                else
                 {
                     if (Session["ResetPendingUserID"] == null)
                     {
@@ -84,7 +80,7 @@ namespace Aidcademy
                         return;
                     }
                     userID = Convert.ToInt32(Session["ResetPendingUserID"]);
-                    email  = Session["ResetPendingEmail"]?.ToString() ?? "";
+                    email = Session["ResetPendingEmail"]?.ToString() ?? "";
                 }
 
                 string newOtp = OtpHelper.SaveOtp(userID, Purpose);
@@ -105,13 +101,12 @@ namespace Aidcademy
             }
         }
 
-        // Private helpers
         private void HandleLoginVerification(string code)
         {
             int userID = Convert.ToInt32(Session["PendingUserID"]);
-            string role     = Session["PendingRole"]?.ToString()  ?? "Member";
-            string fullName = Session["PendingName"]?.ToString()  ?? "Member";
-            string email    = Session["PendingEmail"]?.ToString() ?? "";
+            string role = Session["PendingRole"]?.ToString() ?? "Member";
+            string fullName = Session["PendingName"]?.ToString() ?? "Member";
+            string email = Session["PendingEmail"]?.ToString() ?? "";
 
             string errMsg;
             if (!OtpHelper.VerifyOtp(userID, code, "Login", out errMsg))
@@ -127,7 +122,33 @@ namespace Aidcademy
             Session.Remove("PendingEmail");
 
             SessionHelper.SetLoginSession(userID, role, fullName, email);
-            SessionHelper.RedirectByRole(role);
+
+            // Update/delete SiteTraffic BEFORE redirecting
+            string sessionID = Session.SessionID;
+            using (SqlConnection conn = new SqlConnection(ConfigurationManager.ConnectionStrings["AidcademyDB"].ConnectionString))
+            {
+                conn.Open();
+                if (role == "Admin" || role == "Instructor")
+                {
+                    string deleteQuery = "DELETE FROM SiteTraffic WHERE SessionID = @SessionID";
+                    using (SqlCommand cmd = new SqlCommand(deleteQuery, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@SessionID", sessionID);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                else
+                {
+                    string updateQuery = "UPDATE SiteTraffic SET IsRegisteredUser = 1 WHERE SessionID = @SessionID";
+                    using (SqlCommand cmd = new SqlCommand(updateQuery, conn))
+                    {
+                        cmd.Parameters.AddWithValue("@SessionID", sessionID);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+
+            SessionHelper.RedirectByRole(role); // ? Only called once, after DB work
         }
 
         private void HandleForgotPasswordVerification(string code)
@@ -141,7 +162,6 @@ namespace Aidcademy
                 return;
             }
 
-            // OTP valid - let the reset-password form show
             Session["ResetVerifiedUserID"] = userID;
             Session.Remove("ResetPendingUserID");
             Session.Remove("ResetPendingEmail");
@@ -151,11 +171,9 @@ namespace Aidcademy
 
         private void ShowMessage(string message, bool isSuccess)
         {
-            pnlMessage.Visible    = true;
-            lblMessage.Text       = message;
-            lblMessage.CssClass   = isSuccess ? "message success" : "message error";
+            pnlMessage.Visible = true;
+            lblMessage.Text = message;
+            lblMessage.CssClass = isSuccess ? "message success" : "message error";
         }
-
-       
     }
 }

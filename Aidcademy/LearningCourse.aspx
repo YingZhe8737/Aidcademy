@@ -200,7 +200,7 @@
                 <ItemTemplate>
                     <div class="course-card">
                         <div class="card-image">
-                            <img src='<%# Eval("CourseThumbnailPath") != DBNull.Value && !string.IsNullOrEmpty(Eval("CourseThumbnailPath").ToString()) ? ResolveUrl(Eval("CourseThumbnailPath").ToString()) : "Images/default-course.png" %>' alt="Course" />
+                            <img src='<%# Eval("CourseThumbnailPath") != DBNull.Value && !string.IsNullOrEmpty(Eval("CourseThumbnailPath").ToString()) ? ResolveUrl(Eval("CourseThumbnailPath").ToString()) : "image/default-course.png" %>' alt="Course" />
 
                             <!-- Badges -->
                             <div class="card-badges">

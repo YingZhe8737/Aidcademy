@@ -96,7 +96,7 @@ namespace Aidcademy
 
                                 imgProfile.ImageUrl = !string.IsNullOrEmpty(photo)
                                                        ? "~/Uploads/ProfilePhotos/" + photo
-                                                       : "~/images/default-avatar.png";
+                                                       : "~/image/default-avatar.png";
                             }
                             else
                             {
@@ -159,8 +159,8 @@ namespace Aidcademy
                                 }
                                 else
                                 {
-                                    imgProfile.ImageUrl = "~/images/default-avatar.png";
-                                    imgProfilePreview.ImageUrl = "~/images/default-avatar.png";
+                                    imgProfile.ImageUrl = "~/image/default-avatar.png";
+                                    imgProfilePreview.ImageUrl = "~/image/default-avatar.png";
                                 }
                             }
                         }

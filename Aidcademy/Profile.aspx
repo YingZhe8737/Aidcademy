@@ -105,7 +105,7 @@
 
         <div class="profile-card">
             <div class="profile-header-section">
-                <asp:Image ID="imgProfile" runat="server" CssClass="profile-image" ImageUrl="~/images/default-avatar.png" AlternateText="Profile" />
+                <asp:Image ID="imgProfile" runat="server" CssClass="profile-image" ImageUrl="~/image/default-avatar.png" AlternateText="Profile" />
                 <h2><asp:Label ID="lblProfileName" runat="server" Text="Profile"></asp:Label></h2>
                 <p><asp:Label ID="lblProfileRole" runat="server" Text=""></asp:Label></p>
             </div>
@@ -155,7 +155,7 @@
                 <asp:Panel ID="pnlEdit" runat="server" Visible="false">
                     <div class="section-title">Profile Photo</div>
                     <div class="photo-row">
-                        <asp:Image ID="imgProfilePreview" runat="server" CssClass="photo-preview" ImageUrl="~/images/default-avatar.png" AlternateText="Preview" />
+                        <asp:Image ID="imgProfilePreview" runat="server" CssClass="photo-preview" ImageUrl="~/image/default-avatar.png" AlternateText="Preview" />
                         <div>
                             <asp:FileUpload ID="fuProfilePhoto" runat="server" accept=".jpg,.jpeg,.png,.gif" />
                             <small>JPG, PNG or GIF — max 2 MB</small>
