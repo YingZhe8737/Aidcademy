@@ -14,9 +14,9 @@ namespace Aidcademy
 {
     public partial class GoogleCallback : Page
     {
-        private static string ClientId     => ConfigurationManager.AppSettings["GoogleClientId"];
+        private static string ClientId => ConfigurationManager.AppSettings["GoogleClientId"];
         private static string ClientSecret => ConfigurationManager.AppSettings["GoogleClientSecret"];
-        private static string RedirectUri  => ConfigurationManager.AppSettings["GoogleRedirectUri"];
+        private static string RedirectUri => ConfigurationManager.AppSettings["GoogleRedirectUri"];
 
         private readonly string connectionString =
             ConfigurationManager.ConnectionStrings["AidcademyDB"].ConnectionString;
@@ -30,7 +30,7 @@ namespace Aidcademy
                 return;
             }
 
-            string code  = Request.QueryString["code"];
+            string code = Request.QueryString["code"];
             string state = Request.QueryString["state"];
 
             if (!string.IsNullOrEmpty(code))
@@ -46,18 +46,18 @@ namespace Aidcademy
             var stateCookie = new HttpCookie("g_oauth_state", csrfState)
             {
                 HttpOnly = true,
-                Secure   = Request.IsSecureConnection,
-                Expires  = DateTime.Now.AddMinutes(10)
+                Secure = Request.IsSecureConnection,
+                Expires = DateTime.Now.AddMinutes(10)
             };
             Response.Cookies.Set(stateCookie);
 
             string googleAuthUrl =
                 "https://accounts.google.com/o/oauth2/v2/auth" +
-                "?client_id="     + Uri.EscapeDataString(ClientId) +
-                "&redirect_uri="  + Uri.EscapeDataString(RedirectUri) +
+                "?client_id=" + Uri.EscapeDataString(ClientId) +
+                "&redirect_uri=" + Uri.EscapeDataString(RedirectUri) +
                 "&response_type=code" +
-                "&scope="         + Uri.EscapeDataString("openid email profile") +
-                "&state="         + Uri.EscapeDataString(csrfState) +
+                "&scope=" + Uri.EscapeDataString("openid email profile") +
+                "&state=" + Uri.EscapeDataString(csrfState) +
                 "&access_type=offline" +
                 "&prompt=select_account";
 
@@ -80,7 +80,7 @@ namespace Aidcademy
             try
             {
                 string tokenJson = ExchangeCodeForToken(code);
-                JObject tokens   = JObject.Parse(tokenJson);
+                JObject tokens = JObject.Parse(tokenJson);
                 string accessToken = tokens["access_token"]?.ToString();
 
                 if (string.IsNullOrEmpty(accessToken))
@@ -89,11 +89,11 @@ namespace Aidcademy
                     return;
                 }
 
-                string userInfoJson  = FetchUserInfo(accessToken);
-                JObject userInfo     = JObject.Parse(userInfoJson);
-                string googleId      = userInfo["sub"]?.ToString();
-                string googleEmail   = userInfo["email"]?.ToString();
-                string googleName    = userInfo["name"]?.ToString() ?? googleEmail;
+                string userInfoJson = FetchUserInfo(accessToken);
+                JObject userInfo = JObject.Parse(userInfoJson);
+                string googleId = userInfo["sub"]?.ToString();
+                string googleEmail = userInfo["email"]?.ToString();
+                string googleName = userInfo["name"]?.ToString() ?? googleEmail;
 
                 if (string.IsNullOrEmpty(googleId) || string.IsNullOrEmpty(googleEmail))
                 {
@@ -106,17 +106,16 @@ namespace Aidcademy
                 string fullName;
                 FindOrCreateGoogleUser(googleId, googleEmail, googleName, out userId, out role, out fullName);
 
-                // Use the shared session helper so all session keys match the rest of the app
+                // Use the shared session helper so all session keys match the rest 
                 SessionHelper.SetLoginSession(userId, role, fullName, googleEmail);
                 SessionHelper.RedirectByRole(role);
             }
             catch (System.Threading.ThreadAbortException)
             {
-                throw; 
+                throw;
             }
             catch (Exception ex)
             {
-                // Store real error message so login page can display it
                 Session["GoogleError"] = ex.Message + (ex.InnerException != null ? " | " + ex.InnerException.Message : "");
                 System.Diagnostics.Debug.WriteLine("GoogleCallback error: " + ex.ToString());
                 Response.Redirect("~/Login_signup.aspx?msg=google_error");
@@ -128,24 +127,24 @@ namespace Aidcademy
             string tokenUrl = "https://oauth2.googleapis.com/token";
 
             string postData =
-                "code="          + Uri.EscapeDataString(code) +
-                "&client_id="    + Uri.EscapeDataString(ClientId) +
-                "&client_secret="+ Uri.EscapeDataString(ClientSecret) +
+                "code=" + Uri.EscapeDataString(code) +
+                "&client_id=" + Uri.EscapeDataString(ClientId) +
+                "&client_secret=" + Uri.EscapeDataString(ClientSecret) +
                 "&redirect_uri=" + Uri.EscapeDataString(RedirectUri) +
                 "&grant_type=authorization_code";
 
             byte[] data = Encoding.UTF8.GetBytes(postData);
 
             HttpWebRequest req = (HttpWebRequest)WebRequest.Create(tokenUrl);
-            req.Method        = "POST";
-            req.ContentType   = "application/x-www-form-urlencoded";
+            req.Method = "POST";
+            req.ContentType = "application/x-www-form-urlencoded";
             req.ContentLength = data.Length;
 
             using (Stream stream = req.GetRequestStream())
                 stream.Write(data, 0, data.Length);
 
             using (HttpWebResponse resp = (HttpWebResponse)req.GetResponse())
-            using (StreamReader reader  = new StreamReader(resp.GetResponseStream()))
+            using (StreamReader reader = new StreamReader(resp.GetResponseStream()))
                 return reader.ReadToEnd();
         }
 
@@ -158,7 +157,7 @@ namespace Aidcademy
             req.Headers.Add("Authorization", "Bearer " + accessToken);
 
             using (HttpWebResponse resp = (HttpWebResponse)req.GetResponse())
-            using (StreamReader reader  = new StreamReader(resp.GetResponseStream()))
+            using (StreamReader reader = new StreamReader(resp.GetResponseStream()))
                 return reader.ReadToEnd();
         }
 
@@ -167,8 +166,8 @@ namespace Aidcademy
             string googleId, string email, string name,
             out int userId, out string role, out string fullName)
         {
-            userId   = 0;
-            role     = "Member";
+            userId = 0;
+            role = "Member";
             fullName = name;
 
             using (SqlConnection conn = new SqlConnection(connectionString))
@@ -189,8 +188,8 @@ namespace Aidcademy
                     {
                         if (r.Read())
                         {
-                            userId   = Convert.ToInt32(r["UserID"]);
-                            role     = r["Role"].ToString();
+                            userId = Convert.ToInt32(r["UserID"]);
+                            role = r["Role"].ToString();
                             fullName = r["FullName"]?.ToString() ?? name;
                             return;
                         }
@@ -211,8 +210,8 @@ namespace Aidcademy
                     {
                         if (r.Read())
                         {
-                            userId   = Convert.ToInt32(r["UserID"]);
-                            role     = r["Role"].ToString();
+                            userId = Convert.ToInt32(r["UserID"]);
+                            role = r["Role"].ToString();
                             fullName = r["FullName"]?.ToString() ?? name;
                             r.Close();
 
@@ -221,7 +220,7 @@ namespace Aidcademy
                             using (SqlCommand upd = new SqlCommand(update, conn))
                             {
                                 upd.Parameters.AddWithValue("@GoogleID", googleId);
-                                upd.Parameters.AddWithValue("@UserID",   userId);
+                                upd.Parameters.AddWithValue("@UserID", userId);
                                 upd.ExecuteNonQuery();
                             }
                             return;
@@ -231,7 +230,7 @@ namespace Aidcademy
 
                 // No existing account - create a new one
                 string baseUsername = email.Split('@')[0];
-                string username     = EnsureUniqueUsername(conn, baseUsername);
+                string username = EnsureUniqueUsername(conn, baseUsername);
 
                 string insertUser = @"
                     INSERT INTO Users (Username, Email, PasswordHash, GoogleID, Role, Status, CreatedAt)
@@ -241,7 +240,7 @@ namespace Aidcademy
                 using (SqlCommand cmd = new SqlCommand(insertUser, conn))
                 {
                     cmd.Parameters.AddWithValue("@Username", username);
-                    cmd.Parameters.AddWithValue("@Email",    email);
+                    cmd.Parameters.AddWithValue("@Email", email);
                     cmd.Parameters.AddWithValue("@GoogleID", googleId);
 
                     object newIdObj = cmd.ExecuteScalar();
@@ -255,20 +254,20 @@ namespace Aidcademy
 
                 using (SqlCommand cmd = new SqlCommand(insertProfile, conn))
                 {
-                    cmd.Parameters.AddWithValue("@UserID",   userId);
+                    cmd.Parameters.AddWithValue("@UserID", userId);
                     cmd.Parameters.AddWithValue("@FullName", name);
                     cmd.ExecuteNonQuery();
                 }
 
                 fullName = name;
-                role     = "Member";
+                role = "Member";
             }
         }
 
         private string EnsureUniqueUsername(SqlConnection conn, string baseUsername)
         {
             string candidate = baseUsername;
-            int suffix       = 1;
+            int suffix = 1;
 
             while (true)
             {

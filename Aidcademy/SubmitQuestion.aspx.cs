@@ -130,7 +130,5 @@ namespace Aidcademy
             pnlMessage.Visible = true;
             pnlMessage.CssClass = isSuccess ? "message success" : "message error";
         }
-
-        // btnLogout_Click is now handled by Member.Master
     }
 }

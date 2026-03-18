@@ -36,7 +36,7 @@ namespace Aidcademy
             get { return isMember; }
         }
 
-        // Now uses shared SessionHelper.GetDisplayName() / GetInitial()
+        // uses shared SessionHelper.GetDisplayName() 
         protected string GetMemberName()  { return SessionHelper.GetDisplayName(); }
         protected string GetMemberInitial() { return SessionHelper.GetInitial(); }
 

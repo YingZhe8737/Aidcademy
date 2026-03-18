@@ -6,14 +6,14 @@
 </asp:Content>
 
 <asp:Content ID="Content3" ContentPlaceHolderID="MainContent" runat="server">
-    <div class="member-container" style="max-width:1000px;">
+    <div class="member-container" style="max-width: 1000px;">
         <div class="page-header centered">
-            <h1><i class="fas fa-comments" style="color:#dc2626;"></i> Ask a Question</h1>
+            <h1><i class="fas fa-comments" style="color: #dc2626;"></i>Ask a Question</h1>
             <p>Get help from instructors about your courses</p>
         </div>
 
         <div class="submit-card">
-            <h2 style="margin-bottom:20px; color:#1f2937; font-size:1.2rem; font-weight:700;">Submit New Question</h2>
+            <h2 style="margin-bottom: 20px; color: #1f2937; font-size: 1.2rem; font-weight: 700;">Submit New Question</h2>
 
             <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="message">
                 <asp:Label ID="lblMessage" runat="server"></asp:Label>
@@ -41,7 +41,7 @@
         </div>
 
         <div class="question-list">
-            <h2 style="margin-bottom:20px; color:#1f2937; font-size:1.2rem; font-weight:700;">My Questions</h2>
+            <h2 style="margin-bottom: 20px; color: #1f2937; font-size: 1.2rem; font-weight: 700;">My Questions</h2>
 
             <asp:Panel ID="pnlNoQuestions" runat="server" Visible="false" CssClass="empty-state">
                 <i class="fas fa-question-circle"></i>

@@ -46,7 +46,7 @@ namespace Aidcademy
                     return;
                 }
 
-                // Verify current password using shared helper (BCrypt + SHA fallback)
+                // Verify current password
                 string storedHash = DatabaseHelper.ExecuteScalar(
                     "SELECT PasswordHash FROM Users WHERE UserID = @UserID",
                     new[] { new SqlParameter("@UserID", userID) })?.ToString();

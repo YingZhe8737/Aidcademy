@@ -32,7 +32,6 @@ namespace Aidcademy
             }
         }
 
-        // ── Section A: Summary Stat Cards ──────────────────────────
         private void LoadSummaryStats()
         {
             try
@@ -66,7 +65,7 @@ namespace Aidcademy
             }
         }
 
-        // ── Section B: Course Completion Cards ─────────────────────
+        // Course Completion Cards
         private void LoadCourseProgress()
         {
             try
@@ -119,12 +118,12 @@ namespace Aidcademy
             }
         }
 
-        // ── Section C-Left: Quiz History ───────────────────────────
+        //Quiz History 
         private void LoadQuizHistory()
         {
             try
             {
-                // Score is stored as XP (correct * 100 first try, correct * 50 retry)
+                // Score is stored as XP 
                 // TotalMarks = questionCount * 100 (max possible first-try XP)
                 string query = @"
                     SELECT TOP 5
@@ -153,7 +152,7 @@ namespace Aidcademy
             }
         }
 
-        // ── Section C-Right: Activity Heatmap ──────────────────────
+        //Activity Heatmap 
         private void BuildActivityHeatmap()
         {
             try
@@ -230,12 +229,11 @@ namespace Aidcademy
             }
         }
 
-        // ── Section D: XP & Level Banner ───────────────────────────
+        // XP & Level Banner 
         private void LoadXpLevel()
         {
             try
             {
-                // Use SUM(QuizResults.Score) as single source of truth (matches leaderboard display)
                 string query = "SELECT ISNULL(SUM(Score), 0) FROM QuizResults WHERE UserID = @UID";
                 object xpObj = DatabaseHelper.ExecuteScalar(query, new[] { new SqlParameter("@UID", userID) });
                 int totalXP = xpObj != null && xpObj != DBNull.Value ? Convert.ToInt32(xpObj) : 0;
@@ -279,7 +277,7 @@ namespace Aidcademy
             else                 { level = 1; currentMin = 0;    nextMin = 500;  title = "Beginner"; }
         }
 
-        // ── Helpers ────────────────────────────────────────────────
+        // Helpers
         protected string GetThumbnailUrl(object path)
         {
             string s = path?.ToString() ?? "";

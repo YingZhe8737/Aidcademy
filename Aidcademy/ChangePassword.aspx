@@ -194,7 +194,7 @@
             if (!input) return;
             var pwd = input.value;
             var strengthText = document.getElementById('strengthText');
-            var strengthBar  = document.getElementById('strengthBar');
+            var strengthBar = document.getElementById('strengthBar');
 
             if (pwd.length === 0) {
                 strengthBar.style.width = '0%';
@@ -203,11 +203,11 @@
             }
 
             var score = 0;
-            if (pwd.length >= 8)                  score++;
-            if (pwd.match(/[a-z]/))               score++;
-            if (pwd.match(/[A-Z]/))               score++;
-            if (pwd.match(/[0-9]/))               score++;
-            if (pwd.match(/[@$!%*?&##+]/))        score++;
+            if (pwd.length >= 8) score++;
+            if (pwd.match(/[a-z]/)) score++;
+            if (pwd.match(/[A-Z]/)) score++;
+            if (pwd.match(/[0-9]/)) score++;
+            if (pwd.match(/[@$!%*?&##+]/)) score++;
 
             if (score <= 2) {
                 strengthBar.style.width = '33%';

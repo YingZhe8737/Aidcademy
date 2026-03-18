@@ -69,7 +69,6 @@ namespace Aidcademy
             Response.Redirect("~/Login_signup.aspx");
         }
 
-        // Kept for compatibility with pages that still call these helpers
         protected string GetMemberName()
         {
             string name = SessionHelper.GetUsername();

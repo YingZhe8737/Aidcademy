@@ -23,7 +23,7 @@ namespace Aidcademy
 
             int currentUserId = Convert.ToInt32(Session["UserID"]);
 
-            // Check if a different UserID is being requested (e.g. from quiz page link)
+            // Check if a different UserID is being requested 
             if (Request.QueryString["UserID"] != null)
             {
                 int requestedId = Convert.ToInt32(Request.QueryString["UserID"]);
@@ -54,7 +54,7 @@ namespace Aidcademy
             }
         }
 
-        // ── Read-only view of another user ──────────────────────────────────
+        //  Read-only view of another user 
         private void LoadReadOnlyProfile()
         {
             pnlViewOnlyBanner.Visible = true;
@@ -113,7 +113,7 @@ namespace Aidcademy
             }
         }
 
-        // ── Editable own profile ─────────────────────────────────────────────
+        // Editable own profile 
         private void LoadOwnProfile()
         {
             pnlViewOnlyBanner.Visible = false;

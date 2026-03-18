@@ -115,7 +115,7 @@ namespace Aidcademy
                 return;
             }
 
-            // OTP valid - promote to full session
+            // OTP valid
             Session.Remove("PendingUserID");
             Session.Remove("PendingRole");
             Session.Remove("PendingName");

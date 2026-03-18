@@ -40,9 +40,8 @@ namespace Aidcademy
                 {
                     conn.Open();
 
-                    // Stats: streak, points
-                    // Use SUM(QuizResults.Score) as the single source of truth for points
-                    // so it always matches the leaderboard table display
+                    // streak, points
+                    // leaderboard table display
                     string queryStats = @"
                         SELECT
                             ISNULL(lb.DailyStreak, 0) AS DailyStreak,
@@ -79,8 +78,7 @@ namespace Aidcademy
                     lblDailyStreak.Text = dailyStreak.ToString();
                     lblTotalPoints.Text = totalPoints.ToString("N0");
 
-                    // Personal best streak — query the highest streak ever recorded
-                    // (For now, use current streak as the best since we don't track history)
+                    // Personal best streak
                     lblPersonalBest.Text = dailyStreak.ToString();
 
                     // Monthly points
@@ -95,7 +93,7 @@ namespace Aidcademy
                         lblMonthlyPoints.Text = Convert.ToInt32(cmd.ExecuteScalar()).ToString("N0");
                     }
 
-                    // Enrolled & completed counts — combined into one query
+                    // Enrolled & completed counts
                     int enrolled = 0, completed = 0;
                     using (SqlCommand cmd = new SqlCommand(
                         @"SELECT COUNT(*) AS Enrolled,
@@ -115,8 +113,7 @@ namespace Aidcademy
                         lblCompletedCourses.Text = completed.ToString();
                     }
 
-                    // Leaderboard rank — uses same SUM(QuizResults.Score) source as leaderboard table
-                    // so rank is consistent with the displayed leaderboard
+                    // Leaderboard rank
                     string queryRank = @"
                         SELECT COUNT(*) + 1
                         FROM (
@@ -243,10 +240,7 @@ namespace Aidcademy
                             pnlCompletedSection.Visible = true;
                     }
 
-                    // Leaderboard (top 10) — skip top 3 for podium
-                    // Base on Users (not UserProfiles) so users without a profile row
-                    // still appear. Filter Role='Member' so admins/instructors are excluded.
-                    // GROUP BY u.UserID only — avoids NULL-merge bug on lb.DailyStreak.
+                    // Filter Role='Member' so admins/instructors are excluded
                     string queryLeaderboard = @"
                         SELECT
                             u.UserID,
@@ -270,10 +264,8 @@ namespace Aidcademy
                         using (SqlDataAdapter da = new SqlDataAdapter(cmd))
                             da.Fill(dt);
 
-                        // Build podium for top 3
                         BuildPodium(dt);
 
-                        // Table shows ranks 4+
                         if (dt.Rows.Count > 3)
                         {
                             DataTable tableData = dt.Clone();
@@ -296,7 +288,7 @@ namespace Aidcademy
         private void BuildStreakDays(SqlConnection conn, int userID, int dailyStreak)
         {
             string[] dayNames = { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
-            int todayIndex = ((int)DateTime.Now.DayOfWeek + 6) % 7; // 0=Mon ... 6=Sun
+            int todayIndex = ((int)DateTime.Now.DayOfWeek + 6) % 7; 
 
             var sb = new StringBuilder();
             for (int i = 0; i < 7; i++)
@@ -321,7 +313,6 @@ namespace Aidcademy
 
             string[] avatarBgs = { "avatar-gold", "avatar-silver", "avatar-brown" };
             string[] trophies = { "&#129351;", "&#129352;", "&#129353;" };
-            // Podium order: #2 left, #1 center, #3 right
             int[] order = dt.Rows.Count >= 3 ? new[] { 1, 0, 2 } :
                           dt.Rows.Count == 2 ? new[] { 1, 0 } : new[] { 0 };
 

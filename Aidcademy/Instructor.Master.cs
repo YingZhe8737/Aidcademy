@@ -66,7 +66,6 @@ namespace Aidcademy
             }
             catch
             {
-                // Fallback silently — sidebar will show default
                 lblSidebarName.Text = Session["Username"] != null
                     ? Session["Username"].ToString()
                     : "Instructor";

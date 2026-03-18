@@ -71,7 +71,6 @@ namespace Aidcademy
 
                         if (!EmailHelper.SendOtpEmail(email, otp, "ForgotPassword", out errMsg))
                         {
-                            // Log to server only — never show OTP code on screen
                             System.Diagnostics.Debug.WriteLine($"[DEV] OTP for UserID {userID}: {otp}");
                             ShowMessage("OTP generated. Check your email (or server log in dev mode).", true);
                         }

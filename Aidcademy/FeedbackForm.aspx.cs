@@ -30,7 +30,6 @@ namespace Aidcademy
                 return;
             }
 
-            // Fixed: was "YourConnectionString" — now correctly uses "AidcademyDB"
             string connStr = ConfigurationManager.ConnectionStrings["AidcademyDB"].ConnectionString;
 
             try

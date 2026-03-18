@@ -14,10 +14,10 @@ namespace Aidcademy
 
         protected void Page_Load(object sender, EventArgs e)
         {
-            // 1. Determine User Role - use Session["UserRole"] (set by SessionHelper)
+            // Determine User Role - use Session["UserRole"]
             string role = Session["UserRole"] != null ? Session["UserRole"].ToString() : "Visitor";
 
-            // 2. Setup Top Navbar depending on Role
+            // Top Navbar depending on Role
             pnlNavVisitor.Visible    = (role == "Visitor");
             pnlNavMember.Visible     = (role == "Member");
             pnlNavInstructor.Visible = (role == "Instructor");
@@ -28,14 +28,14 @@ namespace Aidcademy
 
             pnlAdminActions.Visible = (role == "Admin");
 
-            // 3. Set dynamic back button URL
+            //Set dynamic back button URL
             string backUrl = "LearningCourse.aspx";
             if (role == "Member")     backUrl = "MemberDashboard.aspx";
             else if (role == "Instructor") backUrl = "InstructorManageContent.aspx";
             else if (role == "Admin") backUrl = "AdminDashboard.aspx";
             hlBackBtn.NavigateUrl = backUrl;
 
-            // 4. Disable quiz submissions for visitors; also enforce free-lesson rule
+            //Disable quiz submissions for visitors; also enforce free-lesson rule
             if (role == "Visitor")
             {
                 btnSubmitQuiz.Enabled = false;
@@ -103,7 +103,7 @@ namespace Aidcademy
         {
             using (SqlConnection conn = new SqlConnection(connString))
             {
-                // 1. Load the Content
+                //Load the Content
                 using (SqlCommand cmd = new SqlCommand("SELECT Title, ContentBody, SequenceOrder FROM Lessons WHERE LessonID = @LessonID", conn))
                 {
                     cmd.Parameters.AddWithValue("@LessonID", lessonId);
@@ -119,10 +119,10 @@ namespace Aidcademy
                     }
                 }
 
-                // 1b. Load prev/next navigation + set ViewState["CourseID"]
+                // Load prev/next navigation + set ViewState["CourseID"]
                 LoadLessonNavigation(lessonId, conn);
 
-                // 2. Load ALL Quiz Questions
+                //Load ALL Quiz Questions
                 string quizQuery = @"SELECT qq.* FROM QuizQuestions qq INNER JOIN Quizzes q ON qq.QuizID = q.QuizID WHERE q.LessonID = @LessonID";
                 using (SqlCommand cmd = new SqlCommand(quizQuery, conn))
                 {
@@ -142,7 +142,7 @@ namespace Aidcademy
                     }
                 }
 
-                // 3. Load Simulation Data (if it exists)
+                // Load Simulation Data (if it exists)
                 using (SqlCommand cmd = new SqlCommand("SELECT SimulationType, SimulationData FROM LessonSimulations WHERE LessonID = @LessonID", conn))
                 {
                     cmd.Parameters.AddWithValue("@LessonID", lessonId);
@@ -204,7 +204,7 @@ namespace Aidcademy
             {
                 conn.Open();
 
-                // A. Capture previous last activity BEFORE this submission
+                // Capture previous last activity BEFORE this submission
                 lastActivity = DateTime.MinValue;
                 string lastActivityQuery = "SELECT ISNULL(MAX(DateTaken), '2000-01-01') FROM QuizResults WHERE UserID = @UserID";
                 using (SqlCommand cmd = new SqlCommand(lastActivityQuery, conn))
@@ -289,7 +289,7 @@ namespace Aidcademy
                     newStreak = 1;
                 }
 
-                // D. Upsert Leaderboard (TotalPoints + DailyStreak)
+                // Upsert Leaderboard (TotalPoints + DailyStreak)
                 string upsertQuery = @"
                                     IF EXISTS (SELECT 1 FROM Leaderboard WHERE UserID = @UserID)
                                         UPDATE Leaderboard
@@ -339,9 +339,7 @@ namespace Aidcademy
             btnApprove.Enabled = false;
         }
 
-        // ════════════════════════════════════════════════════════════════════
         // ADMIN: REJECT  (comment comes from hfRejectComment hidden field)
-        // ════════════════════════════════════════════════════════════════════
         protected void btnReject_Click(object sender, EventArgs e)
         {
             if (!SessionHelper.IsAdmin()) return; // extra server-side guard
@@ -587,7 +585,7 @@ namespace Aidcademy
             {
                 conn.Open();
 
-                // 1. Mark lesson as complete (LessonProgress columns: ProgressID, UserID, LessonID, Status, LastAccessedDate)
+                //Mark lesson as complete 
                 string upsertQuery = @"
                     IF NOT EXISTS (SELECT 1 FROM LessonProgress WHERE UserID = @UserID AND LessonID = @LessonID)
                     BEGIN
@@ -607,7 +605,7 @@ namespace Aidcademy
                     cmd.ExecuteNonQuery();
                 }
 
-                // 2. Recalculate Course Progress Percentage
+                // Recalculate Course Progress Percentage
                 // LessonProgress has no CourseID, so join through Lessons to get the course
                 string pctQuery = @"
                     DECLARE @Total INT = (SELECT COUNT(LessonID) FROM Lessons WHERE CourseID = @CourseID AND ApprovalStatus = 'Approved');

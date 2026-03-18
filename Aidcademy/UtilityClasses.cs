@@ -127,7 +127,6 @@ namespace Aidcademy.Utilities
         }
 
         /// Verify a plaintext password against a stored hash.
-        /// Tries BCrypt first; falls back to SHA-256 for legacy hashes.
         public static bool VerifyStoredPassword(string plainPassword, string storedHash)
         {
             if (string.IsNullOrEmpty(storedHash)) return false;
@@ -137,18 +136,17 @@ namespace Aidcademy.Utilities
             }
             catch (BCrypt.Net.SaltParseException)
             {
-                // Legacy SHA-256 hash — fallback
                 return VerifyPassword(plainPassword, storedHash);
             }
         }
 
-        // Generate a random token for password reset (legacy, kept for compatibility)
+        // Generate a random token for password reset 
         public static string GenerateResetToken()
         {
             return Guid.NewGuid().ToString("N") + DateTime.Now.Ticks.ToString("x");
         }
 
-        // Validate password strength (must be 8+ chars with upper, lower, and digit)
+        // Validate password strength 
         public static bool IsPasswordValid(string password, out string errorMessage)
         {
             errorMessage = string.Empty;
@@ -183,15 +181,14 @@ namespace Aidcademy.Utilities
         }
     }
 
-    // OTP - generate, save, and verify one-time passwords
+    // OTP METHODS- generate, save, and verify passwords
     public static class OtpHelper
     {
         private static readonly Random _rng = new Random();
 
-        // ===== LAB 11 OTP METHODS =====
         public static string GenerateNumericOtp()
         {
-            return GenerateOtp(); // Returns a 7-digit numeric string
+            return GenerateOtp();
         }
 
         public static string HmacOtp(string otp, string secret)
@@ -212,7 +209,7 @@ namespace Aidcademy.Utilities
                 using (SqlCommand cmd = new SqlCommand(insert, conn))
                 {
                     cmd.Parameters.AddWithValue("@UserID", userId);
-                    cmd.Parameters.AddWithValue("@OtpCode", otpHash); // Store the hash in OtpCode
+                    cmd.Parameters.AddWithValue("@OtpCode", otpHash);
                     cmd.Parameters.AddWithValue("@ExpiresAt", expiresAt);
                     cmd.ExecuteNonQuery();
                 }
@@ -220,21 +217,19 @@ namespace Aidcademy.Utilities
         }
 
 
-        /// Generate a cryptographically random 7-digit OTP string.
+        /// Generate a random 7-digit OTP string.
         public static string GenerateOtp()
         {
-            // Use RNGCryptoServiceProvider for better randomness
             using (var rng = new RNGCryptoServiceProvider())
             {
                 byte[] data = new byte[4];
                 rng.GetBytes(data);
                 int value = Math.Abs(BitConverter.ToInt32(data, 0)) % 10000000;
-                return value.ToString("D7"); // always 7 digits, zero-padded
+                return value.ToString("D7"); // always 7 digits
             }
         }
 
-        /// Invalidate any existing unused OTPs for this user+purpose and save a new one.
-        /// Returns the generated OTP code.
+
         public static string SaveOtp(int userID, string purpose)
         {
             string code = GenerateOtp();
@@ -247,7 +242,6 @@ namespace Aidcademy.Utilities
             {
                 conn.Open();
 
-                // Invalidate previous unused OTPs for this user+purpose
                 string invalidate = @"
                     UPDATE OtpCodes SET IsUsed = 1
                     WHERE UserID = @UserID AND Purpose = @Purpose AND IsUsed = 0";
@@ -258,10 +252,10 @@ namespace Aidcademy.Utilities
                     cmd.ExecuteNonQuery();
                 }
 
-                // Hash the OTP with BCrypt before storing
+                // Hash the OTP with BCrypt 
                 string hashedCode = BCrypt.Net.BCrypt.HashPassword(code);
 
-                // Insert new OTP (hashed)
+                // Insert new OTP 
                 string insert = @"
                     INSERT INTO OtpCodes (UserID, OtpCode, Purpose, ExpiresAt)
                     VALUES (@UserID, @OtpCode, @Purpose, @ExpiresAt)";
@@ -279,9 +273,6 @@ namespace Aidcademy.Utilities
         }
 
         /// Verify that the supplied OTP code is correct, unused, and unexpired.
-        /// Compares against BCrypt-hashed OTP stored in database.
-        /// Marks it as used on success.
-        /// Returns true if valid.
         public static bool VerifyOtp(int userID, string code, string purpose, out string errorMessage)
         {
             errorMessage = string.Empty;
@@ -326,7 +317,7 @@ namespace Aidcademy.Utilities
                     return false;
                 }
 
-                // Check each candidate against the plaintext code using BCrypt
+                // Check each candidate using BCrypt
                 foreach (var candidate in candidates)
                 {
                     int otpID = candidate.Item1;
@@ -360,9 +351,8 @@ namespace Aidcademy.Utilities
         }
     }
 
-    // =====================================================================
+
     // Sends emails via SMTP (configured in Web.config)
-    // =====================================================================
     public static class EmailHelper
     {
         public static bool SendEmail(string toEmail, string subject, string body, out string errorMessage)
@@ -413,7 +403,8 @@ namespace Aidcademy.Utilities
         }
 
 
-        /// Send a 7-digit OTP email.  purpose is "Login" or "ForgotPassword".
+        /// Send a 7-digit OTP email
+        /// "Login" or "ForgotPassword"
         public static bool SendOtpEmail(string toEmail, string otp, string purpose, out string errorMessage)
         {
             string subject = purpose == "ForgotPassword"
@@ -450,7 +441,7 @@ namespace Aidcademy.Utilities
             return SendEmail(toEmail, subject, body, out errorMessage);
         }
 
-        // Legacy: password reset link email (kept for compatibility)
+        // password reset
         public static bool SendPasswordResetEmail(string toEmail, string resetLink, out string errorMessage)
         {
             string subject = "Password Reset - Aidcademy";
@@ -487,7 +478,7 @@ namespace Aidcademy.Utilities
             context.Session["Name"] = fullName;
 
             // Create a Forms Auth ticket that carries the role as UserData
-            // so User.IsInRole() can be wired up in Global.asax if needed
+            // User.IsInRole() can be wired up in Global.asax if needed
             FormsAuthenticationTicket ticket = new FormsAuthenticationTicket(
                 version:     1,
                 name:        userID.ToString(),
@@ -612,7 +603,7 @@ namespace Aidcademy.Utilities
         }
 
 
-        /// Get a display name for the logged-in user (checks multiple session keys).
+        /// Get a display name for the logged-in user 
         public static string GetDisplayName()
         {
             string name = GetUsername();
@@ -625,21 +616,19 @@ namespace Aidcademy.Utilities
         }
 
 
-        /// Get the first letter of the user's display name (for avatar circles).
+        /// Get the first letter of the user's display name 
         public static string GetInitial()
         {
             string name = GetDisplayName().Trim();
             return name.Length > 0 ? name.Substring(0, 1).ToUpperInvariant() : "M";
         }
 
-        // Legacy alias - kept so existing callers compile without change
         public static void ClearSession()
         {
             SignOut();
         }
     }
 
-    // Basic input validation
     public static class ValidationHelper
     {
         // Check if the email address format is valid
