@@ -50,7 +50,7 @@ namespace Aidcademy
 
                                 imgSidebarAvatar.ImageUrl = !string.IsNullOrEmpty(photo)
                                     ? "~/Uploads/ProfilePhotos/" + photo
-                                    : "~/images/default-avatar.png";
+                                    : "~/image/default-avatar.png";
                             }
                         }
                     }
@@ -59,7 +59,7 @@ namespace Aidcademy
             catch
             {
                 lblSidebarName.Text = SessionHelper.GetUsername() ?? "Member";
-                imgSidebarAvatar.ImageUrl = "~/images/default-avatar.png";
+                imgSidebarAvatar.ImageUrl = "~/image/default-avatar.png";
             }
         }
 
