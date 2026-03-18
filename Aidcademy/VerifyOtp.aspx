@@ -228,7 +228,7 @@
             <h2>Verify Your Code</h2>
 
             <asp:Label ID="lblSubtitle" runat="server" CssClass="subtitle">
-                    We've sent a <strong>6-digit verification code</strong> to your email address.
+                    We've sent a <strong>7-digit verification code</strong> to your email address.
                     Enter it below. The code expires in <strong>10 minutes</strong>.
             </asp:Label>
 
@@ -237,7 +237,7 @@
                 <asp:Label ID="lblMessage" runat="server" CssClass="message"></asp:Label>
             </asp:Panel>
 
-            <!-- Six digit inputs -->
+            <!-- Seven digit inputs -->
             <div class="otp-row" id="otpRow">
                 <input class="otp-digit" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]" id="d1" autocomplete="off" />
                 <input class="otp-digit" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]" id="d2" autocomplete="off" />
@@ -245,6 +245,7 @@
                 <input class="otp-digit" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]" id="d4" autocomplete="off" />
                 <input class="otp-digit" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]" id="d5" autocomplete="off" />
                 <input class="otp-digit" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]" id="d6" autocomplete="off" />
+                <input class="otp-digit" maxlength="1" type="text" inputmode="numeric" pattern="[0-9]" id="d7" autocomplete="off" />
             </div>
 
             <!-- Hidden field passed to server -->
@@ -291,7 +292,7 @@
                 digits[digits.length - 1].focus();
         });
 
-        // Collect all 6 digits into the hidden field before postback
+        // Collect all 7 digits into the hidden field before postback
         function aggregateOtp() {
             var code = '';
             digits.forEach(function (d) { code += d.value; });

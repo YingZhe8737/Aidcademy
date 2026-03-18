@@ -36,7 +36,7 @@
                 <div class="lp-stat-icon"><i class="fas fa-star-half-alt"></i></div>
                 <div class="lp-stat-info">
                     <div class="lp-stat-value"><asp:Label ID="lblAvgScore" runat="server" Text="N/A" /></div>
-                    <div class="lp-stat-label">Avg. Score</div>
+                    <div class="lp-stat-label">Score</div>
                 </div>
             </div>
             <div class="lp-stat-card orange">

@@ -55,7 +55,7 @@ namespace Aidcademy
                     lblCompletedCourses.Text = r["CompletedCourses"].ToString();
 
                     if (r["AvgScore"] != DBNull.Value)
-                        lblAvgScore.Text = Convert.ToDouble(r["AvgScore"]).ToString("F0") + "%";
+                        lblAvgScore.Text = Convert.ToDouble(r["AvgScore"]).ToString("F0");
                     else
                         lblAvgScore.Text = "N/A";
                 }

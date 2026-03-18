@@ -11,7 +11,7 @@ using System.Web.Security;
 
 namespace Aidcademy.Utilities
 {
-    // Handles all database operations in one place
+    // Handles all database
     public static class DatabaseHelper
     {
         private static string ConnectionString
@@ -103,9 +103,8 @@ namespace Aidcademy.Utilities
         }
     }
 
-    // =====================================================================
+
     // Password hashing and validation
-    // =====================================================================
     public static class SecurityHelper
     {
         // Hash a password using SHA256
@@ -127,10 +126,8 @@ namespace Aidcademy.Utilities
             return HashPassword(password).Equals(hash, StringComparison.OrdinalIgnoreCase);
         }
 
-        /// <summary>
         /// Verify a plaintext password against a stored hash.
         /// Tries BCrypt first; falls back to SHA-256 for legacy hashes.
-        /// </summary>
         public static bool VerifyStoredPassword(string plainPassword, string storedHash)
         {
             if (string.IsNullOrEmpty(storedHash)) return false;
@@ -186,9 +183,7 @@ namespace Aidcademy.Utilities
         }
     }
 
-    // =====================================================================
     // OTP - generate, save, and verify one-time passwords
-    // =====================================================================
     public static class OtpHelper
     {
         private static readonly Random _rng = new Random();
@@ -196,7 +191,7 @@ namespace Aidcademy.Utilities
         // ===== LAB 11 OTP METHODS =====
         public static string GenerateNumericOtp()
         {
-            return GenerateOtp(); // Returns a 6-digit numeric string
+            return GenerateOtp(); // Returns a 7-digit numeric string
         }
 
         public static string HmacOtp(string otp, string secret)
@@ -223,11 +218,9 @@ namespace Aidcademy.Utilities
                 }
             }
         }
-        // ================================
 
-        /// <summary>
-        /// Generate a cryptographically random 6-digit OTP string.
-        /// </summary>
+
+        /// Generate a cryptographically random 7-digit OTP string.
         public static string GenerateOtp()
         {
             // Use RNGCryptoServiceProvider for better randomness
@@ -235,15 +228,13 @@ namespace Aidcademy.Utilities
             {
                 byte[] data = new byte[4];
                 rng.GetBytes(data);
-                int value = Math.Abs(BitConverter.ToInt32(data, 0)) % 1000000;
-                return value.ToString("D6"); // always 6 digits, zero-padded
+                int value = Math.Abs(BitConverter.ToInt32(data, 0)) % 10000000;
+                return value.ToString("D7"); // always 7 digits, zero-padded
             }
         }
 
-        /// <summary>
         /// Invalidate any existing unused OTPs for this user+purpose and save a new one.
         /// Returns the generated OTP code.
-        /// </summary>
         public static string SaveOtp(int userID, string purpose)
         {
             string code = GenerateOtp();
@@ -267,14 +258,17 @@ namespace Aidcademy.Utilities
                     cmd.ExecuteNonQuery();
                 }
 
-                // Insert new OTP
+                // Hash the OTP with BCrypt before storing
+                string hashedCode = BCrypt.Net.BCrypt.HashPassword(code);
+
+                // Insert new OTP (hashed)
                 string insert = @"
                     INSERT INTO OtpCodes (UserID, OtpCode, Purpose, ExpiresAt)
                     VALUES (@UserID, @OtpCode, @Purpose, @ExpiresAt)";
                 using (SqlCommand cmd = new SqlCommand(insert, conn))
                 {
                     cmd.Parameters.AddWithValue("@UserID", userID);
-                    cmd.Parameters.AddWithValue("@OtpCode", code);
+                    cmd.Parameters.AddWithValue("@OtpCode", hashedCode);
                     cmd.Parameters.AddWithValue("@Purpose", purpose);
                     cmd.Parameters.AddWithValue("@ExpiresAt", expiresAt);
                     cmd.ExecuteNonQuery();
@@ -284,64 +278,84 @@ namespace Aidcademy.Utilities
             return code;
         }
 
-        /// <summary>
         /// Verify that the supplied OTP code is correct, unused, and unexpired.
+        /// Compares against BCrypt-hashed OTP stored in database.
         /// Marks it as used on success.
         /// Returns true if valid.
-        /// </summary>
         public static bool VerifyOtp(int userID, string code, string purpose, out string errorMessage)
         {
             errorMessage = string.Empty;
+            string trimmedCode = code.Trim();
 
             using (SqlConnection conn = new SqlConnection(
                 ConfigurationManager.ConnectionStrings["AidcademyDB"].ConnectionString))
             {
                 conn.Open();
 
+                // Fetch all unused OTPs for this user+purpose (cannot match hashed value in SQL)
                 string query = @"
-                    SELECT OtpID, ExpiresAt
+                    SELECT OtpID, OtpCode, ExpiresAt
                     FROM OtpCodes
                     WHERE UserID  = @UserID
-                      AND OtpCode = @OtpCode
                       AND Purpose = @Purpose
                       AND IsUsed  = 0
                     ORDER BY CreatedAt DESC";
 
+                var candidates = new System.Collections.Generic.List<Tuple<int, string, DateTime>>();
+
                 using (SqlCommand cmd = new SqlCommand(query, conn))
                 {
                     cmd.Parameters.AddWithValue("@UserID", userID);
-                    cmd.Parameters.AddWithValue("@OtpCode", code.Trim());
                     cmd.Parameters.AddWithValue("@Purpose", purpose);
 
                     using (SqlDataReader reader = cmd.ExecuteReader())
                     {
-                        if (!reader.Read())
+                        while (reader.Read())
                         {
-                            errorMessage = "Invalid OTP code. Please try again.";
-                            return false;
+                            candidates.Add(Tuple.Create(
+                                Convert.ToInt32(reader["OtpID"]),
+                                reader["OtpCode"].ToString(),
+                                Convert.ToDateTime(reader["ExpiresAt"])));
                         }
-
-                        DateTime expiresAt = Convert.ToDateTime(reader["ExpiresAt"]);
-                        int otpID = Convert.ToInt32(reader["OtpID"]);
-                        reader.Close();
-
-                        if (DateTime.Now > expiresAt)
-                        {
-                            errorMessage = "OTP has expired. Please request a new one.";
-                            return false;
-                        }
-
-                        // Mark as used
-                        string markUsed = "UPDATE OtpCodes SET IsUsed = 1 WHERE OtpID = @OtpID";
-                        using (SqlCommand cmdMark = new SqlCommand(markUsed, conn))
-                        {
-                            cmdMark.Parameters.AddWithValue("@OtpID", otpID);
-                            cmdMark.ExecuteNonQuery();
-                        }
-
-                        return true;
                     }
                 }
+
+                if (candidates.Count == 0)
+                {
+                    errorMessage = "Invalid OTP code. Please try again.";
+                    return false;
+                }
+
+                // Check each candidate against the plaintext code using BCrypt
+                foreach (var candidate in candidates)
+                {
+                    int otpID = candidate.Item1;
+                    string hashedOtp = candidate.Item2;
+                    DateTime expiresAt = candidate.Item3;
+
+                    if (!BCrypt.Net.BCrypt.Verify(trimmedCode, hashedOtp))
+                        continue;
+
+                    // Match found — check expiry
+                    if (DateTime.Now > expiresAt)
+                    {
+                        errorMessage = "OTP has expired. Please request a new one.";
+                        return false;
+                    }
+
+                    // Mark as used
+                    string markUsed = "UPDATE OtpCodes SET IsUsed = 1 WHERE OtpID = @OtpID";
+                    using (SqlCommand cmdMark = new SqlCommand(markUsed, conn))
+                    {
+                        cmdMark.Parameters.AddWithValue("@OtpID", otpID);
+                        cmdMark.ExecuteNonQuery();
+                    }
+
+                    return true;
+                }
+
+                errorMessage = "Invalid OTP code. Please try again.";
+                return false;
             }
         }
     }
@@ -379,7 +393,7 @@ namespace Aidcademy.Utilities
                     EnableSsl   = enableSSL
                 };
 
-                // ===== DEVELOPMENT MOCK =====
+                // DEVELOPMENT MOCK 
                 if (smtpPassword == "your-app-password")
                 {
                     string logPath = HttpContext.Current.Server.MapPath("~/App_Data/MockEmails.txt");
@@ -387,7 +401,6 @@ namespace Aidcademy.Utilities
                     System.IO.File.AppendAllText(logPath, logEntry);
                     return true;
                 }
-                // ============================
 
                 smtp.Send(mail);
                 return true;
@@ -399,9 +412,8 @@ namespace Aidcademy.Utilities
             }
         }
 
-        /// <summary>
-        /// Send a 6-digit OTP email.  purpose is "Login" or "ForgotPassword".
-        /// </summary>
+
+        /// Send a 7-digit OTP email.  purpose is "Login" or "ForgotPassword".
         public static bool SendOtpEmail(string toEmail, string otp, string purpose, out string errorMessage)
         {
             string subject = purpose == "ForgotPassword"
@@ -586,9 +598,8 @@ namespace Aidcademy.Utilities
             return "";
         }
 
-        /// <summary>
+
         /// Redirect to the correct dashboard based on role.
-        /// </summary>
         public static void RedirectByRole(string role)
         {
             var ctx = HttpContext.Current;
@@ -600,9 +611,8 @@ namespace Aidcademy.Utilities
                 ctx.Response.Redirect("~/MemberDashboard.aspx");
         }
 
-        /// <summary>
+
         /// Get a display name for the logged-in user (checks multiple session keys).
-        /// </summary>
         public static string GetDisplayName()
         {
             string name = GetUsername();
@@ -614,9 +624,8 @@ namespace Aidcademy.Utilities
             return "Member";
         }
 
-        /// <summary>
+
         /// Get the first letter of the user's display name (for avatar circles).
-        /// </summary>
         public static string GetInitial()
         {
             string name = GetDisplayName().Trim();

@@ -26,7 +26,7 @@ namespace Aidcademy
                 }
 
                 if (Purpose == "ForgotPassword")
-                    lblSubtitle.Text = "We've sent a <strong>6-digit verification code</strong> to your email. " +
+                    lblSubtitle.Text = "We've sent a <strong>7-digit verification code</strong> to your email. " +
                                        "Enter it below to reset your password. The code expires in <strong>10 minutes</strong>.";
             }
         }
@@ -35,9 +35,9 @@ namespace Aidcademy
         {
             string code = txtOtp.Value?.Trim() ?? "";
 
-            if (code.Length != 6)
+            if (code.Length != 7)
             {
-                ShowMessage("Please enter all 6 digits of the OTP.", false);
+                ShowMessage("Please enter all 7 digits of the OTP.", false);
                 return;
             }
 
@@ -148,7 +148,7 @@ namespace Aidcademy
                 }
             }
 
-            SessionHelper.RedirectByRole(role); // ? Only called once, after DB work
+            SessionHelper.RedirectByRole(role); // Only called once, after DB work
         }
 
         private void HandleForgotPasswordVerification(string code)
