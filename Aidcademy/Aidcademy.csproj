@@ -16,11 +16,9 @@
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <UseIISExpress>true</UseIISExpress>
     <Use64BitIISExpress />
-    <IISExpressSSLPort>44327</IISExpressSSLPort>
-    <IISExpressAnonymousAuthentication>
-    </IISExpressAnonymousAuthentication>
-    <IISExpressWindowsAuthentication>
-    </IISExpressWindowsAuthentication>
+    <IISExpressSSLPort>44310</IISExpressSSLPort>
+    <IISExpressAnonymousAuthentication>enabled</IISExpressAnonymousAuthentication>
+    <IISExpressWindowsAuthentication>disabled</IISExpressWindowsAuthentication>
     <IISExpressUseClassicPipelineMode />
     <UseGlobalApplicationHostFile />
     <NuGetPackageImportStamp>
@@ -170,7 +168,6 @@
     <Content Include="Global.asax" />
     <Content Include="InstructorEditContent.aspx" />
     <Content Include="InstructorManageContent.aspx" />
-    <Content Include="InstructorProfile.aspx" />
     <Content Include="InstructorUploadLesson.aspx" />
     <Content Include="InstructorUploadQuiz.aspx" />
     <Content Include="RespondQuestions.aspx" />
@@ -324,13 +321,6 @@
     </Compile>
     <Compile Include="LearningProgress.aspx.designer.cs">
       <DependentUpon>LearningProgress.aspx</DependentUpon>
-    </Compile>
-    <Compile Include="InstructorProfile.aspx.cs">
-      <DependentUpon>InstructorProfile.aspx</DependentUpon>
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="InstructorProfile.aspx.designer.cs">
-      <DependentUpon>InstructorProfile.aspx</DependentUpon>
     </Compile>
     <Compile Include="Login_signup.aspx.cs">
       <DependentUpon>Login_signup.aspx</DependentUpon>
