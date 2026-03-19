@@ -36,9 +36,27 @@ namespace Aidcademy
             get { return isMember; }
         }
 
-        // uses shared SessionHelper.GetDisplayName() 
+        // uses shared SessionHelper.GetDisplayName()
         protected string GetMemberName()  { return SessionHelper.GetDisplayName(); }
         protected string GetMemberInitial() { return SessionHelper.GetInitial(); }
+
+        private string _memberPhotoUrl;
+        protected string GetMemberPhotoUrl()
+        {
+            if (_memberPhotoUrl != null) return _memberPhotoUrl;
+            if (!isMember) { _memberPhotoUrl = ""; return ""; }
+            try
+            {
+                string q = "SELECT ProfilePhoto FROM UserProfiles WHERE UserID = @UserID";
+                SqlParameter[] p = { new SqlParameter("@UserID", userID) };
+                object r = DatabaseHelper.ExecuteScalar(q, p);
+                _memberPhotoUrl = (r != null && r != DBNull.Value && !string.IsNullOrEmpty(r.ToString()))
+                    ? ResolveUrl("~/Uploads/ProfilePhotos/" + r.ToString())
+                    : "";
+            }
+            catch { _memberPhotoUrl = ""; }
+            return _memberPhotoUrl;
+        }
 
         private void LoadCourseTitle()
         {

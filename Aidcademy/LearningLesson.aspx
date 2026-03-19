@@ -132,7 +132,9 @@
         </nav>
         <div class="sidebar-footer">
             <a href="Profile.aspx" class="sidebar-profile-link" title="View Profile">
-                <div class="sidebar-avatar"><%= GetMemberInitial() %></div>
+                <div class="sidebar-avatar">
+                    <img src="<%= !string.IsNullOrEmpty(GetMemberPhotoUrl()) ? GetMemberPhotoUrl() : ResolveUrl("~/image/default-avatar.png") %>" alt="Profile" />
+                </div>
                 <div class="sidebar-user-info">
                     <div class="sidebar-user-name"><%= GetMemberName() %></div>
                     <div class="sidebar-user-role">Member &middot; View Profile</div>
